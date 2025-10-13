@@ -1,0 +1,233 @@
+# ================================================================================
+# WORLDENV .gitignore
+# Comprehensive ignore rules for WORLDENV game engine project
+# ================================================================================
+
+# ================================================================================
+# Node.js & npm
+# ================================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-store/
+
+# ================================================================================
+# Build Output
+# ================================================================================
+dist/
+dist-ssr/
+build/
+*.wasm
+*.js.map
+*.wasm.map
+
+# Keep build directory structure but ignore contents
+!build/.gitkeep
+
+# ================================================================================
+# TypeScript
+# ================================================================================
+*.tsbuildinfo
+*.d.ts.map
+
+# ================================================================================
+# AssemblyScript
+# ================================================================================
+*.wat
+*.wast
+
+# ================================================================================
+# Environment Variables
+# ================================================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# ================================================================================
+# IDE & Editor
+# ================================================================================
+
+# Visual Studio Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+*.code-workspace
+
+# JetBrains IDEs (WebStorm, IntelliJ, etc.)
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Atom
+.atom/
+
+# ================================================================================
+# Operating System
+# ================================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+.nfs*
+
+# ================================================================================
+# Logs
+# ================================================================================
+logs/
+*.log
+log/
+*.log.*
+
+# ================================================================================
+# Testing
+# ================================================================================
+coverage/
+*.lcov
+.nyc_output/
+.cache/
+test-results/
+junit.xml
+
+# ================================================================================
+# Temporary Files
+# ================================================================================
+tmp/
+temp/
+*.tmp
+*.temp
+*.cache
+*.bak
+*.backup
+
+# ================================================================================
+# WORLDENV Specific
+# ================================================================================
+
+# Project files (user-specific)
+projects/*/node_modules/
+projects/*/dist/
+projects/*/.cache/
+projects/*/build/
+
+# Editor build artifacts
+editor/dist/
+editor/build/
+editor/out/
+editor/.cache/
+
+# User preferences
+.user.prefs
+user-settings.json
+
+# Lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ================================================================================
+# Assets (uncomment if you don't want to commit large assets)
+# ================================================================================
+# public/assets/*.png
+# public/assets/*.jpg
+# public/assets/*.jpeg
+# public/assets/*.mp3
+# public/assets/*.wav
+# public/assets/*.ogg
+# public/assets/*.gltf
+# public/assets/*.glb
+
+# ================================================================================
+# Generated Documentation
+# ================================================================================
+docs/api/generated/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
+# ================================================================================
+# Miscellaneous
+# ================================================================================
+*.pid
+*.seed
+*.pid.lock
+.grunt
+.lock-wscript
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.node_repl_history
+.yarn-integrity
+.npm
+
+# ================================================================================
+# Optional: Development Database
+# ================================================================================
+*.sqlite
+*.sqlite3
+*.db
+
+# ================================================================================
+# Optional: Ignore everything in certain directories except README
+# ================================================================================
+# Uncomment these if needed:
+# public/*
+# !public/README.md

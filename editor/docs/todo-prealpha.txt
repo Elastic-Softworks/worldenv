@@ -1,0 +1,540 @@
+================================================================================
+WORLDEDIT PRE-ALPHA DEVELOPMENT TODO
+WORLDENV Editor - Electron-based Game Development Environment
+================================================================================
+
+TIMELINE: January 2025 - June 2025 (6 months)
+
+OBJECTIVE: Establish foundation for WORLDEDIT with minimal viable features
+          to demonstrate core editor functionality and engine integration.
+
+================================================================================
+PHASE 1: PROJECT SETUP & INFRASTRUCTURE
+DATE RANGE: January 1-15, 2025 (2 weeks)
+================================================================================
+
+[ ] 1.1 - Initialize Electron Project (Jan 1-3, 2025)
+    [ ] Create package.json with Electron dependencies
+    [ ] Set up TypeScript configuration (tsconfig.json)
+    [ ] Configure Electron main process entry point
+    [ ] Configure Electron renderer process entry point
+    [ ] Add electron-builder for packaging
+
+[ ] 1.2 - Build System Configuration (Jan 4-6, 2025)
+    [ ] Set up Webpack/Vite for bundling renderer process
+    [ ] Configure separate builds for main/renderer processes
+    [ ] Add development mode with hot reload
+    [ ] Create build scripts for production packaging
+    [ ] Set up source maps for debugging
+
+[ ] 1.3 - Project Structure (Jan 7-9, 2025)
+    [ ] Create src/ directory structure:
+        - src/main/          (Electron main process)
+        - src/renderer/      (UI/renderer process)
+        - src/shared/        (shared types/utilities)
+        - src/engine/        (engine integration layer)
+    [ ] Create assets/ directory for editor UI resources
+    [ ] Create templates/ directory for project templates
+    [ ] Set up dist/ and build/ output directories
+
+[ ] 1.4 - Development Environment (Jan 10-15, 2025)
+    [ ] Configure ESLint for TypeScript
+    [ ] Set up Prettier for code formatting
+    [ ] Add npm scripts for dev/build/package
+    [ ] Create .gitignore for editor-specific files
+    [ ] Document build process in docs/build-guide.md
+
+================================================================================
+PHASE 2: BASIC ELECTRON APPLICATION
+DATE RANGE: January 16-31, 2025 (2 weeks)
+================================================================================
+
+[ ] 2.1 - Main Process Setup (Jan 16-19, 2025)
+    [ ] Create main window with BrowserWindow
+    [ ] Implement IPC (inter-process communication) handlers
+    [ ] Set up application menu structure
+    [ ] Implement file dialog handlers (open/save project)
+    [ ] Add basic error handling and logging
+
+[ ] 2.2 - Window Management (Jan 20-23, 2025)
+    [ ] Create main editor window (1280x720 default)
+    [ ] Implement window state persistence (size/position)
+    [ ] Add splash screen during initialization
+    [ ] Support multiple editor windows (future-proofing)
+    [ ] Handle window lifecycle events
+
+[ ] 2.3 - File System Integration (Jan 24-31, 2025)
+    [ ] Implement project directory watcher
+    [ ] Create file system abstraction layer
+    [ ] Add safe file read/write operations
+    [ ] Implement project file (.worldenv) format
+    [ ] Set up auto-save functionality
+
+================================================================================
+PHASE 3: UI FRAMEWORK & LAYOUT
+DATE RANGE: February 1-21, 2025 (3 weeks)
+================================================================================
+
+[ ] 3.1 - Base UI Architecture (Feb 1-5, 2025)
+    [ ] Choose and integrate UI framework (options: React, Vue, or custom)
+    [ ] Create main application shell component
+    [ ] Implement dockable panel system
+    [ ] Add panel resize/drag functionality
+    [ ] Create panel state persistence system
+
+[ ] 3.2 - Core Layout Panels (Feb 6-10, 2025)
+    [ ] Viewport panel (central area)
+    [ ] Scene hierarchy panel (left sidebar)
+    [ ] Inspector panel (right sidebar)
+    [ ] Asset browser panel (bottom)
+    [ ] Menu bar (top)
+    [ ] Toolbar (below menu bar)
+    [ ] Status bar (bottom)
+
+[ ] 3.3 - UI Theming (Feb 11-14, 2025)
+    [ ] Create dark theme (default)
+    [ ] Create light theme
+    [ ] Implement theme switching system
+    [ ] Define color palette system
+    [ ] Style all base UI components
+
+[ ] 3.4 - Basic UI Components (Feb 15-21, 2025)
+    [ ] Button component
+    [ ] Input field component
+    [ ] Dropdown/select component
+    [ ] Tree view component (for hierarchy)
+    [ ] Property grid component (for inspector)
+    [ ] Tab container component
+    [ ] Context menu component
+    [ ] Modal dialog component
+
+================================================================================
+PHASE 4: VIEWPORT & RENDERING
+DATE RANGE: February 22 - March 14, 2025 (3 weeks)
+================================================================================
+
+[ ] 4.1 - Viewport Integration (Feb 22-26, 2025)
+    [ ] Embed Three.js renderer in viewport panel
+    [ ] Embed Pixi.js renderer in viewport panel
+    [ ] Implement viewport mode switching (2D/3D)
+    [ ] Add viewport camera controls (pan/zoom/rotate)
+    [ ] Create viewport grid overlay
+
+[ ] 4.2 - Scene Rendering (Feb 27 - Mar 4, 2025)
+    [ ] Render Three.js scene in 3D mode
+    [ ] Render Pixi.js scene in 2D mode
+    [ ] Implement selection highlight overlay
+    [ ] Add gizmos for transform manipulation
+    [ ] Create viewport rendering loop
+
+[ ] 4.3 - Viewport Controls (Mar 5-9, 2025)
+    [ ] Implement mouse camera controls
+    [ ] Add viewport navigation toolbar
+    [ ] Create camera reset functionality
+    [ ] Add viewport statistics display (FPS, draw calls)
+    [ ] Implement viewport snap-to-grid
+
+[ ] 4.4 - Editor Camera (Mar 10-14, 2025)
+    [ ] Create editor camera class (separate from game camera)
+    [ ] Implement orbit controls for 3D
+    [ ] Implement pan/zoom for 2D
+    [ ] Add camera position presets (top, side, front, etc.)
+    [ ] Save/restore camera position per scene
+
+================================================================================
+PHASE 5: SCENE HIERARCHY SYSTEM
+DATE RANGE: March 15-31, 2025 (2.5 weeks)
+================================================================================
+
+[ ] 5.1 - Node/Entity Data Structure (Mar 15-18, 2025)
+    [ ] Define Node/Entity base class
+    [ ] Implement hierarchical tree structure
+    [ ] Add parent/child relationship management
+    [ ] Create node type system (Entity2D, Entity3D, etc.)
+    [ ] Implement node ID generation
+
+[ ] 5.2 - Hierarchy Panel UI (Mar 19-22, 2025)
+    [ ] Display scene tree in hierarchy panel
+    [ ] Implement node selection (single/multi)
+    [ ] Add drag-and-drop for reparenting
+    [ ] Create node context menu (add/delete/rename)
+    [ ] Add node visibility toggles
+
+[ ] 5.3 - Node Operations (Mar 23-26, 2025)
+    [ ] Create node (right-click menu)
+    [ ] Delete node (with confirmation)
+    [ ] Rename node (inline editing)
+    [ ] Duplicate node (with children)
+    [ ] Copy/paste nodes
+
+[ ] 5.4 - Scene Management (Mar 27-31, 2025)
+    [ ] Create new scene
+    [ ] Load existing scene
+    [ ] Save scene to file (.scene.json)
+    [ ] Implement scene dirty state tracking
+    [ ] Add unsaved changes warning
+
+================================================================================
+PHASE 6: COMPONENT SYSTEM
+DATE RANGE: April 1-18, 2025 (2.5 weeks)
+================================================================================
+
+[ ] 6.1 - Component Architecture (Apr 1-5, 2025)
+    [ ] Define Component base interface
+    [ ] Create component registry system
+    [ ] Implement component attachment to nodes
+    [ ] Add component serialization/deserialization
+    [ ] Create component type discovery
+
+[ ] 6.2 - Core Components (Pre-Alpha Minimal Set) (Apr 6-12, 2025)
+    [ ] Transform component (position, rotation, scale)
+    [ ] Sprite component (2D texture rendering)
+    [ ] MeshRenderer component (3D model rendering)
+    [ ] Camera component
+    [ ] Script component (reference to script file)
+
+[ ] 6.3 - Component Inspector Integration (Apr 13-18, 2025)
+    [ ] Display attached components in inspector
+    [ ] Add "Add Component" button/menu
+    [ ] Remove component functionality
+    [ ] Enable/disable component toggles
+    [ ] Component reordering
+
+================================================================================
+PHASE 7: INSPECTOR/PROPERTIES PANEL
+DATE RANGE: April 19 - May 2, 2025 (2 weeks)
+================================================================================
+
+[ ] 7.1 - Property Display System (Apr 19-23, 2025)
+    [ ] Auto-generate property fields from component data
+    [ ] Support basic types (number, string, boolean)
+    [ ] Support vector types (Vector2, Vector3)
+    [ ] Support color picker
+    [ ] Support dropdown/enum selection
+
+[ ] 7.2 - Property Editing (Apr 24-27, 2025)
+    [ ] Implement live property updates
+    [ ] Add undo/redo for property changes
+    [ ] Create numeric input with drag-to-change
+    [ ] Add min/max constraints for numeric fields
+    [ ] Implement property validation
+
+[ ] 7.3 - Inspector Header (Apr 28-29, 2025)
+    [ ] Display selected node name
+    [ ] Show node type/icon
+    [ ] Add node enable/disable toggle
+    [ ] Show node ID (for debugging)
+
+[ ] 7.4 - Multi-Selection Support (Apr 30 - May 2, 2025)
+    [ ] Handle multiple node selection
+    [ ] Show shared properties only
+    [ ] Update all selected nodes simultaneously
+    [ ] Display multi-select indicator
+
+================================================================================
+PHASE 8: ASSET BROWSER & FILE SYSTEM
+DATE RANGE: May 3-16, 2025 (2 weeks)
+================================================================================
+
+[ ] 8.1 - Asset Browser UI (May 3-6, 2025)
+    [ ] Create file tree view for project assets
+    [ ] Add asset thumbnail grid view
+    [ ] Implement view mode switching (tree/grid)
+    [ ] Show asset type icons
+    [ ] Display asset metadata
+
+[ ] 8.2 - Asset Import System (May 7-9, 2025)
+    [ ] Drag-and-drop files into editor
+    [ ] Import images (PNG, JPG, WebP)
+    [ ] Import 3D models (GLTF, OBJ)
+    [ ] Import audio files (MP3, WAV, OGG)
+    [ ] Copy imported files to project assets folder
+
+[ ] 8.3 - Asset Management (May 10-12, 2025)
+    [ ] Create folders in asset browser
+    [ ] Rename assets
+    [ ] Delete assets (with confirmation)
+    [ ] Move assets between folders
+    [ ] Asset search/filter functionality
+
+[ ] 8.4 - Asset Preview (May 13-16, 2025)
+    [ ] Preview images in asset browser
+    [ ] Preview 3D models (small viewport)
+    [ ] Show audio waveform preview
+    [ ] Display asset properties (size, format, etc.)
+
+================================================================================
+PHASE 9: ENGINE INTEGRATION
+DATE RANGE: May 17-30, 2025 (2 weeks)
+================================================================================
+
+[ ] 9.1 - WORLDENV Runtime Embedding (May 17-20, 2025)
+    [ ] Integrate WORLDENV runtime into editor
+    [ ] Create engine instance in viewport
+    [ ] Load engine with current scene data
+    [ ] Implement editor-to-engine data sync
+    [ ] Handle engine initialization errors
+
+[ ] 9.2 - Scene Serialization (May 21-23, 2025)
+    [ ] Export scene to WORLDENV format (.scene.json)
+    [ ] Serialize node hierarchy
+    [ ] Serialize component data
+    [ ] Include asset references
+    [ ] Validate exported scene data
+
+[ ] 9.3 - Engine Communication Layer (May 24-27, 2025)
+    [ ] Create IPC bridge for engine commands
+    [ ] Implement scene update messaging
+    [ ] Add entity manipulation commands
+    [ ] Create asset loading commands
+    [ ] Handle engine error reporting
+
+[ ] 9.4 - Play Mode (Basic) (May 28-30, 2025)
+    [ ] Add Play/Stop buttons to toolbar
+    [ ] Start engine in play mode
+    [ ] Pause/resume functionality
+    [ ] Stop and restore editor state
+    [ ] Disable editing during play mode
+
+================================================================================
+PHASE 10: BASIC SCRIPT EDITOR
+DATE RANGE: May 31 - June 6, 2025 (1 week)
+================================================================================
+
+[ ] 10.1 - Code Editor Integration (May 31 - Jun 2, 2025)
+    [ ] Integrate Monaco Editor (VSCode editor component)
+    [ ] Create script editor panel
+    [ ] Open TypeScript/AssemblyScript files
+    [ ] Implement syntax highlighting
+    [ ] Add line numbers and gutter
+
+[ ] 10.2 - Script Management (Jun 3-4, 2025)
+    [ ] Create new script file
+    [ ] Save script file
+    [ ] Auto-save on changes
+    [ ] Script file templates
+    [ ] Script file association with entities
+
+[ ] 10.3 - Basic Code Features (Jun 5-6, 2025)
+    [ ] Code folding
+    [ ] Find/replace functionality
+    [ ] Bracket matching
+    [ ] Auto-indentation
+    [ ] Multi-cursor editing
+
+================================================================================
+PHASE 11: PROJECT MANAGEMENT
+DATE RANGE: June 7-13, 2025 (1 week)
+================================================================================
+
+[ ] 11.1 - Project Creation (Jun 7-8, 2025)
+    [ ] New project wizard dialog
+    [ ] Project template selection
+    [ ] Set project name and location
+    [ ] Initialize project directory structure
+    [ ] Create default project configuration
+
+[ ] 11.2 - Project Loading (Jun 9-10, 2025)
+    [ ] Open project dialog
+    [ ] Recent projects list
+    [ ] Load project configuration
+    [ ] Restore last opened scene
+    [ ] Handle missing/corrupted projects
+
+[ ] 11.3 - Project Configuration (Jun 11-12, 2025)
+    [ ] Project settings dialog
+    [ ] Game title and metadata
+    [ ] Default window size
+    [ ] Physics settings (basic)
+    [ ] Renderer settings (2D/3D defaults)
+
+[ ] 11.4 - Project File Structure (Jun 13, 2025)
+    [ ] assets/          (imported assets)
+    [ ] scenes/          (scene files)
+    [ ] scripts/         (TypeScript/AssemblyScript)
+    [ ] prefabs/         (reusable entities)
+    [ ] project.worldenv (project config)
+
+================================================================================
+PHASE 12: TRANSFORM MANIPULATORS & OPERATIONS
+DATE RANGE: March 25-31, 2026 (1 week)
+================================================================================
+
+[ ] 12.1 - Manipulator System (Mar 25-27, 2026)
+    [ ] Create translate manipulator (arrows)
+    [ ] Create rotate manipulator (circles)
+    [ ] Create scale manipulator (boxes)
+    [ ] Implement manipulator rendering overlay
+    [ ] Add manipulator interaction system
+
+[ ] 12.2 - Transform Operations (Mar 28-29, 2026)
+    [ ] Drag manipulator handles to transform
+    [ ] Snap to grid functionality
+    [ ] Numeric input for precise values
+    [ ] Local vs. world space transforms
+    [ ] Transform multiple selected nodes
+
+[ ] 12.3 - Manipulator Settings (Mar 30-31, 2026)
+    [ ] Manipulator size adjustment
+    [ ] Toggle manipulator visibility
+    [ ] Switch manipulator mode (translate/rotate/scale)
+    [ ] Keyboard shortcuts (W=translate, E=rotate, R=scale)
+
+================================================================================
+PHASE 13: UNDO/REDO SYSTEM
+DATE RANGE: June 21-24, 2025 (4 days)
+================================================================================
+
+[ ] 13.1 - Command Pattern Implementation (Jun 21, 2025)
+    [ ] Create Command base class
+    [ ] Implement undo/redo stack
+    [ ] Add execute/undo/redo methods
+    [ ] Set maximum undo history
+
+[ ] 13.2 - Undoable Operations (Jun 22-23, 2025)
+    [ ] Node creation/deletion
+    [ ] Property changes
+    [ ] Transform modifications
+    [ ] Component add/remove
+    [ ] Scene hierarchy changes
+
+[ ] 13.3 - Undo UI Integration (Jun 24, 2025)
+    [ ] Undo menu item (Ctrl+Z)
+    [ ] Redo menu item (Ctrl+Y)
+    [ ] Display undo action description
+    [ ] Clear undo history on scene change
+
+================================================================================
+PHASE 14: BASIC BUILD SYSTEM
+DATE RANGE: June 25-27, 2025 (3 days)
+================================================================================
+
+[ ] 14.1 - Build Configuration (Jun 25, 2025)
+    [ ] Create build settings dialog
+    [ ] Select output directory
+    [ ] Configure build target (web/desktop)
+    [ ] Set optimization level
+    [ ] Define entry scene
+
+[ ] 14.2 - Build Process (Jun 26, 2025)
+    [ ] Compile TypeScript to JavaScript
+    [ ] Build AssemblyScript to WASM
+    [ ] Bundle assets
+    [ ] Generate index.html
+    [ ] Copy runtime files
+
+[ ] 14.3 - Build Output (Jun 27, 2025)
+    [ ] Create dist/ directory
+    [ ] Package all required files
+    [ ] Generate manifest/config
+    [ ] Validate build output
+    [ ] Open build location option
+
+================================================================================
+PHASE 15: WORLDSRC LANGUAGE FOUNDATION
+DATE RANGE: June 28 - July 11, 2025 (2 weeks)
+================================================================================
+
+[ ] 15.1 - Language Design Specification (Jun 28 - Jul 1, 2025)
+    [ ] Define WORLDSRC syntax (C-inspired)
+    [ ] Specify data types and type system
+    [ ] Define control flow structures
+    [ ] Design function/procedure syntax
+    [ ] Create language grammar specification
+    [ ] Document language features and limitations
+
+[ ] 15.2 - Lexer Implementation (Jul 2-5, 2025)
+    [ ] Token definition for WORLDSRC
+    [ ] Lexical analyzer implementation
+    [ ] Keyword recognition
+    [ ] Operator and delimiter handling
+    [ ] Comment parsing
+    [ ] Error reporting for lexical errors
+
+[ ] 15.3 - Parser Foundation (Jul 6-9, 2025)
+    [ ] Abstract Syntax Tree (AST) node definitions
+    [ ] Recursive descent parser implementation
+    [ ] Expression parsing
+    [ ] Statement parsing
+    [ ] Basic syntax error detection
+    [ ] AST visualization for debugging
+
+[ ] 15.4 - WORLDSRC Integration Planning (Jul 10-11, 2025)
+    [ ] Define WORLDSRC to TypeScript compilation strategy
+    [ ] Plan AssemblyScript integration points
+    [ ] Design standard library architecture
+    [ ] Specify engine-specific built-in functions
+    [ ] Create roadmap for compiler features
+
+================================================================================
+PHASE 16: TESTING & POLISH
+DATE RANGE: July 12-18, 2025 (1 week)
+================================================================================
+
+[ ] 16.1 - Error Handling (Jul 12-13, 2025)
+    [ ] Implement global error catching
+    [ ] User-friendly error dialogs
+    [ ] Error logging to file
+    [ ] Crash recovery (save backup)
+
+[ ] 16.2 - Performance Optimization (Jul 14-15, 2025)
+    [ ] Optimize viewport rendering
+    [ ] Implement viewport culling
+    [ ] Reduce UI re-renders
+    [ ] Profile and fix bottlenecks
+
+[ ] 16.3 - User Experience (Jul 16, 2025)
+    [ ] Add keyboard shortcuts documentation
+    [ ] Create tooltips for all UI elements
+    [ ] Implement loading indicators
+    [ ] Add confirmation dialogs for destructive actions
+
+[ ] 16.4 - Testing (Jul 17, 2025)
+    [ ] Manual testing of all features
+    [ ] Test project creation workflow
+    [ ] Test scene editing workflow
+    [ ] Test build/export workflow
+    [ ] Fix critical bugs
+
+[ ] 16.5 - Documentation (Jul 18, 2025)
+    [ ] Write user guide (basic)
+    [ ] Document keyboard shortcuts
+    [ ] Create quick start tutorial
+    [ ] Add inline help/documentation links
+
+================================================================================
+PRE-ALPHA DELIVERABLES (Complete by June 30, 2025)
+================================================================================
+
+[ ] Functional Electron editor application
+[ ] 2D/3D viewport with camera controls
+[ ] Scene hierarchy with node management
+[ ] Component system with core components
+[ ] Inspector panel with property editing
+[ ] Asset browser with import functionality
+[ ] Basic script editor (Monaco)
+[ ] Transform manipulators
+[ ] Undo/redo system
+[ ] Project management (new/open/save)
+[ ] Engine integration with play mode
+[ ] Basic build/export system
+[ ] Minimal documentation
+[ ] WORLDSRC language specification
+[ ] Basic WORLDSRC lexer and parser
+
+================================================================================
+PRE-ALPHA SUCCESS CRITERIA
+================================================================================
+
+1. User can create a new WORLDENV project
+2. User can create entities in 2D/3D scenes
+3. User can add/remove/edit components
+4. User can import assets (images, models)
+5. User can write scripts in integrated editor
+6. User can test game in play mode
+7. User can build project for web deployment
+8. Editor is stable enough for basic development work
+
+================================================================================
+END OF PRE-ALPHA TODO
+================================================================================

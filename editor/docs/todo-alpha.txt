@@ -1,0 +1,623 @@
+================================================================================
+WORLDEDIT ALPHA DEVELOPMENT TODO
+WORLDENV Editor - Feature Expansion & Refinement Phase
+================================================================================
+
+OBJECTIVE: Expand feature set, implement advanced editing capabilities,
+          improve stability, and create a more complete development environment.
+
+PREREQUISITES: All pre-alpha tasks completed successfully.
+
+================================================================================
+PHASE 1: ADVANCED COMPONENT SYSTEM
+================================================================================
+
+[ ] 1.1 - Additional Core Components
+    [ ] Light component (Point, Directional, Spot)
+    [ ] AudioSource component
+    [ ] AudioListener component
+    [ ] ParticleSystem component
+    [ ] Collider component (Box, Sphere, Capsule, Mesh)
+    [ ] RigidBody component (physics)
+    [ ] CharacterController component
+    [ ] TileMap component (2D)
+    [ ] AnimationPlayer component
+
+[ ] 1.2 - Component Features
+    [ ] Component presets/templates
+    [ ] Component copying between entities
+    [ ] Component search/filter in Add menu
+    [ ] Component dependencies (auto-add required components)
+    [ ] Component conflicts detection
+    [ ] Component documentation in inspector
+
+[ ] 1.3 - Custom Component System
+    [ ] Create custom component from template
+    [ ] Define custom properties via UI
+    [ ] Script-based component definitions
+    [ ] Custom component validation
+    [ ] Component library management
+
+================================================================================
+PHASE 2: PREFAB SYSTEM
+================================================================================
+
+[ ] 2.1 - Prefab Creation
+    [ ] Create prefab from selected entity
+    [ ] Save prefab to file (.prefab.json)
+    [ ] Prefab preview thumbnail generation
+    [ ] Nested prefab support
+    [ ] Prefab variants
+
+[ ] 2.2 - Prefab Instantiation
+    [ ] Drag-and-drop prefab into scene
+    [ ] Prefab instance identification
+    [ ] Link to source prefab
+    [ ] Instance override system
+    [ ] Revert instance to prefab
+
+[ ] 2.3 - Prefab Editing
+    [ ] Edit prefab in isolation
+    [ ] Apply changes to all instances
+    [ ] Apply changes to selected instances
+    [ ] Break prefab instance link
+    [ ] Update prefab from instance
+
+[ ] 2.4 - Prefab Management
+    [ ] Prefab browser/library
+    [ ] Prefab search and categorization
+    [ ] Prefab dependencies tracking
+    [ ] Missing prefab handling
+    [ ] Prefab validation system
+
+================================================================================
+PHASE 3: INTEGRATED SCRIPT EDITOR ENHANCEMENTS
+================================================================================
+
+[ ] 3.1 - Code Intelligence
+    [ ] TypeScript IntelliSense integration
+    [ ] Auto-completion for WORLDENV API
+    [ ] Parameter hints
+    [ ] Quick documentation on hover
+    [ ] Go to definition functionality
+    [ ] Find all references
+
+[ ] 3.2 - Script Templates & Snippets
+    [ ] Component script template
+    [ ] System script template
+    [ ] Utility script template
+    [ ] Custom snippet creation
+    [ ] Snippet library
+
+[ ] 3.3 - Error Detection
+    [ ] Real-time syntax error highlighting
+    [ ] TypeScript compilation errors
+    [ ] Link errors to source location
+    [ ] Error panel/console
+    [ ] Quick fix suggestions
+
+[ ] 3.4 - Script Organization
+    [ ] Script folder structure
+    [ ] Script dependencies visualization
+    [ ] Import statement auto-completion
+    [ ] Organize imports functionality
+    [ ] Unused import detection
+
+================================================================================
+PHASE 4: LIVE COMPILATION & HOT RELOAD
+================================================================================
+
+[ ] 4.1 - Watch System
+    [ ] File system watcher for scripts
+    [ ] Detect file changes in real-time
+    [ ] Batch change detection
+    [ ] Ignore patterns configuration
+
+[ ] 4.2 - Incremental Compilation
+    [ ] Compile only changed files
+    [ ] TypeScript incremental build
+    [ ] AssemblyScript incremental build
+    [ ] Cache compilation results
+    [ ] Parallel compilation
+
+[ ] 4.3 - Hot Module Replacement
+    [ ] HMR for TypeScript scripts
+    [ ] Preserve game state during reload
+    [ ] Component hot-swapping
+    [ ] Script reload without scene restart
+    [ ] Handle reload errors gracefully
+
+[ ] 4.4 - Live Preview
+    [ ] Auto-reload on save option
+    [ ] Manual reload button
+    [ ] Reload notification system
+    [ ] Reload error handling
+    [ ] Selective module reloading
+
+================================================================================
+PHASE 5: DEBUGGER INTEGRATION
+================================================================================
+
+[ ] 5.1 - Debug Configuration
+    [ ] Debug settings panel
+    [ ] Breakpoint management
+    [ ] Debug launch configurations
+    [ ] Attach to running process
+    [ ] Debug console integration
+
+[ ] 5.2 - Breakpoint System
+    [ ] Set/remove breakpoints in code editor
+    [ ] Conditional breakpoints
+    [ ] Logpoints (non-breaking)
+    [ ] Breakpoint persistence
+    [ ] Breakpoint visualization
+
+[ ] 5.3 - Debug Controls
+    [ ] Pause execution
+    [ ] Step over
+    [ ] Step into
+    [ ] Step out
+    [ ] Continue execution
+    [ ] Stop debugging
+
+[ ] 5.4 - Variable Inspection
+    [ ] Watch window
+    [ ] Local variables panel
+    [ ] Call stack panel
+    [ ] Evaluate expressions
+    [ ] Variable value editing
+
+[ ] 5.5 - Debug Integration with Play Mode
+    [ ] Debug while playing in editor
+    [ ] Inspect entity properties at runtime
+    [ ] Modify values during debugging
+    [ ] Performance impact indicators
+
+================================================================================
+PHASE 6: ANIMATION EDITOR
+================================================================================
+
+[ ] 6.1 - Animation Timeline UI
+    [ ] Timeline panel implementation
+    [ ] Keyframe visualization
+    [ ] Timeline zoom/pan controls
+    [ ] Frame rate configuration
+    [ ] Playhead scrubbing
+
+[ ] 6.2 - Keyframe Editing
+    [ ] Add keyframes for properties
+    [ ] Move/delete keyframes
+    [ ] Keyframe interpolation types (linear, ease, bezier)
+    [ ] Copy/paste keyframes
+    [ ] Multi-select keyframes
+
+[ ] 6.3 - Animation Tracks
+    [ ] Transform tracks (position, rotation, scale)
+    [ ] Property tracks (any component property)
+    [ ] Event tracks (trigger functions)
+    [ ] Audio tracks
+    [ ] Track grouping/organization
+
+[ ] 6.4 - Animation Clips
+    [ ] Create animation clips
+    [ ] Save/load animation files (.anim.json)
+    [ ] Animation preview in viewport
+    [ ] Loop/ping-pong options
+    [ ] Animation blending
+
+[ ] 6.5 - Animation Player
+    [ ] AnimationPlayer component integration
+    [ ] Play/pause/stop controls
+    [ ] Animation speed control
+    [ ] Animation events/callbacks
+    [ ] Animation state machine (basic)
+
+================================================================================
+PHASE 7: VISUAL SHADER EDITOR
+================================================================================
+
+[ ] 7.1 - Node Graph UI
+    [ ] Node-based shader editor panel
+    [ ] Node creation menu
+    [ ] Connection/wire system
+    [ ] Node search functionality
+    [ ] Graph zoom/pan controls
+
+[ ] 7.2 - Shader Nodes
+    [ ] Input nodes (UV, vertex color, etc.)
+    [ ] Output nodes (color, alpha, etc.)
+    [ ] Math nodes (add, multiply, etc.)
+    [ ] Texture sample nodes
+    [ ] Color manipulation nodes
+    [ ] Vector math nodes
+
+[ ] 7.3 - Material Editing
+    [ ] Material preview window
+    [ ] Real-time shader compilation
+    [ ] Material presets
+    [ ] Export shader to GLSL
+    [ ] Material parameter exposure
+
+[ ] 7.4 - Shader Templates
+    [ ] Unlit shader template
+    [ ] PBR shader template
+    [ ] Toon shader template
+    [ ] Custom shader template
+    [ ] Shader snippet library
+
+================================================================================
+PHASE 8: INPUT MAPPING SYSTEM
+================================================================================
+
+[ ] 8.1 - Input Map Editor
+    [ ] Input mapping configuration UI
+    [ ] Action definition (jump, fire, move, etc.)
+    [ ] Key binding assignment
+    [ ] Gamepad button mapping
+    [ ] Mouse button mapping
+
+[ ] 8.2 - Input Actions
+    [ ] Create named input actions
+    [ ] Multiple bindings per action
+    [ ] Input modifiers (Ctrl, Shift, Alt)
+    [ ] Axis mapping (analog inputs)
+    [ ] Dead zone configuration
+
+[ ] 8.3 - Input Profiles
+    [ ] Keyboard/mouse profile
+    [ ] Gamepad profile
+    [ ] Touch/mobile profile
+    [ ] Custom profile creation
+    [ ] Profile switching
+
+[ ] 8.4 - Input Testing
+    [ ] Test input mappings in editor
+    [ ] Input visualizer/debugger
+    [ ] Conflict detection
+    [ ] Input action documentation
+    [ ] Export input configuration
+
+================================================================================
+PHASE 9: 2D TILEMAP/TILESET EDITOR
+================================================================================
+
+[ ] 9.1 - Tileset Management
+    [ ] Import tileset images
+    [ ] Define tile grid dimensions
+    [ ] Auto-detect tile size
+    [ ] Tile collision shapes
+    [ ] Tile properties/metadata
+
+[ ] 9.2 - Tilemap Editor UI
+    [ ] Tilemap painting tools
+    [ ] Tile palette panel
+    [ ] Layer system for tilemaps
+    [ ] Grid overlay
+    [ ] Tile selection/marquee
+
+[ ] 9.3 - Tilemap Tools
+    [ ] Paint/draw tool
+    [ ] Fill/bucket tool
+    [ ] Eraser tool
+    [ ] Line tool
+    [ ] Rectangle tool
+    [ ] Selection tool (move/copy/paste)
+
+[ ] 9.4 - Tilemap Features
+    [ ] Multiple tilemap layers
+    [ ] Layer visibility/locking
+    [ ] Auto-tiling rules (basic)
+    [ ] Tilemap collision generation
+    [ ] Export tilemap data
+
+================================================================================
+PHASE 10: PHYSICS SIMULATION & VISUALIZATION
+================================================================================
+
+[ ] 10.1 - Physics Engine Integration
+    [ ] Integrate physics library (e.g., Matter.js, Cannon.js)
+    [ ] Physics world configuration
+    [ ] Gravity settings
+    [ ] Physics timestep configuration
+    [ ] Physics materials
+
+[ ] 10.2 - Physics Visualization
+    [ ] Collider shape wireframe rendering
+    [ ] Collision point visualization
+    [ ] Velocity vector display
+    [ ] Force vector display
+    [ ] Physics debug overlay toggle
+
+[ ] 10.3 - Physics Testing
+    [ ] Run physics simulation in editor
+    [ ] Pause/resume physics
+    [ ] Step physics simulation
+    [ ] Apply test forces
+    [ ] Physics profiling
+
+[ ] 10.4 - Collision Shapes
+    [ ] Box collider editor
+    [ ] Sphere collider editor
+    [ ] Capsule collider editor
+    [ ] Mesh collider editor
+    [ ] Polygon collider editor (2D)
+    [ ] Compound shapes
+
+================================================================================
+PHASE 11: SIGNAL/EVENT SYSTEM VISUALIZATION
+================================================================================
+
+[ ] 11.1 - Event System Architecture
+    [ ] Define event/signal data structure
+    [ ] Event emitter/listener registry
+    [ ] Event payload types
+    [ ] Event documentation
+
+[ ] 11.2 - Visual Event Editor
+    [ ] Node-based event connection UI
+    [ ] Drag connections between entities
+    [ ] Event type selection
+    [ ] Event parameter configuration
+    [ ] Connection validation
+
+[ ] 11.3 - Event Inspector
+    [ ] List entity events/signals
+    [ ] Show event connections
+    [ ] Test fire events
+    [ ] Event debugging/logging
+    [ ] Event performance monitoring
+
+================================================================================
+PHASE 12: PROFILER & PERFORMANCE TOOLS
+================================================================================
+
+[ ] 12.1 - Performance Profiler UI
+    [ ] Profiler panel implementation
+    [ ] Real-time performance graphs
+    [ ] Frame time display
+    [ ] Memory usage display
+    [ ] GPU usage display (if available)
+
+[ ] 12.2 - CPU Profiling
+    [ ] Function call profiling
+    [ ] Execution time measurement
+    [ ] Call tree visualization
+    [ ] Hot path identification
+    [ ] Profile data export
+
+[ ] 12.3 - Memory Profiling
+    [ ] Heap snapshot capture
+    [ ] Memory leak detection
+    [ ] Object allocation tracking
+    [ ] Memory timeline
+    [ ] GC event logging
+
+[ ] 12.4 - Rendering Profiling
+    [ ] Draw call counter
+    [ ] Triangle/vertex count
+    [ ] Texture memory usage
+    [ ] Shader compilation time
+    [ ] Render pass breakdown
+
+[ ] 12.5 - Performance Recommendations
+    [ ] Automated performance analysis
+    [ ] Bottleneck detection
+    [ ] Optimization suggestions
+    [ ] Performance best practices tips
+
+================================================================================
+PHASE 13: BUILD/EXPORT MANAGER ENHANCEMENTS
+================================================================================
+
+[ ] 13.1 - Build Targets
+    [ ] Web (HTML5) export
+    [ ] Desktop (Electron) export
+    [ ] Mobile (Capacitor) export
+    [ ] Target-specific settings
+    [ ] Build template system
+
+[ ] 13.2 - Build Optimization
+    [ ] Asset compression options
+    [ ] Code minification
+    [ ] Tree shaking
+    [ ] Bundle splitting
+    [ ] Source map generation
+
+[ ] 13.3 - Build Automation
+    [ ] Build scripts/tasks
+    [ ] Pre-build/post-build hooks
+    [ ] Automated testing integration
+    [ ] Build versioning
+    [ ] Build notifications
+
+[ ] 13.4 - Distribution
+    [ ] Package for web deployment
+    [ ] Create desktop installers
+    [ ] Generate app icons/assets
+    [ ] Deployment configuration
+    [ ] Upload to hosting (optional)
+
+================================================================================
+PHASE 14: PLUGIN SYSTEM FOUNDATION
+================================================================================
+
+[ ] 14.1 - Plugin Architecture
+    [ ] Define plugin API
+    [ ] Plugin manifest format
+    [ ] Plugin loading system
+    [ ] Plugin sandboxing
+    [ ] Plugin lifecycle hooks
+
+[ ] 14.2 - Plugin Management
+    [ ] Plugin manager UI
+    [ ] Enable/disable plugins
+    [ ] Plugin settings panel
+    [ ] Plugin update checking
+    [ ] Plugin dependency resolution
+
+[ ] 14.3 - Plugin Development Kit
+    [ ] Plugin template generator
+    [ ] Plugin API documentation
+    [ ] Example plugins
+    [ ] Plugin testing utilities
+    [ ] Plugin packaging tools
+
+================================================================================
+PHASE 15: COLLABORATION FEATURES
+================================================================================
+
+[ ] 15.1 - Version Control Integration (Git)
+    [ ] Git status display
+    [ ] Commit changes from editor
+    [ ] View diff/changes
+    [ ] Branch switching
+    [ ] Conflict detection
+
+[ ] 15.2 - Scene Merging
+    [ ] Detect scene file conflicts
+    [ ] Visual merge tool for scenes
+    [ ] Three-way merge support
+    [ ] Merge conflict resolution UI
+
+[ ] 15.3 - Asset Locking (Optional)
+    [ ] Lock assets for editing
+    [ ] Show who is editing what
+    [ ] Prevent concurrent edits
+    [ ] Lock release on close
+
+================================================================================
+PHASE 16: UI/UX IMPROVEMENTS
+================================================================================
+
+[ ] 16.1 - Advanced Docking
+    [ ] Save/load panel layouts
+    [ ] Multiple layout presets
+    [ ] Tab groups
+    [ ] Floating windows
+    [ ] Minimize/maximize panels
+
+[ ] 16.2 - Customization
+    [ ] Custom keyboard shortcuts
+    [ ] Toolbar customization
+    [ ] Menu customization
+    [ ] UI scale/zoom
+    [ ] Accessibility options
+
+[ ] 16.3 - Search & Navigation
+    [ ] Global search (Ctrl+P style)
+    [ ] Quick open file
+    [ ] Symbol search in scripts
+    [ ] Scene object search
+    [ ] Asset search improvements
+
+[ ] 16.4 - Context-Sensitive Help
+    [ ] Inline documentation tooltips
+    [ ] Help panel with tutorials
+    [ ] Video tutorial integration
+    [ ] Community resources links
+    [ ] "Getting Started" wizard
+
+================================================================================
+PHASE 17: TESTING & QUALITY ASSURANCE
+================================================================================
+
+[ ] 17.1 - Automated Testing
+    [ ] Unit tests for core systems
+    [ ] Integration tests
+    [ ] UI tests (if applicable)
+    [ ] Performance regression tests
+    [ ] Test coverage reporting
+
+[ ] 17.2 - Manual Testing
+    [ ] Feature testing checklist
+    [ ] Cross-platform testing
+    [ ] Performance testing
+    [ ] Usability testing
+    [ ] Edge case testing
+
+[ ] 17.3 - Bug Tracking
+    [ ] Bug database/tracker
+    [ ] Bug prioritization
+    [ ] Bug assignment workflow
+    [ ] Regression testing
+    [ ] Bug fix verification
+
+[ ] 17.4 - Stability Improvements
+    [ ] Fix critical bugs
+    [ ] Fix high-priority bugs
+    [ ] Improve error recovery
+    [ ] Add more validation
+    [ ] Enhance logging
+
+================================================================================
+PHASE 18: DOCUMENTATION & SAMPLES
+================================================================================
+
+[ ] 18.1 - User Documentation
+    [ ] Complete user manual
+    [ ] Feature documentation
+    [ ] Video tutorials
+    [ ] FAQ section
+    [ ] Troubleshooting guide
+
+[ ] 18.2 - Developer Documentation
+    [ ] API reference (complete)
+    [ ] Scripting guide
+    [ ] Component development guide
+    [ ] Plugin development guide
+    [ ] Architecture documentation
+
+[ ] 18.3 - Sample Projects
+    [ ] 2D platformer sample
+    [ ] 3D first-person sample
+    [ ] UI/menu sample
+    [ ] Physics demo sample
+    [ ] Shader demo sample
+
+[ ] 18.4 - In-Editor Help
+    [ ] Context-sensitive help panel
+    [ ] Interactive tutorials
+    [ ] Onboarding flow
+    [ ] Tooltips for all UI
+    [ ] Sample project templates
+
+================================================================================
+ALPHA DELIVERABLES
+================================================================================
+
+[ ] Complete component library
+[ ] Prefab system with variants
+[ ] Advanced script editor with IntelliSense
+[ ] Live compilation and hot reload
+[ ] Integrated debugger
+[ ] Animation editor
+[ ] Visual shader editor
+[ ] Input mapping system
+[ ] TileMap/TileSet editor
+[ ] Physics simulation and visualization
+[ ] Event system visualization
+[ ] Performance profiler
+[ ] Multi-platform build/export
+[ ] Plugin system foundation
+[ ] Git integration
+[ ] Comprehensive documentation
+[ ] Sample projects
+
+================================================================================
+ALPHA SUCCESS CRITERIA
+================================================================================
+
+1. All pre-alpha features stable and refined
+2. Advanced editing workflows functional
+3. Debugging and profiling tools working
+4. Multi-platform export verified
+5. Performance acceptable for medium-sized projects
+6. Documentation covers all features
+7. Sample projects demonstrate capabilities
+8. Community feedback incorporated
+9. Plugin system allows extensibility
+10. Editor is feature-competitive with established tools
+
+================================================================================
+END OF ALPHA TODO
+================================================================================
