@@ -1,0 +1,452 @@
+/*
+ * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
+ * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
+ * See LICENSE.txt for full license texts
+ */
+
+/**
+ * WORLDEDIT - Base Styles
+ *
+ * Core CSS for React-based editor interface.
+ * Defines reset, base styles, and utilities.
+ */
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
+    'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================
+   THEME VARIABLES
+   ============================================ */
+
+:root {
+  /* CSS custom properties will be set by ThemeContext */
+  /* These are fallback values */
+  --color-bg-primary: #1e1e1e;
+  --color-bg-secondary: #2d2d2d;
+  --color-bg-tertiary: #3c3c3c;
+  --color-fg-primary: #ffffff;
+  --color-fg-secondary: #cccccc;
+  --color-fg-tertiary: #999999;
+  --color-border-primary: #404040;
+  --color-border-secondary: #555555;
+  --color-accent-primary: #007acc;
+  --color-accent-secondary: #005a9e;
+  --color-accent-danger: #f85149;
+  --color-accent-warning: #d29922;
+  --color-accent-success: #3fb950;
+  --color-panel-background: #252526;
+  --color-panel-border: #3c3c3c;
+  --color-panel-header: #2d2d2d;
+  --color-button-background: #0e639c;
+  --color-button-backgroundHover: #1177bb;
+  --color-button-backgroundActive: #005a9e;
+  --color-button-text: #ffffff;
+  --color-input-background: #3c3c3c;
+  --color-input-border: #555555;
+  --color-input-text: #ffffff;
+  --color-input-placeholder: #999999;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --border-radius-sm: 2px;
+  --border-radius-md: 4px;
+  --border-radius-lg: 8px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   SCROLLBARS
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-sm);
+  border: 2px solid var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-secondary);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--color-bg-primary);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-bg-tertiary) var(--color-bg-primary);
+}
+
+/* ============================================
+   REACT SPLIT PANE OVERRIDES
+   ============================================ */
+
+.Pane {
+  overflow: hidden !important;
+}
+
+.Pane1 {
+  overflow: hidden !important;
+}
+
+.Pane2 {
+  overflow: hidden !important;
+}
+
+/* ============================================
+   FOCUS STYLES
+   ============================================ */
+
+*:focus {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+}
+
+button:focus {
+  outline-offset: 0;
+}
+
+/* ============================================
+   SELECTION
+   ============================================ */
+
+::selection {
+  background-color: var(--color-accent-primary);
+  color: var(--color-button-text);
+}
+
+::-moz-selection {
+  background-color: var(--color-accent-primary);
+  color: var(--color-button-text);
+}
+
+/* ============================================
+   INPUTS
+   ============================================ */
+
+input[type='text'],
+input[type='number'],
+input[type='email'],
+input[type='password'],
+textarea,
+select {
+  background-color: var(--color-input-background);
+  border: 1px solid var(--color-input-border);
+  color: var(--color-input-text);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-xs);
+  font-family: inherit;
+  font-size: inherit;
+  transition: border-color 0.2s ease;
+}
+
+input[type='text']:focus,
+input[type='number']:focus,
+input[type='email']:focus,
+input[type='password']:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-accent-primary);
+}
+
+input[type='text']::placeholder,
+input[type='number']::placeholder,
+input[type='email']::placeholder,
+input[type='password']::placeholder,
+textarea::placeholder {
+  color: var(--color-input-placeholder);
+}
+
+input[type='checkbox'] {
+  accent-color: var(--color-accent-primary);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.not-allowed {
+  cursor: not-allowed;
+}
+
+/* ============================================
+   CONTEXT MENUS
+   ============================================ */
+
+.context-menu {
+  position: fixed;
+  background: var(--color-panel-background);
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-xs);
+  z-index: 9999;
+  min-width: 180px;
+  animation: slideDown 0.15s ease-out;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 13px;
+  color: var(--color-fg-primary);
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  transition: background-color 0.1s ease;
+}
+
+.context-menu-item:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.context-menu-item.disabled {
+  color: var(--color-fg-tertiary);
+  cursor: not-allowed;
+}
+
+.context-menu-item.disabled:hover {
+  background-color: transparent;
+}
+
+.context-menu-separator {
+  height: 1px;
+  background-color: var(--color-border-primary);
+  margin: var(--spacing-xs) 0;
+}
+
+/* ============================================
+   TOOLTIPS
+   ============================================ */
+
+[title] {
+  position: relative;
+}
+
+/* ============================================
+   DRAG AND DROP
+   ============================================ */
+
+.drag-over {
+  background-color: var(--color-accent-primary) !important;
+  opacity: 0.1;
+}
+
+.drag-ghost {
+  opacity: 0.5;
+  transform: rotate(5deg);
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Mobile adjustments if needed */
+  :root {
+    --spacing-xs: 2px;
+    --spacing-sm: 4px;
+    --spacing-md: 8px;
+    --spacing-lg: 12px;
+    --spacing-xl: 16px;
+  }
+}
+
+/* ============================================
+   THEME OVERRIDES
+   ============================================ */
+
+.theme-dark {
+  color-scheme: dark;
+}
+
+.theme-light {
+  color-scheme: light;
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  :root {
+    --color-border-primary: #ffffff;
+    --color-border-secondary: #ffffff;
+  }
+}
+
+/* ============================================
+   ALLOTMENT STYLES
+   ============================================ */
+
+.allotment {
+  height: 100%;
+}
+
+.allotment > .allotment-pane {
+  overflow: hidden;
+}
+
+.allotment-separator {
+  background-color: var(--color-border-primary) !important;
+  border: none !important;
+}
+
+.allotment-separator:hover {
+  background-color: var(--color-border-secondary) !important;
+}
+
+.allotment-separator.allotment-separator-resizing {
+  background-color: var(--color-accent-primary) !important;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}

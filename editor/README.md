@@ -27,11 +27,36 @@ Hierarchical scene graph with component-based architecture. Entities organize ga
 
 ### Inspector Panel
 
-Property editor for selected entities. Displays and modifies component data with type-appropriate controls (numeric inputs, color pickers, dropdown selectors).
+Advanced property editor for selected entities with enhanced editing capabilities:
+- Type-safe property editors with validation and error display
+- Drag-to-change numeric inputs with precision control
+- Vector2/Vector3 inputs with color-coded axis components
+- Color picker with alpha channel support
+- Dropdown selectors for enumeration types
+- Multi-entity selection with shared property editing
+- Undo/redo support for all property changes
+- Real-time validation with constraint enforcement
 
-### Asset Browser
+### Asset Browser & File System
 
-File system integration for importing and managing project assets. Supports images, 3D models, audio files, and scripts. Provides thumbnail previews and metadata display.
+Comprehensive asset management system with real-time file system integration:
+- Drag-and-drop asset import with format validation
+- Grid and list view modes with thumbnail previews
+- Context menu operations (rename, delete, organize)
+- Multi-format support: images, 3D models, audio, scripts, materials
+- Asset metadata tracking and search functionality
+- Automatic folder structure creation and organization
+
+### Engine Integration & Play Mode
+
+Real-time engine integration with WORLDENV runtime embedded directly in the editor:
+- Live scene synchronization between editor and engine
+- Play mode with pause/resume functionality for testing game logic
+- Engine state preservation and restoration when entering/exiting play mode
+- Real-time performance statistics and error reporting
+- Scene serialization to WORLDENV format (.scene.json) with validation
+- IPC communication layer for secure engine operations
+- Visual play mode indicators and engine status feedback
 
 ### Script Editor
 
@@ -49,6 +74,27 @@ Timeline-based animation system with keyframe editing. Supports transform animat
 
 Compiles and packages projects for deployment. Generates production builds for web browsers and desktop platforms (via Electron).
 
+## Development Status
+
+WORLDEDIT is currently in pre-alpha development. The following core systems are implemented:
+
+### Completed Features
+- ✅ **Phase 1-3**: Basic Electron application with UI framework (React)
+- ✅ **Phase 4**: Viewport system with 2D/3D rendering (Three.js, Pixi.js)
+- ✅ **Phase 5**: Scene hierarchy management with drag-and-drop node organization
+- ✅ **Phase 6**: Entity-component system with registry and lifecycle management
+- ✅ **Phase 7**: Enhanced inspector panel with property validation and undo/redo
+- ✅ **Phase 8**: Asset browser and file system integration with drag-and-drop import
+
+### In Development
+- 🚧 **Phase 9**: Engine integration and live scene preview
+- ⏳ **Phase 10**: Script editor with Monaco integration
+- ⏳ **Phase 11**: Project management and build system
+
+### Planned Features
+- 📋 **Phase 12-14**: Manipulator tools, prefab system, and animation editor
+- 📋 **Phase 15-16**: WORLDSRC language compiler and debugging tools
+
 ## Technical Stack
 
 - **Electron**: Cross-platform desktop application framework
@@ -56,8 +102,8 @@ Compiles and packages projects for deployment. Generates production builds for w
 - **Three.js**: 3D rendering in viewport
 - **Pixi.js**: 2D rendering in viewport
 - **Monaco Editor**: Code editing component
-- **React/Vue**: UI framework (selected during implementation)
-- **Webpack/Vite**: Module bundling and build system
+- **React**: UI framework for editor interface
+- **Webpack**: Module bundling and build system
 
 ## System Requirements
 
@@ -307,13 +353,86 @@ Complete documentation available at:
 
 ## Development Status
 
-WORLDEDIT is under active development. Current phase: Pre-Alpha
+WORLDEDIT is under active development. Current phase: Pre-Alpha (Phase 8 Complete)
+
+### Phase 1: Project Setup & Infrastructure - COMPLETE
+
+Phase 1 implementation complete. All foundational infrastructure established:
+
+- ✓ Electron application structure
+- ✓ TypeScript build system with Webpack
+- ✓ Main and renderer process architecture
+- ✓ Secure IPC communication
+- ✓ Development environment with hot reload
+- ✓ ESLint and Prettier configuration
+- ✓ Base type system and error handling
+- ✓ CSS styling foundation
+- ✓ Build and packaging system
+- ✓ Complete documentation
+
+### Phase 2: Basic Electron Application - COMPLETE
+
+Phase 2 implementation complete. Core application functionality established:
+
+- ✓ Window management with state persistence
+- ✓ File system abstraction and operations
+- ✓ Project management system (create, open, save, close)
+- ✓ Auto-save functionality with file watching
+- ✓ Application menu system
+- ✓ Dialog handlers for user interaction
+- ✓ Structured logging system
+- ✓ Splash screen and application lifecycle
+- ✓ Comprehensive IPC handler system
+
+### Phase 3: UI Framework & Layout - COMPLETE
+
+Phase 3 implementation complete. Modern React-based UI architecture established:
+
+- ✓ React 18 with TypeScript JSX integration
+- ✓ Comprehensive theming system (dark/light modes)
+- ✓ Dockable panel system with Allotment
+- ✓ All core layout panels (viewport, hierarchy, inspector, assets)
+- ✓ Menu bar with File, Edit, View, Help menus
+- ✓ Toolbar with tools and viewport controls
+- ✓ Status bar with project and system information
+- ✓ Rich UI components (buttons, inputs, property editors)
+- ✓ State management with context providers
+- ✓ Panel resize and persistence functionality
+
+Build verified:
+- Main process: 316 KB (compiled, production)
+- Renderer process: 286 KB (compiled, production)
+- Build time: ~9 seconds
+- Zero compilation errors or warnings
+- Professional VS Code-inspired interface
+
+### Phase 8: Asset Browser & File System - COMPLETE
+
+Phase 8 implementation complete. Comprehensive asset management system established:
+
+- ✓ AssetManager service with file system operations
+- ✓ Real-time asset listing and caching
+- ✓ Drag-and-drop asset import with DropZone component
+- ✓ Context menu system for asset operations
+- ✓ Support for multiple asset types (images, audio, models, scripts, etc.)
+- ✓ Asset metadata tracking and thumbnail generation
+- ✓ Integration with project system and IPC handlers
+- ✓ Grid and list view modes with file size and date display
+- ✓ Asset search and filtering functionality
+- ✓ Folder creation and organization tools
+
+Next: Phase 9 - Engine Integration
 
 See development roadmaps:
 - `docs/todo-prealpha.txt` - Foundation features
 - `docs/todo-alpha.txt` - Feature expansion
 - `docs/todo-beta.txt` - Polish and optimization
 - `docs/todo-release.txt` - Release preparation
+
+See also:
+- `docs/phase1-status.md` - Complete Phase 1 status report
+- `docs/implementation-log.md` - Development session log
+- `docs/build-guide.md` - Build instructions
 
 ## Acknowledgments
 

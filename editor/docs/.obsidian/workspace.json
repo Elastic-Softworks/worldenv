@@ -1,0 +1,196 @@
+{
+  "main": {
+    "id": "cc0631f5695f9286",
+    "type": "split",
+    "children": [
+      {
+        "id": "9809051baa786194",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2d2d263745f117cd",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "quickstart.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "quickstart"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "a4b678512a09a23e",
+    "type": "split",
+    "children": [
+      {
+        "id": "220c1651b1d276b9",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e4d2174a0017aa16",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "d89a91b8563744ab",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "c72feee0f29bb140",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "735a49c6602d3c86",
+    "type": "split",
+    "children": [
+      {
+        "id": "fe014ce24c7a30d9",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "264fdfbebb54730a",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "quickstart.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for quickstart"
+            }
+          },
+          {
+            "id": "98963425ef385ae7",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "quickstart.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from quickstart"
+            }
+          },
+          {
+            "id": "4cf7db6147d6097c",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "1c00b6900063733d",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "quickstart.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of quickstart"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "2d2d263745f117cd",
+  "lastOpenFiles": [
+    "phase4-summary.md",
+    "quick-reference.md",
+    "index.md",
+    "implementation-log.md",
+    "doc-update-summary.md",
+    "doc-summary.md",
+    "worldsrc/worldsrc-lexicon.md",
+    "worldsrc/worldsrc-manual.md",
+    "copy",
+    "PHASE2-README.md",
+    "phase2-completion.md",
+    "phase2-testing.md",
+    "phase1-status.md",
+    "README.md",
+    "quickstart.md",
+    "development-overview.md",
+    "build-guide.md",
+    "agent-instruct.md",
+    "guides/template-2d-platformer.md",
+    "engine-overview.md",
+    "engine-setup.md"
+  ]
+}

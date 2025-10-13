@@ -1,10 +1,13 @@
 # WORLDENV
 
 Web-based game engine powered by TypeScript, AssemblyScript, Three.js, and Pixi.js.
+Includes WORLDEDIT, a professional integrated development environment for game creation.
 
 ## Overview
 
 WORLDENV is a hybrid game engine designed for high-performance web games. It combines TypeScript for game logic with AssemblyScript for performance-critical operations, providing a development environment that mirrors traditional C/Assembly workflows for the modern web platform.
+
+The engine is paired with WORLDEDIT, a cross-platform game editor built with Electron that provides visual tools for creating, editing, and managing WORLDENV projects through an integrated workflow similar to established engines like Godot and Unity.
 
 ## Architecture
 
@@ -48,6 +51,33 @@ The engine supports both 2D and 3D rendering through Pixi.js and Three.js respec
 - Asset management and loading
 - Event system for decoupled communication
 - Hot module replacement during development
+
+## WORLDEDIT Development Environment
+
+WORLDEDIT provides a complete integrated development environment for WORLDENV projects:
+
+### Current Status: Pre-Alpha (Phase 8 Complete)
+
+**Completed Features:**
+- ✅ **Phase 1-3**: Electron application foundation with React UI framework
+- ✅ **Phase 4**: Viewport system with 2D/3D rendering capabilities
+- ✅ **Phase 5**: Scene hierarchy management with drag-and-drop organization
+- ✅ **Phase 6**: Entity-component system with registry and lifecycle management  
+- ✅ **Phase 7**: Enhanced inspector panel with property validation and undo/redo
+- ✅ **Phase 8**: Asset browser and file system integration with drag-and-drop import
+
+**In Development:**
+- 🚧 **Phase 9**: Engine integration and live scene preview
+- ⏳ **Phase 10**: Script editor with Monaco integration
+- ⏳ **Phase 11**: Project management and build system
+
+### Key Editor Features
+
+- **Visual Scene Editor**: Real-time 2D/3D viewport with object manipulation
+- **Advanced Inspector**: Type-safe property editing with validation and undo/redo
+- **Asset Management**: Comprehensive file browser with drag-and-drop import
+- **Component System**: Visual component editing with real-time updates
+- **Professional UI**: VS Code-inspired interface with dockable panels
 
 ### WORLDSRC (Planned)
 

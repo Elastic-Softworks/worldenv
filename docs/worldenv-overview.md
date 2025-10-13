@@ -2,20 +2,22 @@
 
 ## Introduction
 
-WORLDENV is a hybrid game engine that combines the power of modern web technologies with safety-critical C89 tooling to create a complete game development environment. This guide introduces you to the core architecture and design philosophy of WORLDENV.
+WORLDENV is a hybrid game engine that combines the power of modern web technologies with safety-critical C89 tooling to create a complete game development environment. Games are built using WORLDSRC, a C/C++ hybrid language that compiles to web technologies, and developed in WORLDEDIT, the integrated development environment. This guide introduces you to the core architecture and design philosophy of WORLDENV.
 
 ## What is WORLDENV?
 
-WORLDENV (World Environment) is a **dual-layer game engine**:
+WORLDENV (World Environment) is a **triple-layer game development platform**:
 
-1. **Runtime Layer** (TypeScript/AssemblyScript): The game engine itself
-2. **Tooling Layer** (C89 ANSI-C): Development tools and editor
+1. **Game Language Layer** (WORLDSRC): C/C++ hybrid language for writing games
+2. **Runtime Layer** (TypeScript/AssemblyScript/WebAssembly): Compiled game output
+3. **Tooling Layer** (C89 ANSI-C + Electron): WORLDEDIT development environment
 
-This separation allows for:
-- High-performance web-based games
-- Robust, safety-critical development tools
-- Cross-platform deployment (web, desktop, mobile)
-- Professional-grade workflows
+This architecture enables:
+- **Web-first game development**: Games output to HTML, CSS, and JavaScript
+- **High-performance execution**: TypeScript for logic, WebAssembly for performance
+- **Desktop packaging**: Optional Electron wrapper for native distribution
+- **C/C++ familiarity**: Write games in familiar syntax with modern features
+- **Professional tooling**: Robust, safety-critical development environment
 
 ## Architecture Overview
 
@@ -137,7 +139,34 @@ This separation allows for:
 - [Three.js Documentation](https://threejs.org/docs/)
 - [Three.js Fundamentals](https://threejs.org/manual/)
 
-### 5. C89 ANSI-C (Editor)
+### 5. WORLDSRC Language
+WORLDSRC is a C/C++ hybrid language designed specifically for WORLDENV game development.
+
+**Why WORLDSRC?**
+- **C/C++ Syntax**: Familiar to C and C++ developers
+- **Web Compilation**: Compiles to TypeScript, AssemblyScript, and WebAssembly
+- **Standard Library**: C standard library equivalents (stdio, stdlib, string, math)
+- **Game-Optimized**: Built-in 2D/3D rendering, physics, audio APIs
+- **Modern Features**: Templates, lambdas, smart pointers, type inference
+- **Performance Control**: Manual memory management with malloc/free
+- **JIT Compilation**: Fast iteration with just-in-time compilation in editor
+
+**Compilation Targets:**
+- **TypeScript**: Development builds with full debugging
+- **AssemblyScript**: Performance-critical code paths
+- **WebAssembly**: Maximum performance for production
+
+**Output Format:**
+- **Primary**: HTML, CSS, JavaScript (for web browsers)
+- **Optional**: Electron-wrapped desktop applications
+
+**WORLDSRC compiles to web technologies, not native code.** Games run in browsers via JavaScript/WebAssembly, making them instantly deployable to any platform with a web browser. The Electron wrapper is available for desktop distribution but the core target is always the web.
+
+**Learn More:**
+- WORLDSRC Manual: `editor/docs/worldsrc/worldsrc-manual.md`
+- WORLDSRC Lexicon: `editor/docs/worldsrc/worldsrc-lexicon.md`
+
+### 6. C89 ANSI-C (Editor Tooling)
 [C89](https://en.wikipedia.org/wiki/ANSI_C) is the ANSI standard for the C programming language from 1989.
 
 **Why C89?**
@@ -148,7 +177,7 @@ This separation allows for:
 - **Deterministic**: Predictable behavior
 
 **In WORLDENV, C89 provides:**
-- Scene editor
+- Scene editor backend
 - Asset management pipeline
 - Build system
 - Debugging tools
@@ -259,21 +288,44 @@ worldenv/
 # Development server
 npm run dev
 
+# Compile WORLDSRC to TypeScript/AssemblyScript
+worldsrc compile game.ws --target typescript
+
 # Build WASM modules
 npm run asbuild
 
-# Production build
+# Production build (outputs HTML/CSS/JS)
 npm run build
+
+# Package as Electron app (optional)
+npm run package
 ```
 
-### 3. Editor Integration
-The C89 editor compiles separately and outputs project files that the TypeScript runtime loads.
+### 3. Development Workflow
+Games are written in WORLDSRC and compiled to web technologies:
 
 ```
-[C89 Editor] → scene.json, assets.json
-                    ↓
-[TypeScript Runtime] ← Loads and runs
+[WORLDSRC Code (.ws)] → [WORLDSRC Compiler]
+                              ↓
+              ┌─────────────────┴─────────────────┐
+              ↓                                   ↓
+    [TypeScript/JavaScript]         [AssemblyScript/WASM]
+              ↓                                   ↓
+              └─────────────────┬─────────────────┘
+                                ↓
+                    [HTML + CSS + JavaScript]
+                                ↓
+                    ┌───────────┴───────────┐
+                    ↓                       ↓
+            [Web Browser]          [Electron App]
 ```
+
+**WORLDEDIT (Editor)** provides:
+- Visual scene editing
+- Asset management
+- WORLDSRC code editor with JIT compilation
+- Build pipeline configuration
+- Project templates
 
 ## Key Design Patterns
 
@@ -393,17 +445,22 @@ Now that you understand WORLDENV's architecture:
 ## Summary
 
 WORLDENV combines:
-- **TypeScript** for game logic
-- **AssemblyScript** for performance
+- **WORLDSRC** for game development (C/C++ hybrid language)
+- **TypeScript/AssemblyScript/WebAssembly** as compilation targets
 - **Pixi.js** for 2D graphics
 - **Three.js** for 3D graphics
-- **C89** for reliable tooling
+- **C89** for reliable editor tooling
 
-This hybrid approach gives you:
-- ✅ Web deployment
-- ✅ High performance
-- ✅ Professional tools
-- ✅ Safety-critical reliability
-- ✅ Modern developer experience
+This architecture gives you:
+- ✅ **Web-first deployment**: Games output to HTML, CSS, JavaScript
+- ✅ **C/C++ familiarity**: Write games in familiar syntax
+- ✅ **High performance**: WebAssembly for critical code paths
+- ✅ **Professional tools**: Full-featured IDE (WORLDEDIT)
+- ✅ **Optional desktop**: Electron packaging available
+- ✅ **Modern features**: Templates, lambdas, smart pointers
+
+**Target Platform:** Web browsers (primary), with optional Electron desktop wrapper.
+
+**Game Output:** HTML + CSS + JavaScript (with embedded WebAssembly).
 
 **Ready to build? Let's start with [[worldenv-setup|Environment Setup]]!**

@@ -1,0 +1,56 @@
+# WORLDEDIT - Editor .gitignore
+
+# Build outputs
+dist/
+build/packages/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Cache
+.cache/
+.npm/
+.eslintcache
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Testing
+coverage/
+.nyc_output/
+
+# Editor state
+*.code-workspace
+.history/
+
+# Electron
+out/
+release/

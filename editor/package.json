@@ -1,0 +1,93 @@
+{
+  "name": "worldedit",
+  "version": "0.1.0",
+  "description": "WORLDEDIT - Game development editor for WORLDENV engine",
+  "main": "dist/main/main.js",
+  "author": "Elastic Softworks",
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:main\" \"npm run dev:renderer\"",
+    "dev:main": "webpack --config webpack.main.config.js --mode development --watch",
+    "dev:renderer": "webpack serve --config webpack.renderer.config.js --mode development",
+    "build": "npm run build:main && npm run build:renderer",
+    "build:main": "webpack --config webpack.main.config.js --mode production",
+    "build:renderer": "webpack --config webpack.renderer.config.js --mode production",
+    "start": "electron .",
+    "package": "electron-builder",
+    "package:win": "electron-builder --win",
+    "package:mac": "electron-builder --mac",
+    "package:linux": "electron-builder --linux",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,css,scss}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,css,scss}\""
+  },
+  "dependencies": {
+    "@types/react": "^18.3.26",
+    "@types/react-dom": "^18.3.7",
+    "@types/three": "^0.160.0",
+    "allotment": "^1.20.4",
+    "electron-store": "^8.1.0",
+    "pixi.js": "^7.4.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.160.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "concurrently": "^8.2.2",
+    "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^6.8.1",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "html-webpack-plugin": "^5.5.4",
+    "prettier": "^3.1.0",
+    "style-loader": "^3.3.3",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.2",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
+  },
+  "build": {
+    "appId": "com.elasticsoftworks.worldedit",
+    "productName": "WORLDEDIT",
+    "directories": {
+      "output": "build/packages",
+      "buildResources": "build/resources"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/resources/icon.ico"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "build/resources/icon.icns",
+      "category": "public.app-category.developer-tools"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "tar.gz"
+      ],
+      "icon": "build/resources/icon.png",
+      "category": "Development"
+    }
+  }
+}
