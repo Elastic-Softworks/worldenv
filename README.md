@@ -1,7 +1,5 @@
 # WORLDENV
 
-**2D/3D Game Development Environment**
-
 WORLDENV is a game development ecosystem consisting of **WORLDEDIT** (a visual editor) and **WORLDSRC** (a programming language). This monorepo contains both components organized for standalone use and integrated development.
 
 ## Project Structure
@@ -33,7 +31,7 @@ worldenv/
 
 ## Components
 
-### WORLDEDIT - Visual Game Editor
+### WORLDEDIT - Visual Editor
 
 **Electron-based game editor with real-time rendering**
 
@@ -203,26 +201,6 @@ void update(float deltaTime) {
 }
 ```
 
-## Development Status
-
-**Current Phase**: Pre-Alpha Testing Preparation
-
-### Completed Features
-
-- WORLDEDIT: Visual editor with core features
-- WORLDSRC: Functional programming language with multi-target compilation
-- Integration: Editor and language integration
-- Documentation: User and developer guides
-- Build System: Compilation and deployment pipeline
-
-### Upcoming Features
-
-- Pre-Alpha Testing: Testing program
-- Performance Optimization: Editor and language performance improvements
-- Mobile Support: Android and iOS export targets
-- Cloud Features: Online collaboration and asset sharing
-- Plugin System: Third-party extensions and tools
-
 ## Documentation
 
 - **[Editor Quick Start](editor/docs/QUICKSTART.md)**: Getting started with WORLDEDIT
@@ -232,25 +210,6 @@ void update(float deltaTime) {
 - **[API Reference](editor/docs/API-REFERENCE.md)**: API documentation
 - **[WORLDSRC Manual](worldsrc/README.md)**: Programming language reference
 
-## Community and Support
-
-- **GitHub Issues**: Submit bug reports and feature requests
-- **Documentation**: Access comprehensive guides and tutorials
-- **Examples**: Download sample projects and code snippets
-- **Discord** (Coming Soon): Join community chat and support
-
-## Contributing
-
-To contribute to WORLDEDIT and WORLDSRC:
-
-1. Fork the repository
-2. Create a feature branch
-3. Follow coding standards (C-Form for C code)
-4. Add tests for new features
-5. Submit a pull request
-
-See [`editor/docs/DEVELOPER-GUIDE.md`](editor/docs/DEVELOPER-GUIDE.md) for detailed contribution guidelines.
-
 ## License
 
 Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0.
@@ -258,7 +217,7 @@ See LICENSE.txt for complete license texts.
 
 ## Technical Stack
 
-### Editor Technology
+### Editor Integrations
 
 - Electron: Cross-platform desktop application framework
 - React: UI component framework
@@ -267,7 +226,7 @@ See LICENSE.txt for complete license texts.
 - Pixi.js: 2D rendering
 - Monaco Editor: Code editing component
 
-### Language Technology
+### Language Integrations
 
 - TypeScript Compiler API: Parsing and analysis
 - Custom AST: Hybrid language syntax tree

@@ -6,6 +6,7 @@
       {
         "id": "9809051baa786194",
         "type": "tabs",
+        "dimension": 60.40554962646745,
         "children": [
           {
             "id": "2d2d263745f117cd",
@@ -14,11 +15,28 @@
               "type": "markdown",
               "state": {
                 "file": "TESTING-GUIDE.md",
-                "mode": "source",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
               "title": "TESTING-GUIDE"
+            }
+          }
+        ]
+      },
+      {
+        "id": "a8196403ec363f9b",
+        "type": "tabs",
+        "dimension": 39.59445037353255,
+        "children": [
+          {
+            "id": "739708f0dbd47efe",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
             }
           }
         ]
@@ -78,7 +96,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "735a49c6602d3c86",
@@ -169,10 +188,10 @@
       "bases:Create new base": false
     }
   },
-  "active": "2d2d263745f117cd",
+  "active": "739708f0dbd47efe",
   "lastOpenFiles": [
-    "QUICKSTART.md",
     "TESTING-GUIDE.md",
+    "QUICKSTART.md",
     "phase4-summary.md",
     "quick-reference.md",
     "index.md",
