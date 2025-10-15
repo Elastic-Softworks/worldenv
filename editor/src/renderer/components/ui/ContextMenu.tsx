@@ -233,7 +233,7 @@ export function ContextMenu({
               <div style={iconStyle}>{item.icon || ''}</div>
               <div style={labelStyle}>{item.label}</div>
               {item.shortcut && <div style={shortcutStyle}>{item.shortcut}</div>}
-              {hasSubmenu && <div style={submenuIndicatorStyle}>▶</div>}
+              {hasSubmenu && <div style={submenuIndicatorStyle}>{'>'}</div>}
             </div>
           );
         })}
@@ -337,22 +337,26 @@ export const createSeparator = (id: string): ContextMenuItem => ({
  */
 export const CommonMenuItems = {
   copy: (action: () => void): ContextMenuItem =>
-    createContextMenuItem('copy', 'Copy', action, { icon: '📋', shortcut: 'Ctrl+C' }),
+    createContextMenuItem('copy', 'Copy', action, { icon: 'Copy', shortcut: 'Ctrl+C' }),
 
   cut: (action: () => void): ContextMenuItem =>
-    createContextMenuItem('cut', 'Cut', action, { icon: '✂️', shortcut: 'Ctrl+X' }),
+    createContextMenuItem('cut', 'Cut', action, { icon: 'Cut', shortcut: 'Ctrl+X' }),
 
   paste: (action: () => void, disabled = false): ContextMenuItem =>
-    createContextMenuItem('paste', 'Paste', action, { icon: '📄', shortcut: 'Ctrl+V', disabled }),
+    createContextMenuItem('paste', 'Paste', action, {
+      icon: 'Paste',
+      shortcut: 'Ctrl+V',
+      disabled
+    }),
 
   delete: (action: () => void): ContextMenuItem =>
-    createContextMenuItem('delete', 'Delete', action, { icon: '🗑️', shortcut: 'Del' }),
+    createContextMenuItem('delete', 'Delete', action, { icon: 'Delete', shortcut: 'Del' }),
 
   rename: (action: () => void): ContextMenuItem =>
-    createContextMenuItem('rename', 'Rename', action, { icon: '✏️', shortcut: 'F2' }),
+    createContextMenuItem('rename', 'Rename', action, { icon: 'Rename', shortcut: 'F2' }),
 
   refresh: (action: () => void): ContextMenuItem =>
-    createContextMenuItem('refresh', 'Refresh', action, { icon: '🔄', shortcut: 'F5' }),
+    createContextMenuItem('refresh', 'Refresh', action, { icon: 'Refresh', shortcut: 'F5' }),
 
   properties: (action: () => void): ContextMenuItem =>
     createContextMenuItem('properties', 'Properties', action, { icon: 'ⓘ' })

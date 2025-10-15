@@ -63,6 +63,22 @@ body {
   --color-accent-danger: #f85149;
   --color-accent-warning: #d29922;
   --color-accent-success: #3fb950;
+
+  /* Build system colors */
+  --color-accent: #007acc;
+  --color-accent-hover: #1177bb;
+  --color-success: #3fb950;
+  --color-success-hover: #2ea043;
+  --color-error: #f85149;
+  --color-error-hover: #da3633;
+  --color-warning: #d29922;
+  --color-warning-hover: #b8860b;
+  --color-background: #1e1e1e;
+  --color-background-secondary: #252526;
+  --color-background-hover: #2a2d2e;
+  --color-border: #3c3c3c;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #cccccc;
   --color-panel-background: #252526;
   --color-panel-border: #3c3c3c;
   --color-panel-header: #2d2d2d;
@@ -449,4 +465,72 @@ input[type='checkbox'] {
     box-shadow: none !important;
     text-shadow: none !important;
   }
+}
+
+/* ============================================
+   DIALOG STYLES
+   ============================================ */
+
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.dialog {
+  background: var(--color-panel-background);
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideDown 0.2s ease-out;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-panel-border);
+  background: var(--color-panel-header);
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+}
+
+.dialog-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-fg-primary);
+}
+
+.dialog-close {
+  background: none;
+  border: none;
+  color: var(--color-fg-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog-close:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-fg-primary);
 }

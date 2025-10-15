@@ -1,165 +1,181 @@
-# WORLDEDIT Documentation
+# WORLDEDIT DOCUMENTATION
 
-Documentation for WORLDEDIT game development editor and WORLDENV engine.
+**Professional game development editor for the WORLDENV engine**
 
-## Navigation
+## Quick Navigation
 
-See [index.md](index.md) for complete documentation index.
+### Getting Started
+- **[QUICKSTART.md](QUICKSTART.md)** - Get up and running in 15 minutes
+- **[USER-GUIDE.md](USER-GUIDE.md)** - Comprehensive user manual
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
 
-## Quick Start
+### Development
+- **[DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md)** - Development and contribution guide
+- **[API-REFERENCE.md](API-REFERENCE.md)** - Technical API documentation
 
-- [Quick Start Guide](quickstart.md) - Essential commands and workflows
-- [Build Guide](build-guide.md) - Complete build instructions
-- [Quick Reference](quick-reference.md) - Commands and shortcuts
+### WORLDSRC Language
+- **[WORLDSRC Manual](../worldsrc/docs/worldsrc-manual.md)** - Complete language reference
+- **[WORLDSRC Lexicon](../worldsrc/docs/worldsrc-lexicon.md)** - API and function reference
+- **[WORLDSRC Troubleshooting](../worldsrc/docs/troubleshooting.md)** - Language-specific issues
 
-## Core Documentation
+## What is WORLDEDIT?
 
-- [Agent Instructions](agent-instruct.md) - Development guidelines
-- [Engine Overview](engine-overview.md) - Engine architecture
-- [Engine Setup](engine-setup.md) - Installation instructions
-- [Development Overview](development-overview.md) - Project phases
+WORLDEDIT is a professional game development editor built for the WORLDENV engine. It provides a complete integrated development environment for creating 2D and 3D games with visual tools, scene management, component systems, and the powerful WORLDSRC programming language.
 
-## Implementation Status
+### Key Features
 
-- **Phase 1: Project Setup & Infrastructure - COMPLETE**
-- **Phase 2: Basic Electron Application - COMPLETE**
-- **Phase 3: UI Framework & Layout - COMPLETE**
-- **Phase 4: Viewport & Rendering - COMPLETE**
-- **Phase 5: Scene Hierarchy System - COMPLETE**
-- **Phase 6: Component System - COMPLETE**
-- [Implementation Log](implementation-log.md) - Development sessions and detailed reports
+- **Visual Scene Editor** - Real-time 2D/3D viewport with object manipulation
+- **Component System** - Modular entity-component architecture
+- **Asset Management** - Comprehensive file browser with drag-and-drop support
+- **WORLDSRC Integration** - Advanced scripting with hybrid C/C++/TypeScript syntax
+- **Multi-Platform Deployment** - Export to web, desktop, and PWA formats
+- **Professional UI** - VS Code-inspired interface with dockable panels
 
-## Development Planning
+### Technology Stack
 
-- [Calendar](calendar.txt) - Complete timeline with dates
-- [Pre-Alpha TODO](todo-prealpha.txt) - Foundation tasks
-- [Alpha TODO](todo-alpha.txt) - Feature expansion
-- [Beta TODO](todo-beta.txt) - Polish and optimization
-- [Release TODO](todo-release.txt) - Release preparation
+- **Frontend**: Electron, React, TypeScript
+- **Backend**: Node.js, IPC communication
+- **Rendering**: Three.js (3D), Pixi.js (2D)
+- **Language**: WORLDSRC compiler and tooling
+- **Build System**: Webpack, TypeScript compiler
 
-## WORLDSRC Language
+## Documentation Structure
 
-- [Manual](worldsrc/worldsrc-manual.md) - Language specification
-- [Lexicon](worldsrc/worldsrc-lexicon.md) - Function reference
+### For Users
+1. **Start Here**: [QUICKSTART.md](QUICKSTART.md) - Essential first steps
+2. **Learn More**: [USER-GUIDE.md](USER-GUIDE.md) - Complete feature guide
+3. **Get Help**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Problem solving
 
-## Game Templates
+### For Developers
+1. **Development**: [DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md) - Build and contribute
+2. **API Reference**: [API-REFERENCE.md](API-REFERENCE.md) - Technical documentation
+3. **Language Docs**: [WORLDSRC Documentation](../worldsrc/docs/) - Programming language
 
-- [2D Platformer](guides/template-2d-platformer.md)
-- [First-Person 3D](guides/template-first-person-3d.md)
+### For Testing
+- **[Pre-Alpha Testing](todo/pre-alpha-testing-checklist.md)** - Complete testing framework
+- **[Project Cleanup](todo/project-clean-todo.txt)** - Current reorganization status
 
-## Current Status
+## Installation
 
-**Phase 5: Scene Hierarchy System - COMPLETE**
+### Quick Install (Recommended)
+```bash
+# Download from releases
+wget https://github.com/elastic-softworks/worldenv/releases/latest
 
-Comprehensive scene hierarchy management system implemented:
-
-Phase 1 (Complete):
-- Electron application structure
-- TypeScript build system
-- Main and renderer processes
-- IPC communication foundation
-- Development environment
-- Code quality tools
-
-Phase 2 (Complete):
-- Window management with state persistence
-- File system abstraction layer
-- Project management (.worldenv format)
-- Auto-save functionality
-- File system watcher
-- Application menu system
-- Dialog handlers
-- Structured logging system
-- Splash screen
-- IPC handler system (40+ handlers)
-
-Phase 3 (Complete):
-- React 18 UI framework integration
-- Professional VS Code-inspired interface
-- Complete panel layout system (viewport, hierarchy, inspector, assets)
-- Dark/light theme system with CSS variables
-- Responsive panel management with Allotment
-- Menu bar with file operations
-- Status bar with project information
-- Component library with buttons, inputs, forms
-
-Phase 4 (Complete):
-- Three.js 3D renderer integration
-- Pixi.js 2D renderer integration
-- Seamless 2D/3D viewport mode switching
-- Advanced camera control system (orbit, pan, zoom)
-- Interactive viewport toolbar with camera presets
-- Grid overlay and axes helpers
-- Object selection and highlighting
-- Transform gizmos system
-- Real-time performance statistics
-- Demo content system for testing
-
-Phase 5 (Complete):
-- Node/Entity data structure with hierarchical tree management
-- Scene and SceneManager classes for lifecycle operations
-- Enhanced HierarchyPanel with drag-and-drop reparenting
-- Context menus for node operations (create, delete, rename, duplicate)
-- Inline editing with keyboard shortcuts
-- Real-time scene updates and dirty state tracking
-- Scene file I/O with .scene.json format
-- Integration with existing IPC file system handlers
-- Multi-selection support with Ctrl/Cmd modifiers
-- Node visibility toggles and type-specific icons
-
-Build verified:
-- Main process: 316 KB (minified)
-- Renderer process: 1.44 MB (minified, includes hierarchy system)
-- Build time: ~11 seconds
-- Performance targets maintained
-- All hierarchy operations tested
-
-Next: Phase 6 - Component System
-
-## Documentation Standards
-
-All documentation follows:
-- Dry, concise, clinical, professional tone
-- Active voice
-- Direct instructions
-- No fluff or conversational language
-- Step-by-step procedures
-- Working code examples
-
-## File Organization
-
-```
-docs/
-├── index.md                    Documentation index
-├── README.md                   This file
-├── agent-instruct.md           Development guidelines
-├── build-guide.md              Build instructions
-├── quickstart.md               Quick start guide
-├── quick-reference.md          Commands and shortcuts
-├── engine-overview.md          Engine architecture
-├── engine-setup.md             Installation guide
-├── development-overview.md     Project phases
-├── doc-summary.md              Documentation inventory
-├── implementation-log.md       Development log with phase reports
-├── calendar.txt                Development timeline
-├── todo-prealpha.txt           Pre-alpha tasks
-├── todo-alpha.txt              Alpha tasks
-├── todo-beta.txt               Beta tasks
-├── todo-release.txt            Release tasks
-├── guides/                     Game templates
-│   ├── template-2d-platformer.md
-│   └── template-first-person-3d.md
-└── worldsrc/                   WORLDSRC language
-    ├── worldsrc-manual.md
-    └── worldsrc-lexicon.md
+# Install WORLDSRC compiler
+npm install -g @worldenv/worldsrc
 ```
 
-## Version
+### Build from Source
+```bash
+git clone https://github.com/elastic-softworks/worldenv.git
+cd worldenv/editor
+npm install
+npm run build
+npm run start
+```
 
-Documentation Version: 1.5.0
-Editor Version: 0.1.0 (Pre-Alpha)
-Last Updated: Phase 5 Complete - December 2024
+## System Requirements
+
+**Minimum:**
+- Node.js 18+ and npm 9+
+- 4 GB RAM, 2 GB disk space
+- OpenGL 3.3 compatible graphics
+
+**Recommended:**
+- 8 GB RAM, SSD storage
+- Dedicated graphics card
+- Multi-core processor
+
+## Project Status
+
+**Current Version**: 0.1.0 (Pre-Alpha)  
+**Development Phase**: Alpha Phase 20 Complete  
+**Next Milestone**: Beta Testing & Community Release
+
+### Recent Achievements
+- Complete editor infrastructure
+- Visual scene editing system
+- Component-based architecture
+- WORLDSRC language integration
+- Multi-platform build system
+- Professional UI framework
+
+### Upcoming Features
+- Enhanced asset pipeline
+- Advanced animation tools
+- Collaborative editing
+- Cloud deployment
+- Mobile platform support
+
+## Quick Examples
+
+### Creating Your First Project
+1. Launch WORLDEDIT
+2. Click "New Project" → "2D Platformer"
+3. Name your project and click "Create"
+4. Press F5 to test in play mode
+
+### Basic WORLDSRC Script
+```worldsrc
+class PlayerController {
+    private float speed = 200.0f;
+    
+    void update(float deltaTime) {
+        if (Input.isKeyPressed(KeyCode.A)) {
+            transform.position.x -= speed * deltaTime;
+        }
+        if (Input.isKeyPressed(KeyCode.D)) {
+            transform.position.x += speed * deltaTime;
+        }
+    }
+}
+```
+
+### Building for Web
+1. Build → Build Settings
+2. Select "Web" platform
+3. Click "Build"
+4. Open `build/web/index.html`
+
+## Community & Support
+
+### Getting Help
+- **Documentation**: Start with [QUICKSTART.md](QUICKSTART.md)
+- **Issues**: [GitHub Issues](https://github.com/elastic-softworks/worldenv/issues)
+- **Discord**: Join our community server
+- **Email**: support@elasticsoftworks.com
+
+### Contributing
+- **Bug Reports**: Use GitHub issue templates
+- **Feature Requests**: Discuss in GitHub discussions
+- **Code Contributions**: See [DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md)
+- **Documentation**: Help improve these guides
+
+### Resources
+- **Examples**: Browse sample projects in repository
+- **Tutorials**: Step-by-step video guides
+- **API Docs**: Complete technical reference
+- **Community**: Share projects and get feedback
+
+## License
+
+Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0.  
+See [LICENSE.txt](../LICENSE.txt) for complete license texts.
+
+## Acknowledgments
+
+Built with love by Elastic Softworks using:
+- Electron by GitHub
+- React by Meta
+- Three.js by mrdoob
+- TypeScript by Microsoft
+- And many other amazing open source projects
 
 ---
 
-END OF README
+**Ready to Start Building Games?**
+
+👉 **[Get Started with QUICKSTART.md](QUICKSTART.md)**
+
+Need help? Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) or reach out to our community!

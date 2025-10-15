@@ -1,338 +1,280 @@
 # WORLDENV
 
-Web-based game engine powered by TypeScript, AssemblyScript, Three.js, and Pixi.js.
-Includes WORLDEDIT, a professional integrated development environment for game creation.
+**Professional 2D/3D Game Development Environment**
 
-## Overview
-
-WORLDENV is a hybrid game engine designed for high-performance web games. It combines TypeScript for game logic with AssemblyScript for performance-critical operations, providing a development environment that mirrors traditional C/Assembly workflows for the modern web platform.
-
-The engine is paired with WORLDEDIT, a cross-platform game editor built with Electron that provides visual tools for creating, editing, and managing WORLDENV projects through an integrated workflow similar to established engines like Godot and Unity.
-
-## Architecture
-
-WORLDENV operates on a dual-layer architecture:
-
-- **High-Level Layer (TypeScript)**: Game logic, scene management, component systems, and engine APIs
-- **Performance Layer (AssemblyScript/WASM)**: Physics calculations, collision detection, pathfinding, and computationally intensive operations
-
-The engine supports both 2D and 3D rendering through Pixi.js and Three.js respectively, with the ability to mix rendering modes within a single application.
-
-## Core Technologies
-
-- **TypeScript**: Type-safe game logic and scripting
-- **AssemblyScript**: Near-native performance through WebAssembly compilation
-- **Three.js**: 3D rendering, materials, lighting, and scene management
-- **Pixi.js**: Hardware-accelerated 2D sprite rendering
-- **WebAssembly**: Direct execution of performance-critical code
-- **WebGL**: GPU-accelerated graphics rendering
-
-## Features
-
-### Rendering
-
-- 2D sprite rendering via Pixi.js
-- 3D mesh rendering via Three.js
-- Hybrid 2D/3D scene composition
-- Shader support for custom visual effects
-- Hardware acceleration through WebGL
-
-### Performance
-
-- WebAssembly modules for compute-intensive operations
-- AssemblyScript compilation for TypeScript-like syntax at native speeds
-- Support for direct WASM integration (C, Rust, or other WASM-compatible languages)
-- Optimized rendering pipeline with batching and culling
-
-### Development
-
-- Component-based entity system
-- Scene graph architecture
-- Asset management and loading
-- Event system for decoupled communication
-- Hot module replacement during development
-
-## WORLDEDIT Development Environment
-
-WORLDEDIT provides a complete integrated development environment for WORLDENV projects:
-
-### Current Status: Pre-Alpha (Phase 8 Complete)
-
-**Completed Features:**
-- ✅ **Phase 1-3**: Electron application foundation with React UI framework
-- ✅ **Phase 4**: Viewport system with 2D/3D rendering capabilities
-- ✅ **Phase 5**: Scene hierarchy management with drag-and-drop organization
-- ✅ **Phase 6**: Entity-component system with registry and lifecycle management  
-- ✅ **Phase 7**: Enhanced inspector panel with property validation and undo/redo
-- ✅ **Phase 8**: Asset browser and file system integration with drag-and-drop import
-
-**In Development:**
-- 🚧 **Phase 9**: Engine integration and live scene preview
-- ⏳ **Phase 10**: Script editor with Monaco integration
-- ⏳ **Phase 11**: Project management and build system
-
-### Key Editor Features
-
-- **Visual Scene Editor**: Real-time 2D/3D viewport with object manipulation
-- **Advanced Inspector**: Type-safe property editing with validation and undo/redo
-- **Asset Management**: Comprehensive file browser with drag-and-drop import
-- **Component System**: Visual component editing with real-time updates
-- **Professional UI**: VS Code-inspired interface with dockable panels
-
-### WORLDSRC (Planned)
-
-WORLDSRC is a planned high-level scripting language for WORLDENV. Designed with C-inspired syntax, WORLDSRC will provide engine-specific functions and direct access to the TypeScript/AssemblyScript/Three.js/Pixi.js stack, simplifying game development with purpose-built abstractions.
-
-**Status**: In design phase. See development roadmap for timeline.
-
-## System Requirements
-
-### Minimum
-
-- Modern web browser with WebGL 2.0 support
-- 4 GB RAM
-- Dual-core 2.0 GHz processor
-
-### Recommended
-
-- Latest Chrome, Firefox, or Edge
-- 8 GB RAM
-- Quad-core 3.0 GHz processor
-- Dedicated GPU with WebGL 2.0 support
-
-## Installation
-
-### Prerequisites
-
-- Node.js 18+ and npm 9+
-- Git
-
-### Clone and Install
-
-```bash
-git clone https://github.com/your-org/worldenv.git
-cd worldenv
-npm install
-```
+WORLDENV provides a comprehensive game development ecosystem consisting of **WORLDEDIT** (the visual editor) and **WORLDSRC** (the programming language). This monorepo contains both components organized for standalone use and integrated development.
 
 ## Project Structure
 
 ```
 worldenv/
-├── asm/              # AssemblyScript source (compiles to WASM)
-├── src/              # TypeScript source
-│   ├── core/         # Engine core systems
-│   ├── components/   # ECS components
-│   ├── scenes/       # Scene management
-│   └── main.ts       # Entry point
-├── public/           # Static assets
-├── build/            # WASM build output
-├── dist/             # Production build output
-├── scripts/          # Build and development scripts
-└── editor/           # WORLDEDIT editor (Electron-based)
+├── README.md                 # This file - project overview
+├── .gitignore               # Git ignore patterns
+├── editor/                  # WORLDEDIT - Visual game editor
+│   ├── README.md           # Editor-specific documentation
+│   ├── package.json        # Editor dependencies and scripts
+│   ├── src/                # Editor source code
+│   ├── dist/               # Built editor application
+│   └── docs/               # Editor documentation
+│       ├── QUICKSTART.md
+│       ├── USER-GUIDE.md
+│       ├── DEVELOPER-GUIDE.md
+│       ├── TROUBLESHOOTING.md
+│       └── API-REFERENCE.md
+└── worldsrc/               # WORLDSRC - Programming language
+    ├── README.md           # Language-specific documentation
+    ├── package.json        # Language tooling dependencies
+    ├── src/                # Language implementation
+    ├── dist/               # Compiled language tools
+    ├── docs/               # Language documentation
+    ├── tests/              # Language test suites
+    └── examples/           # Code examples
 ```
 
-## Development
+## Components
 
-### Run Development Server
+### WORLDEDIT - Visual Game Editor
+
+**Professional Electron-based game editor with real-time rendering**
+
+- **Modern UI**: Dockable panels, customizable workspace
+- **Scene Editor**: Visual viewport with transform manipulators
+- **Entity-Component System**: Flexible game object architecture
+- **Asset Browser**: Integrated file management and preview
+- **Script Editor**: WORLDSRC integration with syntax highlighting
+- **Play Mode**: Real-time testing within the editor
+- **Build System**: Multi-platform export and deployment
+
+**Quick Start**: See [`editor/README.md`](editor/README.md) for detailed information.
+
+### WORLDSRC - Hybrid Programming Language
+
+**C/C++/TypeScript hybrid language for game development**
+
+- **Familiar Syntax**: C/C++ syntax with TypeScript type system
+- **Multi-target**: Compiles to TypeScript and AssemblyScript
+- **Engine Integration**: Direct access to WORLDENV APIs
+- **Professional Tooling**: LSP support for all major editors
+- **Performance**: Hot compilation with optimization passes
+- **Type Safety**: Advanced type system with generics and pointers
+
+**Quick Start**: See [`worldsrc/README.md`](worldsrc/README.md) for detailed information.
+
+## System Requirements
+
+### Minimum Requirements
+
+- **CPU**: Dual-core 2.0 GHz
+- **RAM**: 4 GB
+- **GPU**: OpenGL 3.3 / WebGL 2.0 support
+- **Storage**: 1 GB free space
+- **OS**: Windows 10, macOS 10.14, Ubuntu 18.04 (or equivalent)
+
+### Recommended Requirements
+
+- **CPU**: Quad-core 3.0 GHz
+- **RAM**: 8 GB
+- **GPU**: Dedicated graphics with 2 GB VRAM
+- **Storage**: 4 GB free space (for projects and assets)
+- **OS**: Windows 11, macOS 12+, Ubuntu 22.04+
+
+## Installation
+
+### Option 1: Use WORLDEDIT with Integrated WORLDSRC
+
+Install the complete editor which includes WORLDSRC:
 
 ```bash
+# Clone repository
+git clone https://github.com/elastic-softworks/worldenv.git
+cd worldenv/editor
+
+# Install dependencies
+npm install
+
+# Run development version
 npm run dev
-```
 
-Starts Vite development server with hot reload at `http://localhost:5173`
-
-### Build AssemblyScript to WASM
-
-```bash
-npm run asbuild
-```
-
-Compiles AssemblyScript modules in `asm/` to optimized WASM in `build/`
-
-### Production Build
-
-```bash
+# Or build for production
 npm run build
 ```
 
-Compiles TypeScript and bundles application for production deployment
+### Option 2: Use WORLDSRC Standalone
 
-### Preview Production Build
+Install only the programming language:
 
 ```bash
-npm run preview
+# Clone repository
+git clone https://github.com/elastic-softworks/worldenv.git
+cd worldenv/worldsrc
+
+# Install dependencies
+npm install
+
+# Build language tools
+npm run build
+
+# Install globally (optional)
+npm install -g .
 ```
 
-## Usage
+### Option 3: Install from NPM (Future)
 
-### Basic Game Setup
+```bash
+# Editor (when published)
+npm install -g @worldenv/editor
 
-```typescript
-import { Game } from './core/Game';
-
-const game = new Game({
-  width: 800,
-  height: 600,
-  canvasId: 'gameCanvas'
-});
-
-await game.init();
-game.run();
+# Language only (when published)
+npm install -g @worldenv/worldsrc
 ```
 
-### Using AssemblyScript/WASM
+## Quick Start
 
-```typescript
-// Load WASM module
-const wasmModule = await WebAssembly.instantiateStreaming(
-  fetch('/build/optimized.wasm')
-);
+### Create Your First Game
 
-// Call WASM function
-const result = wasmModule.instance.exports.calculatePhysics(deltaTime);
-```
+1. **Start WORLDEDIT**:
+   ```bash
+   cd worldenv/editor
+   npm run dev
+   ```
 
-### Component System
+2. **Create New Project**: Select File → New Project → Select template
 
-```typescript
-import { Entity } from './core/Entity';
-import { Transform } from './components/Transform';
-import { Sprite } from './components/Sprite';
+3. **Design Scenes**: Place entities and components using the visual editor
 
-const entity = new Entity();
-entity.addComponent(new Transform(x, y));
-entity.addComponent(new Sprite(texture));
-```
+4. **Write Scripts**: Create WORLDSRC files for game logic
 
-## Configuration
+5. **Test in Play Mode**: Press F5 to test your game
 
-### TypeScript Configuration
+6. **Build and Deploy**: Select File → Build → Select target platform
 
-See `tsconfig.json` for TypeScript compiler options. The configuration targets ES2020 with strict type checking enabled.
+### WORLDSRC Programming Example
 
-### AssemblyScript Configuration
+```worldsrc
+/* 
+   ===============================================
+   WORLDSRC Game Logic Example
+   ===============================================
+*/
 
-See `asconfig.json` for AssemblyScript compilation targets. Includes both debug and release configurations with optimization levels.
+#include <worldenv.h>
 
-### Vite Configuration
+/* 
+         Game Initialization
+           ---
+           this function runs once when the game starts.
+           it creates the player entity and sets up the
+           basic components needed for rendering and
+           positioning in the game world.
+*/
 
-See `vite.config.ts` for build and development server configuration.
+void start() {
 
-## Scripts
+  Entity player = Engine.createEntity("Player");
+  
+  player.addComponent<Transform>(Vector3(0, 0, 0));     /* position at origin */
+  player.addComponent<SpriteRenderer>("player.png");   /* visual representation */
+  
+}
 
-All scripts located in `scripts/` directory:
+/* 
+         Frame Update Logic
+           ---
+           this function runs every frame during gameplay.
+           it handles input processing and creates new
+           game objects like bullets when the player
+           presses the space key.
+*/
 
-- `dev.sh`: Start development server
-- `build.sh`: Production build
-- `asbuild.sh`: Compile AssemblyScript to WASM
-- `test.sh`: Run tests (placeholder)
+void update(float deltaTime) {
 
-## WORLDEDIT Editor
-
-WORLDEDIT is the integrated development environment for WORLDENV projects. Built with Electron, it provides visual editing tools, scene management, asset pipeline, and live preview capabilities.
-
-See `editor/README.md` for editor documentation.
-
-**Status**: In development. See `editor/docs/calendar.txt` for development timeline.
-
-## Direct WASM Integration
-
-WORLDENV supports direct WASM module integration from any language that compiles to WebAssembly (C, C++, Rust, etc.). Compile your code to WASM and import it into the engine:
-
-```c
-// Example C code
-int add(int a, int b) {
-  return a + b;
+  /* check for player input and create bullets
+     when space key is pressed */
+     
+  if  (Input.isKeyPressed(KeyCode.SPACE)) {
+  
+    Entity bullet = Engine.createEntity("Bullet");
+    
+    bullet.addComponent<Transform>(player.position);      /* spawn at player */
+    bullet.addComponent<RigidBody>().velocity = Vector3(0, 10, 0);  /* upward velocity */
+    
+  }
+  
 }
 ```
 
-Compile to WASM and use in WORLDENV:
+## Development Status
 
-```typescript
-const wasmModule = await WebAssembly.instantiateStreaming(
-  fetch('/custom.wasm')
-);
-const result = wasmModule.instance.exports.add(5, 10);
-```
+**Current Phase**: Pre-Alpha Testing Preparation
 
-## Performance Optimization
+### Completed Features
 
-### WebAssembly Best Practices
-
-- Minimize JavaScript ↔ WASM boundary crossings
-- Use typed arrays for data exchange
-- Batch operations in WASM when possible
-- Profile to identify hot paths
-
-### Rendering Optimization
-
-- Use sprite batching for 2D rendering
-- Implement frustum culling for 3D scenes
-- Optimize draw calls through instancing
-- Generate texture atlases for sprite sheets
-
-## Browser Compatibility
-
-- Chrome 90+
-- Firefox 88+
-- Edge 90+
-- Safari 14.1+
-
-All browsers must support WebGL 2.0 and WebAssembly.
-
-## Development Roadmap
-
-### Current Status
-
-- Core engine: Pre-Alpha
-- WORLDEDIT editor: Pre-Alpha (starting Oct 2025)
-- WORLDSRC language: Design phase
+- **WORLDEDIT**: Complete visual editor with all core features
+- **WORLDSRC**: Functional programming language with multi-target compilation
+- **Integration**: Editor and language work together seamlessly
+- **Documentation**: Comprehensive guides and references
+- **Build System**: Full compilation and deployment pipeline
 
 ### Upcoming Features
 
-- Entity Component System (ECS) improvements
-- Physics engine integration
-- Audio system enhancements
-- Advanced particle systems
-- WORLDSRC language implementation
-- Visual shader editor
-- Animation system
-
-See `editor/docs/calendar.txt` for complete development timeline.
-
-## License
-
-Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0. See `LICENSE.txt` for complete license texts.
-
-## Contributing
-
-Contributions are welcome. Follow the contribution guidelines and code standards defined in the project.
+- **Pre-Alpha Testing**: Comprehensive testing program
+- **Performance Optimization**: Editor and language performance improvements
+- **Mobile Support**: Android and iOS export targets
+- **Cloud Features**: Online collaboration and asset sharing
+- **Plugin System**: Third-party extensions and tools
 
 ## Documentation
 
-- Engine Overview: `docs/worldenv-overview.md`
-- Environment Setup: `docs/worldenv-setup.md`
-- Editor Documentation: `editor/README.md`
-- Development Calendar: `editor/docs/calendar.txt`
+- **[Editor Quick Start](editor/docs/QUICKSTART.md)**: Start with WORLDEDIT
+- **[User Guide](editor/docs/USER-GUIDE.md)**: Complete editor manual
+- **[Developer Guide](editor/docs/DEVELOPER-GUIDE.md)**: Contribution and development
+- **[Troubleshooting](editor/docs/TROUBLESHOOTING.md)**: Issue resolution
+- **[API Reference](editor/docs/API-REFERENCE.md)**: Technical API documentation
+- **[WORLDSRC Manual](worldsrc/README.md)**: Programming language reference
 
-## Support
+## Community and Support
 
-- Issue Tracker: GitHub Issues
-- Documentation: `docs/` directory
-- Editor Support: `editor/docs/`
+- **GitHub Issues**: Submit bug reports and feature requests
+- **Documentation**: Access comprehensive guides and tutorials
+- **Examples**: Download sample projects and code snippets
+- **Discord** (Coming Soon): Join community chat and support
 
-## Acknowledgments
+## Contributing
 
-Built with:
-- TypeScript by Microsoft
-- Three.js by mrdoob and contributors
-- Pixi.js by PixiJS team
-- AssemblyScript by AssemblyScript contributors
-- Vite by Evan You and contributors
+Contribute to both WORLDEDIT and WORLDSRC:
 
-## Links
+1. Fork the repository
+2. Create a feature branch
+3. Follow coding standards (C-Form for C code)
+4. Add tests for new features
+5. Submit a pull request
 
-- Repository: [GitHub]
-- Documentation: [Link]
-- WORLDEDIT Editor: `editor/`
+See [`editor/docs/DEVELOPER-GUIDE.md`](editor/docs/DEVELOPER-GUIDE.md) for detailed contribution guidelines.
+
+## License
+
+Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0.
+See LICENSE.txt for complete license texts.
+
+## Technical Stack
+
+### Editor Technology
+
+- **Electron**: Cross-platform desktop application framework
+- **React**: Modern UI component framework
+- **TypeScript**: Type-safe JavaScript development
+- **Three.js**: 3D rendering and WebGL integration
+- **Pixi.js**: High-performance 2D rendering
+- **Monaco Editor**: Professional code editing experience
+
+### Language Technology
+
+- **TypeScript Compiler API**: Parsing and analysis
+- **Custom AST**: Hybrid language syntax tree
+- **Multi-target Codegen**: TypeScript and AssemblyScript output
+- **Language Server Protocol**: IDE integration
+- **Incremental Compilation**: Fast development iteration
+
+---
+
+**WORLDENV** - Professional game development made accessible

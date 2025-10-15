@@ -500,6 +500,15 @@ export class ViewportRenderer2D {
   }
 
   /**
+   * getScene()
+   *
+   * Get main scene container.
+   */
+  getScene(): PIXI.Container | null {
+    return this.worldContainer;
+  }
+
+  /**
    * getApp()
    *
    * Get Pixi.js application.

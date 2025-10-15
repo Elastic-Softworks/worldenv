@@ -12,6 +12,7 @@
  */
 
 import './styles/main.css';
+import { ProjectData } from '../shared/types';
 
 /**
  * Application state
@@ -182,7 +183,7 @@ async function handleNewProject(): Promise<void> {
 
     const projectName = dirPath.split('/').pop() || 'New Project';
 
-    const project = await window.worldedit.project.create(dirPath, projectName);
+    const project = (await window.worldedit.project.create(dirPath, projectName)) as ProjectData;
 
     logOutput(`Project created: ${project.name}`);
 
@@ -220,7 +221,7 @@ async function handleOpenProject(): Promise<void> {
       return;
     }
 
-    const project = await window.worldedit.project.open(dirPath);
+    const project = (await window.worldedit.project.open(dirPath)) as ProjectData;
 
     logOutput(`Project opened: ${project.name}`);
 
@@ -315,7 +316,7 @@ async function handleTestFileSystem(): Promise<void> {
     const exists = await window.worldedit.fs.exists(testFile);
     logOutput(`File exists: ${exists}`);
 
-    const stats = await window.worldedit.fs.getStats(testFile);
+    const stats = (await window.worldedit.fs.getStats(testFile)) as { size: number };
     logOutput(`File size: ${stats.size} bytes`);
 
     logOutput('File system test completed successfully');
@@ -338,14 +339,14 @@ function showProjectView(project: any): void {
   const projectDetails = document.getElementById('project-details');
 
   if (welcomeScreen) {
-welcomeScreen.style.display = 'none';
-}
+    welcomeScreen.style.display = 'none';
+  }
   if (projectView) {
-projectView.style.display = 'block';
-}
+    projectView.style.display = 'block';
+  }
   if (projectStatus) {
-projectStatus.textContent = project.name;
-}
+    projectStatus.textContent = project.name;
+  }
 
   if (projectDetails) {
     projectDetails.innerHTML = `
@@ -370,14 +371,14 @@ function showWelcomeScreen(): void {
   const projectStatus = document.getElementById('project-status');
 
   if (welcomeScreen) {
-welcomeScreen.style.display = 'block';
-}
+    welcomeScreen.style.display = 'block';
+  }
   if (projectView) {
-projectView.style.display = 'none';
-}
+    projectView.style.display = 'none';
+  }
   if (projectStatus) {
-projectStatus.textContent = 'No Project';
-}
+    projectStatus.textContent = 'No Project';
+  }
 }
 
 /**

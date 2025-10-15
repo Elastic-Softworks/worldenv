@@ -61,12 +61,12 @@ function registerCoreComponents(): void {
     displayName: 'Transform',
     description: 'Controls the position, rotation, and scale of an entity',
     category: 'Core',
-    icon: '📐',
+    icon: 'Transform',
     factory: createTransformComponent,
     isCore: true,
     isVisible: true,
     dependencies: [],
-    conflicts: [],
+    conflicts: []
   });
 
   // Sprite Component (2D Rendering)
@@ -75,12 +75,12 @@ function registerCoreComponents(): void {
     displayName: 'Sprite',
     description: 'Renders a 2D texture or sprite image',
     category: 'Rendering',
-    icon: '🖼️',
+    icon: 'Sprite',
     factory: createSpriteComponent,
     isCore: false,
     isVisible: true,
     dependencies: ['Transform'],
-    conflicts: ['MeshRenderer'],
+    conflicts: ['MeshRenderer']
   });
 
   // MeshRenderer Component (3D Rendering)
@@ -89,26 +89,26 @@ function registerCoreComponents(): void {
     displayName: 'Mesh Renderer',
     description: 'Renders a 3D mesh with materials and lighting',
     category: 'Rendering',
-    icon: '🧊',
+    icon: 'Mesh',
     factory: createMeshRendererComponent,
     isCore: false,
     isVisible: true,
     dependencies: ['Transform'],
-    conflicts: ['Sprite'],
+    conflicts: ['Sprite']
   });
 
   // Camera Component
   componentRegistry.register({
     type: 'Camera',
     displayName: 'Camera',
-    description: 'Renders the scene from this entity\'s position and orientation',
+    description: "Renders the scene from this entity's position and orientation",
     category: 'Core',
-    icon: '📷',
+    icon: 'Camera',
     factory: createCameraComponent,
     isCore: false,
     isVisible: true,
     dependencies: ['Transform'],
-    conflicts: [],
+    conflicts: []
   });
 
   // Script Component
@@ -117,15 +117,17 @@ function registerCoreComponents(): void {
     displayName: 'Script',
     description: 'Attaches a script file to an entity for custom behavior',
     category: 'Scripting',
-    icon: '📜',
+    icon: 'Script',
     factory: createScriptComponent,
     isCore: false,
     isVisible: true,
     dependencies: [],
-    conflicts: [],
+    conflicts: []
   });
 
-  console.log(`[COMPONENT_SYSTEM] Registered ${componentRegistry.getAllDescriptors().length} core components`);
+  console.log(
+    `[COMPONENT_SYSTEM] Registered ${componentRegistry.getAllDescriptors().length} core components`
+  );
 }
 
 /**
@@ -200,7 +202,7 @@ export const ComponentUtils = {
       console.error(`[COMPONENT_UTILS] Failed to add component ${componentType}:`, error);
       return {
         success: false,
-        error: `Failed to add component: ${error}`,
+        error: `Failed to add component: ${error}`
       };
     }
   },
@@ -215,7 +217,7 @@ export const ComponentUtils = {
       console.error(`[COMPONENT_UTILS] Failed to remove component ${componentType}:`, error);
       return {
         success: false,
-        error: `Failed to remove component: ${error}`,
+        error: `Failed to remove component: ${error}`
       };
     }
   },
@@ -235,7 +237,7 @@ export const ComponentUtils = {
       description: descriptor.description,
       category: descriptor.category,
       icon: descriptor.icon,
-      isCore: descriptor.isCore,
+      isCore: descriptor.isCore
     };
   },
 
@@ -245,7 +247,7 @@ export const ComponentUtils = {
   validateDependencies: (nodeId: string, componentType: string) => {
     const existingTypes = componentSystem.getComponentTypes(nodeId);
     return componentRegistry.checkDependencies(componentType, existingTypes);
-  },
+  }
 };
 
 // Export registry and system instances for direct access

@@ -23,6 +23,7 @@ import { HierarchyPanel } from './panels/HierarchyPanel';
 import { InspectorPanel } from './panels/InspectorPanel';
 import { ViewportPanel } from './panels/ViewportPanel';
 import { AssetBrowserPanel } from './panels/AssetBrowserPanel';
+import { ScriptEditorPanel } from './panels/ScriptEditorPanel';
 
 /**
  * EditorShell component
@@ -125,14 +126,29 @@ export function EditorShell(): JSX.Element {
                   <ViewportPanel />
                 </Allotment.Pane>
 
-                {/* Bottom Panel - Asset Browser */}
-                {state.ui.panels.assets.visible && (
+                {/* Bottom Panel - Asset Browser / Script Editor */}
+                {(state.ui.panels.assets.visible || state.ui.panels.script.visible) && (
                   <Allotment.Pane
                     minSize={150}
-                    maxSize={400}
-                    preferredSize={state.ui.panels.assets.size}
+                    maxSize={500}
+                    preferredSize={
+                      state.ui.panels.script.visible
+                        ? state.ui.panels.script.size
+                        : state.ui.panels.assets.size
+                    }
                   >
-                    <AssetBrowserPanel />
+                    <Allotment>
+                      {state.ui.panels.assets.visible && (
+                        <Allotment.Pane>
+                          <AssetBrowserPanel />
+                        </Allotment.Pane>
+                      )}
+                      {state.ui.panels.script.visible && (
+                        <Allotment.Pane>
+                          <ScriptEditorPanel />
+                        </Allotment.Pane>
+                      )}
+                    </Allotment>
                   </Allotment.Pane>
                 )}
               </Allotment>

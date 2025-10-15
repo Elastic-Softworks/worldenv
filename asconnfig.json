@@ -1,8 +1,0 @@
-{
-  "targets": {
-    "release": {
-      "optimize": true,
-      "shrink": true
-    }
-  }
-}

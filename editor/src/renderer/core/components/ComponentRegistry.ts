@@ -19,7 +19,7 @@ import { IComponent, ComponentDescriptor, ComponentFactory } from './Component';
 export enum RegistryEventType {
   COMPONENT_REGISTERED = 'component_registered',
   COMPONENT_UNREGISTERED = 'component_unregistered',
-  REGISTRY_CLEARED = 'registry_cleared',
+  REGISTRY_CLEARED = 'registry_cleared'
 }
 
 /**
@@ -76,56 +76,56 @@ export class ComponentRegistry {
       name: 'Core',
       displayName: 'Core',
       description: 'Essential core components',
-      icon: '🔧',
-      order: 0,
+      icon: 'Core',
+      order: 0
     });
 
     this.registerCategory({
       name: 'Rendering',
       displayName: 'Rendering',
       description: 'Visual rendering components',
-      icon: '🎨',
-      order: 10,
+      icon: 'Render',
+      order: 10
     });
 
     this.registerCategory({
       name: 'Physics',
       displayName: 'Physics',
       description: 'Physics and collision components',
-      icon: '⚽',
-      order: 20,
+      icon: 'Physics',
+      order: 20
     });
 
     this.registerCategory({
       name: 'Audio',
       displayName: 'Audio',
       description: 'Audio and sound components',
-      icon: '🔊',
-      order: 30,
+      icon: 'Audio',
+      order: 30
     });
 
     this.registerCategory({
       name: 'Scripting',
       displayName: 'Scripting',
       description: 'Script and logic components',
-      icon: '📜',
-      order: 40,
+      icon: 'Script',
+      order: 40
     });
 
     this.registerCategory({
       name: 'UI',
       displayName: 'User Interface',
       description: 'UI and interface components',
-      icon: '🖼️',
-      order: 50,
+      icon: 'UI',
+      order: 50
     });
 
     this.registerCategory({
       name: 'Utility',
       displayName: 'Utility',
       description: 'Utility and helper components',
-      icon: '🔨',
-      order: 60,
+      icon: 'Tool',
+      order: 60
     });
   }
 
@@ -137,7 +137,7 @@ export class ComponentRegistry {
   private emitEvent(event: Omit<RegistryEvent, 'timestamp'>): void {
     const fullEvent: RegistryEvent = {
       ...event,
-      timestamp: new Date(),
+      timestamp: new Date()
     };
 
     for (const listener of this._listeners) {
@@ -191,8 +191,7 @@ export class ComponentRegistry {
    * Gets all component categories sorted by order.
    */
   getAllCategories(): ComponentCategory[] {
-    return Array.from(this._categories.values())
-      .sort((a, b) => a.order - b.order);
+    return Array.from(this._categories.values()).sort((a, b) => a.order - b.order);
   }
 
   /**
@@ -214,12 +213,14 @@ export class ComponentRegistry {
 
     // Ensure category exists
     if (!this._categories.has(descriptor.category)) {
-      console.warn(`[COMPONENT_REGISTRY] Unknown category '${descriptor.category}' for component '${descriptor.type}'`);
+      console.warn(
+        `[COMPONENT_REGISTRY] Unknown category '${descriptor.category}' for component '${descriptor.type}'`
+      );
       this.registerCategory({
         name: descriptor.category,
         displayName: descriptor.category,
         description: `Auto-generated category for ${descriptor.category}`,
-        order: 999,
+        order: 999
       });
     }
 
@@ -229,7 +230,7 @@ export class ComponentRegistry {
     this.emitEvent({
       type: RegistryEventType.COMPONENT_REGISTERED,
       componentType: descriptor.type,
-      descriptor,
+      descriptor
     });
 
     return true;
@@ -251,7 +252,7 @@ export class ComponentRegistry {
     this.emitEvent({
       type: RegistryEventType.COMPONENT_UNREGISTERED,
       componentType: type,
-      descriptor,
+      descriptor
     });
 
     return true;
@@ -290,8 +291,7 @@ export class ComponentRegistry {
    * Gets component descriptors filtered by category.
    */
   getDescriptorsByCategory(category: string): ComponentDescriptor[] {
-    return Array.from(this._descriptors.values())
-      .filter(desc => desc.category === category);
+    return Array.from(this._descriptors.values()).filter((desc) => desc.category === category);
   }
 
   /**
@@ -300,8 +300,7 @@ export class ComponentRegistry {
    * Gets descriptors for components visible in UI.
    */
   getVisibleDescriptors(): ComponentDescriptor[] {
-    return Array.from(this._descriptors.values())
-      .filter(desc => desc.isVisible);
+    return Array.from(this._descriptors.values()).filter((desc) => desc.isVisible);
   }
 
   /**
@@ -310,8 +309,7 @@ export class ComponentRegistry {
    * Gets descriptors for core components.
    */
   getCoreDescriptors(): ComponentDescriptor[] {
-    return Array.from(this._descriptors.values())
-      .filter(desc => desc.isCore);
+    return Array.from(this._descriptors.values()).filter((desc) => desc.isCore);
   }
 
   /**
@@ -360,7 +358,9 @@ export class ComponentRegistry {
     if (descriptor.dependencies) {
       for (const dep of descriptor.dependencies) {
         if (!this._descriptors.has(dep)) {
-          console.warn(`[COMPONENT_REGISTRY] Missing dependency '${dep}' for component '${descriptor.type}'`);
+          console.warn(
+            `[COMPONENT_REGISTRY] Missing dependency '${dep}' for component '${descriptor.type}'`
+          );
         }
       }
     }
@@ -369,7 +369,9 @@ export class ComponentRegistry {
     if (descriptor.conflicts) {
       for (const conflict of descriptor.conflicts) {
         if (this._descriptors.has(conflict)) {
-          console.warn(`[COMPONENT_REGISTRY] Conflicting component '${conflict}' already registered for '${descriptor.type}'`);
+          console.warn(
+            `[COMPONENT_REGISTRY] Conflicting component '${conflict}' already registered for '${descriptor.type}'`
+          );
         }
       }
     }
@@ -382,7 +384,10 @@ export class ComponentRegistry {
    *
    * Checks if component dependencies are satisfied.
    */
-  checkDependencies(type: string, existingComponents: string[]): {
+  checkDependencies(
+    type: string,
+    existingComponents: string[]
+  ): {
     satisfied: boolean;
     missing: string[];
     conflicts: string[];
@@ -416,7 +421,7 @@ export class ComponentRegistry {
     return {
       satisfied: missing.length === 0 && conflicts.length === 0,
       missing,
-      conflicts,
+      conflicts
     };
   }
 
@@ -426,8 +431,9 @@ export class ComponentRegistry {
    * Gets components that depend on a specific component.
    */
   getComponentsByDependency(dependencyType: string): ComponentDescriptor[] {
-    return Array.from(this._descriptors.values())
-      .filter(desc => desc.dependencies?.includes(dependencyType));
+    return Array.from(this._descriptors.values()).filter((desc) =>
+      desc.dependencies?.includes(dependencyType)
+    );
   }
 
   /**
@@ -461,7 +467,7 @@ export class ComponentRegistry {
     this._descriptors.clear();
 
     this.emitEvent({
-      type: RegistryEventType.REGISTRY_CLEARED,
+      type: RegistryEventType.REGISTRY_CLEARED
     });
   }
 
@@ -500,7 +506,7 @@ export class ComponentRegistry {
       totalComponents: this._descriptors.size,
       coreComponents,
       visibleComponents,
-      componentsByCategory,
+      componentsByCategory
     };
   }
 

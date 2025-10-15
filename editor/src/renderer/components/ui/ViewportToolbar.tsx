@@ -8,12 +8,13 @@
  * WORLDEDIT - Viewport Toolbar Component
  *
  * Toolbar for viewport controls including camera presets, view settings,
- * and viewport mode switching. Provides quick access to common viewport operations.
+ * transform manipulators, and viewport mode switching.
  */
 
 import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { CameraPreset } from '../../viewport/EditorCamera';
+import { ManipulatorMode, TransformSpace } from '../../viewport/manipulators';
 
 export interface ViewportToolbarProps {
   mode: '2d' | '3d';
@@ -21,6 +22,8 @@ export interface ViewportToolbarProps {
   showGizmos: boolean;
   showAxes: boolean;
   snapToGrid: boolean;
+  manipulatorMode: ManipulatorMode;
+  transformSpace: TransformSpace;
   onModeToggle: () => void;
   onCameraPreset: (preset: CameraPreset) => void;
   onCameraReset: () => void;
@@ -28,12 +31,14 @@ export interface ViewportToolbarProps {
   onToggleGizmos: () => void;
   onToggleAxes: () => void;
   onToggleSnap: () => void;
+  onManipulatorModeChange: (mode: ManipulatorMode) => void;
+  onTransformSpaceToggle: () => void;
 }
 
 /**
  * ViewportToolbar component
  *
- * Provides controls for viewport settings and camera management.
+ * Provides controls for viewport settings, camera management, and transform tools.
  * Adapts interface based on current viewport mode (2D/3D).
  */
 export function ViewportToolbar({
@@ -42,13 +47,17 @@ export function ViewportToolbar({
   showGizmos,
   showAxes,
   snapToGrid,
+  manipulatorMode,
+  transformSpace,
   onModeToggle,
   onCameraPreset,
   onCameraReset,
   onToggleGrid,
   onToggleGizmos,
   onToggleAxes,
-  onToggleSnap
+  onToggleSnap,
+  onManipulatorModeChange,
+  onTransformSpaceToggle
 }: ViewportToolbarProps): JSX.Element {
   const { theme } = useTheme();
 
@@ -119,6 +128,17 @@ export function ViewportToolbar({
     { preset: 'perspective', label: 'Persp', icon: '🔶' }
   ];
 
+  const manipulatorModes: {
+    mode: ManipulatorMode;
+    label: string;
+    icon: string;
+    shortcut: string;
+  }[] = [
+    { mode: ManipulatorMode.Translate, label: 'Move', icon: '↔', shortcut: 'W' },
+    { mode: ManipulatorMode.Rotate, label: 'Rotate', icon: '↻', shortcut: 'E' },
+    { mode: ManipulatorMode.Scale, label: 'Scale', icon: '⛶', shortcut: 'R' }
+  ];
+
   return (
     <div style={toolbarStyle}>
       {/* VIEW MODE TOGGLE */}
@@ -172,8 +192,43 @@ export function ViewportToolbar({
         onClick={onCameraReset}
         title="Reset camera to default position"
       >
-        🎯
+        Focus
       </button>
+
+      <div style={separatorStyle} />
+
+      {/* TRANSFORM TOOLS */}
+      <div style={buttonGroupStyle}>
+        <span style={labelStyle}>Tools:</span>
+        {manipulatorModes.map(({ mode: toolMode, label, icon, shortcut }) => (
+          <button
+            key={toolMode}
+            style={manipulatorMode === toolMode ? activeButtonStyle : buttonStyle}
+            onClick={() => onManipulatorModeChange(toolMode)}
+            title={`${label} tool (${shortcut})`}
+          >
+            <span style={{ fontSize: '10px' }}>{icon}</span>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div style={separatorStyle} />
+
+      {/* TRANSFORM SPACE */}
+      <div style={buttonGroupStyle}>
+        <span style={labelStyle}>Space:</span>
+        <button
+          style={buttonStyle}
+          onClick={onTransformSpaceToggle}
+          title={`Transform space: ${transformSpace} (Tab to toggle)`}
+        >
+          <span style={{ fontSize: '10px' }}>
+            {transformSpace === TransformSpace.World ? 'World' : 'Local'}
+          </span>
+          {transformSpace === TransformSpace.World ? 'World' : 'Local'}
+        </button>
+      </div>
 
       <div style={separatorStyle} />
 
@@ -206,7 +261,7 @@ export function ViewportToolbar({
           onClick={onToggleGizmos}
           title="Toggle gizmos visibility"
         >
-          <span style={{ fontSize: '10px' }}>🔧</span>
+          <span style={{ fontSize: '10px' }}>Tools</span>
           Gizmos
         </button>
       </div>
@@ -219,7 +274,7 @@ export function ViewportToolbar({
         <button
           style={snapToGrid ? activeButtonStyle : buttonStyle}
           onClick={onToggleSnap}
-          title="Toggle snap to grid"
+          title="Toggle snap to grid (G)"
         >
           <span style={{ fontSize: '10px' }}>🧲</span>
           Grid
@@ -241,7 +296,13 @@ export function ViewportToolbar({
       >
         <span>{mode.toUpperCase()} View</span>
         <span>•</span>
-        <span>Ready</span>
+        <span>
+          {manipulatorMode === ManipulatorMode.Translate && 'Translate'}
+          {manipulatorMode === ManipulatorMode.Rotate && 'Rotate'}
+          {manipulatorMode === ManipulatorMode.Scale && 'Scale'}
+        </span>
+        <span>•</span>
+        <span>{transformSpace}</span>
       </div>
     </div>
   );

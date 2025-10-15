@@ -17,5 +17,10 @@ export {
   AddComponentCommand,
   RemoveComponentCommand,
   RenameEntityCommand,
+  TransformPositionCommand,
+  TransformRotationCommand,
+  TransformScaleCommand,
+  CreateEntityCommand,
+  DeleteEntityCommand,
   type ICommand
 } from './UndoRedoManager';

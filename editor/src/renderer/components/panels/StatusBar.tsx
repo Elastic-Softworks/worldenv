@@ -152,7 +152,7 @@ export function StatusBar(): JSX.Element {
 
           {/* Project Name */}
           <div style={statusItemStyle}>
-            <span>📁 {state.project.name}</span>
+            <span>Project: {state.project.name}</span>
           </div>
 
           {state.project.lastSaved && (
@@ -161,7 +161,7 @@ export function StatusBar(): JSX.Element {
 
               {/* Last Saved */}
               <div style={statusItemStyle}>
-                <span>💾 {state.project.lastSaved.toLocaleTimeString()}</span>
+                <span>Saved {state.project.lastSaved.toLocaleTimeString()}</span>
               </div>
             </>
           )}
@@ -229,9 +229,7 @@ export function StatusBar(): JSX.Element {
           e.currentTarget.style.backgroundColor = 'transparent';
         }}
       >
-        <span>
-          {themeType === 'dark' ? '🌙' : '☀️'} {themeType}
-        </span>
+        <span>{themeType}</span>
       </div>
 
       <div style={separatorStyle} />

@@ -648,7 +648,7 @@ export function InspectorPanel(): JSX.Element {
         <div key={component.id}>
           <div style={componentHeaderStyle} onClick={toggleExpanded}>
             <span style={{ marginRight: theme.spacing.xs, fontSize: '12px' }}>
-              {uiData.expanded ? '▼' : '▶'}
+              {uiData.expanded ? 'v' : '>'}
             </span>
             <span style={{ flex: 1, fontWeight: 500, fontSize: '14px' }}>
               {component.displayName}
@@ -661,7 +661,7 @@ export function InspectorPanel(): JSX.Element {
               }}
               title="Remove component"
             >
-              🗑️
+              Delete
             </button>
             <input
               type="checkbox"
@@ -806,7 +806,7 @@ export function InspectorPanel(): JSX.Element {
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            🔄
+            Refresh
           </button>
         </div>
       </div>

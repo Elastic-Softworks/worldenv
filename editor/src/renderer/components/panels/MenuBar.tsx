@@ -11,9 +11,14 @@
  * Provides access to file operations, edit functions, and view options.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEditorState } from '../../context/EditorStateContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useUndoRedo } from '../../hooks/useUndoRedo';
+import { ProjectData } from '../../../shared/types';
+import { ProjectSettingsDialog } from '../dialogs/ProjectSettingsDialog';
+import { BuildDialogManager } from '../dialogs/BuildDialogManager';
+import { useBuild } from '../../context/BuildContext';
 
 /**
  * Menu item interface
@@ -35,7 +40,11 @@ interface MenuItem {
 export function MenuBar(): JSX.Element {
   const { state, actions } = useEditorState();
   const { theme, toggleTheme } = useTheme();
+  const undoRedo = useUndoRedo();
+  const { state: buildState, actions: buildActions } = useBuild();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [showProjectSettings, setShowProjectSettings] = useState(false);
+  const [showBuildConfig, setShowBuildConfig] = useState(false);
 
   /**
    * handleNewProject()
@@ -54,7 +63,7 @@ export function MenuBar(): JSX.Element {
       }
 
       const projectName = dirPath.split('/').pop() || 'New Project';
-      const project = await window.worldedit.project.create(dirPath, projectName);
+      const project = (await window.worldedit.project.create(dirPath, projectName)) as ProjectData;
 
       actions.openProject({
         path: dirPath,
@@ -88,7 +97,7 @@ export function MenuBar(): JSX.Element {
         return;
       }
 
-      const project = await window.worldedit.project.open(dirPath);
+      const project = (await window.worldedit.project.open(dirPath)) as ProjectData;
 
       actions.openProject({
         path: dirPath,
@@ -151,6 +160,102 @@ export function MenuBar(): JSX.Element {
   };
 
   /**
+   * handleProjectSettings()
+   *
+   * Shows project settings dialog.
+   */
+  const handleProjectSettings = (): void => {
+    setShowProjectSettings(true);
+  };
+
+  /**
+   * handleSaveProjectSettings()
+   *
+   * Saves project settings.
+   */
+  const handleSaveProjectSettings = async (settings: any): Promise<void> => {
+    try {
+      await window.worldedit.project.updateSettings(settings);
+      actions.saveProject();
+    } catch (error) {
+      console.error('[MENU] Failed to save project settings:', error);
+      throw error;
+    }
+  };
+
+  /**
+   * handleBuildProject()
+   *
+   * Starts build with current configuration.
+   */
+  const handleBuildProject = async (): Promise<void> => {
+    try {
+      await buildActions.startBuild();
+    } catch (error) {
+      console.error('[MENU] Failed to start build:', error);
+      await window.worldedit.dialog.showError(
+        'Build Error',
+        `Failed to start build: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  };
+
+  /**
+   * handleBuildConfiguration()
+   *
+   * Shows build configuration dialog.
+   */
+  const handleBuildConfiguration = (): void => {
+    setShowBuildConfig(true);
+  };
+
+  /**
+   * handleOpenBuildLocation()
+   *
+   * Opens the last build output location.
+   */
+  const handleOpenBuildLocation = async (): Promise<void> => {
+    if (buildState.lastResult?.outputPath) {
+      try {
+        await buildActions.openBuildLocation(buildState.lastResult.outputPath);
+      } catch (error) {
+        console.error('[MENU] Failed to open build location:', error);
+        await window.worldedit.dialog.showError(
+          'Open Location Error',
+          `Failed to open build location: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
+    }
+  };
+
+  /**
+   * Listen for IPC menu events
+   */
+  useEffect(() => {
+    const handleMenuBuildProject = () => {
+      handleBuildProject();
+    };
+
+    const handleMenuBuildConfiguration = () => {
+      setShowBuildConfig(true);
+    };
+
+    const handleMenuOpenBuildLocation = () => {
+      handleOpenBuildLocation();
+    };
+
+    window.electronAPI.on('menu:build-project', handleMenuBuildProject);
+    window.electronAPI.on('menu:build-configuration', handleMenuBuildConfiguration);
+    window.electronAPI.on('menu:open-build-location', handleMenuOpenBuildLocation);
+
+    return () => {
+      window.electronAPI.removeListener('menu:build-project', handleMenuBuildProject);
+      window.electronAPI.removeListener('menu:build-configuration', handleMenuBuildConfiguration);
+      window.electronAPI.removeListener('menu:open-build-location', handleMenuOpenBuildLocation);
+    };
+  }, [handleBuildProject, handleBuildConfiguration, handleOpenBuildLocation]);
+
+  /**
    * Menu structure
    */
   const menus: Record<string, MenuItem[]> = {
@@ -170,11 +275,27 @@ export function MenuBar(): JSX.Element {
         disabled: !state.project.isOpen
       },
       { separator: true },
+      {
+        label: 'Project Settings',
+        action: handleProjectSettings,
+        disabled: !state.project.isOpen
+      },
+      { separator: true },
       { label: 'Exit', action: () => window.close(), shortcut: 'Ctrl+Q' }
     ],
     Edit: [
-      { label: 'Undo', shortcut: 'Ctrl+Z', disabled: true },
-      { label: 'Redo', shortcut: 'Ctrl+Y', disabled: true },
+      {
+        label: `Undo${undoRedo.lastUndoDescription ? ` ${undoRedo.lastUndoDescription}` : ''}`,
+        action: undoRedo.undo,
+        shortcut: 'Ctrl+Z',
+        disabled: !undoRedo.canUndo
+      },
+      {
+        label: `Redo${undoRedo.lastRedoDescription ? ` ${undoRedo.lastRedoDescription}` : ''}`,
+        action: undoRedo.redo,
+        shortcut: 'Ctrl+Y',
+        disabled: !undoRedo.canRedo
+      },
       { separator: true },
       { label: 'Cut', shortcut: 'Ctrl+X', disabled: true },
       { label: 'Copy', shortcut: 'Ctrl+C', disabled: true },
@@ -206,6 +327,11 @@ export function MenuBar(): JSX.Element {
         label: state.ui.panels.assets.visible ? 'Hide Assets' : 'Show Assets',
         action: () => actions.togglePanel('assets', !state.ui.panels.assets.visible)
       },
+      {
+        label: state.ui.panels.script.visible ? 'Hide Script Editor' : 'Show Script Editor',
+        action: () => actions.togglePanel('script', !state.ui.panels.script.visible),
+        shortcut: 'Ctrl+Shift+S'
+      },
       { separator: true },
       {
         label: state.ui.showGrid ? 'Hide Grid' : 'Show Grid',
@@ -230,6 +356,26 @@ export function MenuBar(): JSX.Element {
         label: 'Switch to 3D View',
         action: () => actions.setViewportMode('3d'),
         disabled: state.ui.activeViewportMode === '3d'
+      }
+    ],
+    Build: [
+      {
+        label: 'Build Project',
+        action: handleBuildProject,
+        shortcut: 'Ctrl+B',
+        disabled: !state.project.isOpen || buildState.isBuilding
+      },
+      {
+        label: 'Build Configuration...',
+        action: handleBuildConfiguration,
+        shortcut: 'Ctrl+Shift+B',
+        disabled: !state.project.isOpen
+      },
+      { separator: true },
+      {
+        label: 'Open Build Location',
+        action: handleOpenBuildLocation,
+        disabled: !buildState.lastResult?.outputPath
       }
     ],
     Help: [
@@ -422,6 +568,37 @@ export function MenuBar(): JSX.Element {
           onClick={() => setActiveMenu(null)}
         />
       )}
+
+      {/* Project Settings Dialog */}
+      <ProjectSettingsDialog
+        isOpen={showProjectSettings}
+        onClose={() => setShowProjectSettings(false)}
+        onSave={handleSaveProjectSettings}
+        projectData={
+          state.project.isOpen &&
+          state.project.name &&
+          state.project.version &&
+          state.project.engineVersion
+            ? {
+                name: state.project.name,
+                version: state.project.version,
+                engine_version: state.project.engineVersion,
+                created: 0,
+                modified: state.project.lastSaved?.getTime() || 0,
+                settings: {} as any,
+                scenes: [],
+                prefabs: [],
+                assets: {} as any
+              }
+            : null
+        }
+      />
+
+      {/* Build Dialog Manager */}
+      <BuildDialogManager
+        configDialogOpen={showBuildConfig}
+        onCloseConfigDialog={() => setShowBuildConfig(false)}
+      />
     </>
   );
 }

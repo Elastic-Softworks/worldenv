@@ -22,6 +22,7 @@ import { projectManager } from './project';
 import { fileWatcher } from './watcher';
 import { autoSave } from './auto-save';
 import { splashScreen } from './splash';
+import { recentProjectsManager } from './recent-projects';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -53,6 +54,8 @@ async function initializeApplication(): Promise<void> {
 
     splashScreen.updateMessage('Initializing...');
     splashScreen.updateProgress(20);
+
+    await recentProjectsManager.initialize();
 
     ipcManager.initialize();
 
@@ -181,8 +184,8 @@ function setupMenuHandlers(): void {
   menuManager.setHandlers({
     onNewProject: async () => {
       if (!mainWindow) {
-return;
-}
+        return;
+      }
 
       try {
         const dir_path = await dialogManager.openDirectory(mainWindow, {
@@ -191,8 +194,8 @@ return;
         });
 
         if (!dir_path) {
-return;
-}
+          return;
+        }
 
         const project_name = path.basename(dir_path);
 
@@ -214,8 +217,8 @@ return;
 
     onOpenProject: async () => {
       if (!mainWindow) {
-return;
-}
+        return;
+      }
 
       try {
         const dir_path = await dialogManager.openDirectory(mainWindow, {
@@ -223,8 +226,8 @@ return;
         });
 
         if (!dir_path) {
-return;
-}
+          return;
+        }
 
         await projectManager.openProject(dir_path);
 
@@ -240,8 +243,8 @@ return;
 
     onSaveProject: async () => {
       if (!mainWindow) {
-return;
-}
+        return;
+      }
 
       try {
         if (!projectManager.isProjectOpen()) {
@@ -272,8 +275,8 @@ return;
 
     onCloseProject: async () => {
       if (!mainWindow) {
-return;
-}
+        return;
+      }
 
       try {
         if (!projectManager.isProjectOpen()) {
@@ -395,8 +398,8 @@ return;
 
     onShowAbout: async () => {
       if (!mainWindow) {
-return;
-}
+        return;
+      }
 
       await dialogManager.showInfo(
         mainWindow,
@@ -404,6 +407,24 @@ return;
         `WORLDEDIT v${app.getVersion()}\n\nGame development editor for WORLDENV engine.`,
         'Copyright © 2025 Elastic Softworks'
       );
+    },
+
+    onBuildProject: () => {
+      if (mainWindow) {
+        ipcManager.sendToWindow(mainWindow, 'menu:build-project');
+      }
+    },
+
+    onBuildConfiguration: () => {
+      if (mainWindow) {
+        ipcManager.sendToWindow(mainWindow, 'menu:build-configuration');
+      }
+    },
+
+    onOpenBuildLocation: () => {
+      if (mainWindow) {
+        ipcManager.sendToWindow(mainWindow, 'menu:open-build-location');
+      }
     }
   });
 }

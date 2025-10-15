@@ -16,6 +16,7 @@ import { createRoot } from 'react-dom/client';
 import { EditorApp } from './components/EditorApp';
 import { ThemeProvider } from './context/ThemeContext';
 import { EditorStateProvider } from './context/EditorStateContext';
+import { BuildProvider } from './context/BuildContext';
 import { initializeComponentSystem } from './core/components';
 import './styles/main.css';
 
@@ -44,7 +45,9 @@ async function initializeRenderer(): Promise<void> {
       <React.StrictMode>
         <ThemeProvider>
           <EditorStateProvider>
-            <EditorApp />
+            <BuildProvider>
+              <EditorApp />
+            </BuildProvider>
           </EditorStateProvider>
         </ThemeProvider>
       </React.StrictMode>

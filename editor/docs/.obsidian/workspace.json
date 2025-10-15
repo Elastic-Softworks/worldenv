@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "quickstart.md",
-                "mode": "preview",
+                "file": "TESTING-GUIDE.md",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "quickstart"
+              "title": "TESTING-GUIDE"
             }
           }
         ]
@@ -171,6 +171,8 @@
   },
   "active": "2d2d263745f117cd",
   "lastOpenFiles": [
+    "QUICKSTART.md",
+    "TESTING-GUIDE.md",
     "phase4-summary.md",
     "quick-reference.md",
     "index.md",

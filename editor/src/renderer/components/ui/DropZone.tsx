@@ -261,7 +261,7 @@ export function DropZone({
       {/* Drop overlay */}
       <div style={overlayStyle}>
         <div style={overlayTextStyle}>
-          📁 Drop files here to import
+          Drop files here to import
           <br />
           <span style={{ fontSize: '14px', fontWeight: 'normal', opacity: 0.8 }}>
             Supported: Images, Audio, Models, Scripts, and more
@@ -286,7 +286,7 @@ interface DropZoneIndicatorProps {
 export function DropZoneIndicator({
   active = false,
   text = 'Drag files here to import',
-  icon = '📁'
+  icon = 'Files'
 }: DropZoneIndicatorProps): JSX.Element {
   const { theme } = useTheme();
 

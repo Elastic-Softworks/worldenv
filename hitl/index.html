@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HITL Agent-Guided Testing</title>
+    <style>
+      :root {
+        --bg-color: #f5f5f5;
+        --surface-color: #ffffff;
+        --text-color: #212121;
+        --subtle-text: #757575;
+        --primary-color: #2196f3;
+        --primary-dark: #1976d2;
+        --accent-color: #e91e63;
+        --success-color: #4caf50;
+        --border-color: #e0e0e0;
+        --font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+      }
+
+      body {
+        font-family: var(--font-family);
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 800px;
+        background-color: var(--surface-color);
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+      }
+
+      h1 {
+        text-align: center;
+        margin-top: 0;
+        font-size: 1.8rem;
+        font-weight: 500;
+        color: var(--text-color);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1rem;
+      }
+
+      #progress-counter {
+        font-size: 1rem;
+        font-weight: 400;
+        color: var(--subtle-text);
+        margin-left: 0.5rem;
+      }
+
+      .checklist {
+        list-style: none;
+        padding: 0;
+        margin: 2rem 0;
+        max-height: 50vh;
+        overflow-y: auto;
+      }
+
+      .checklist-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.25rem;
+        background-color: #fff;
+        border-radius: 6px;
+        margin-bottom: 0.75rem;
+        cursor: pointer;
+        transition:
+          background-color 0.2s ease,
+          box-shadow 0.2s ease;
+        border: 1px solid var(--border-color);
+      }
+
+      .checklist-item:hover {
+        background-color: #fafafa;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .item-status {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        background-color: var(--subtle-text);
+        transition: background-color 0.3s ease;
+      }
+
+      .checklist-item.status-completed .item-status {
+        background-color: var(--success-color);
+      }
+      .checklist-item.status-softlocked .item-status {
+        background-color: var(--accent-color);
+      }
+
+      .item-title {
+        flex-grow: 1;
+      }
+
+      .submit-btn {
+        display: block;
+        width: 100%;
+        padding: 1rem;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 1.1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .submit-btn:hover {
+        background-color: var(--primary-dark);
+      }
+      .submit-btn.copied {
+        background-color: var(--success-color);
+      }
+
+      /* Modal Styles */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.3s ease,
+          visibility 0.3s ease;
+        z-index: 1000;
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .modal-content {
+        background-color: var(--surface-color);
+        padding: 2rem;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 600px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+      }
+
+      .modal-overlay.active .modal-content {
+        transform: scale(1);
+      }
+
+      .modal-header {
+        font-size: 1.5rem;
+        font-weight: 500;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--subtle-text);
+        font-size: 0.9rem;
+      }
+
+      textarea,
+      select,
+      input[type="file"] {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: #fff;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        color: var(--text-color);
+        font-size: 1rem;
+        box-sizing: border-box;
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        background-color: rgba(233, 30, 99, 0.05);
+        border: 1px solid rgba(233, 30, 99, 0.2);
+        border-radius: 4px;
+      }
+
+      .checkbox-group input {
+        width: 18px;
+        height: 18px;
+        margin-right: 0.75rem;
+      }
+      .checkbox-group label {
+        margin-bottom: 0;
+      }
+      #softlock-feedback-group {
+        display: none;
+        margin-top: 1rem;
+      }
+
+      #screenshot-preview-container {
+        margin-top: 1rem;
+        position: relative;
+      }
+
+      #screenshot-preview {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+      }
+
+      #remove-screenshot-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background-color: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 24px;
+        text-align: center;
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .modal-btn {
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-transform: uppercase;
+        transition:
+          background-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .btn-secondary {
+        background-color: transparent;
+        color: var(--primary-color);
+        border: 1px solid transparent;
+      }
+      .btn-secondary:hover {
+        background-color: rgba(33, 150, 243, 0.1);
+      }
+
+      .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14);
+      }
+      .btn-primary:hover {
+        background-color: var(--primary-dark);
+      }
+
+      #report-output {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background-color: #fafafa;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        max-height: 400px;
+        overflow-y: auto;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>HITL Testing Checklist <span id="progress-counter"></span></h1>
+      <ul class="checklist" id="checklist"></ul>
+      <button class="submit-btn" id="submit-report">Generate Report</button>
+      <pre id="report-output"></pre>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+      <div class="modal-content">
+        <h2 class="modal-header" id="modal-title">Edit Item</h2>
+
+        <div class="form-group">
+          <label for="notes">Notes</label>
+          <textarea
+            id="notes"
+            placeholder="Add your testing notes here..."
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="screenshot">Screenshot (Optional)</label>
+          <input type="file" id="screenshot" accept="image/png, image/jpeg" />
+          <div id="screenshot-preview-container" style="display: none">
+            <img id="screenshot-preview" src="#" alt="Screenshot Preview" />
+            <button id="remove-screenshot-btn" title="Remove screenshot">
+              &times;
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="priority">Priority</label>
+          <select id="priority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="softlocked" />
+            <label for="softlocked"
+              >This is a 'Softlock' (a bug preventing further testing)</label
+            >
+          </div>
+        </div>
+
+        <div class="form-group" id="softlock-feedback-group">
+          <label for="softlock-feedback">Softlock Feedback</label>
+          <textarea
+            id="softlock-feedback"
+            placeholder="Explain what is blocking you."
+          ></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-btn btn-secondary" id="cancel-btn">
+            Cancel
+          </button>
+          <button class="modal-btn btn-primary" id="save-btn">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- AGENT: POPULATE THIS ARRAY WITH THE CHECKLIST ITEMS ---
+      const checklistData = [
+        // I. WORLDEDIT Editor Testing - Application Foundation
+        {
+          id: 1,
+          title: "Application launches successfully on Windows, macOS, Linux",
+        },
+        { id: 2, title: "Splash screen displays correctly" },
+        { id: 3, title: "Main window opens with proper layout" },
+        { id: 4, title: "Application closes gracefully without errors" },
+        { id: 5, title: "No memory leaks during startup/shutdown cycle" },
+        { id: 6, title: "Window resizing works correctly" },
+        { id: 7, title: "Minimize/maximize functionality" },
+        { id: 8, title: "Multi-monitor support" },
+        { id: 9, title: "Window state persistence between sessions" },
+        { id: 10, title: "Proper high-DPI scaling" },
+        { id: 11, title: "All menu items functional" },
+        { id: 12, title: "Keyboard shortcuts work" },
+        { id: 13, title: "Context menus appear correctly" },
+        { id: 14, title: "Menu state updates appropriately" },
+        { id: 15, title: "Platform-specific menu behavior (macOS app menu)" },
+
+        // Project Management
+        { id: 16, title: "New project wizard functions correctly" },
+        { id: 17, title: "Project templates available and working" },
+        { id: 18, title: "Default project structure created properly" },
+        { id: 19, title: "Project settings saved correctly" },
+        { id: 20, title: "Recent projects list updates" },
+        { id: 21, title: "Open existing project works" },
+        { id: 22, title: "Save project preserves all data" },
+        { id: 23, title: "Project validation detects issues" },
+        { id: 24, title: "Auto-save functionality operational" },
+        { id: 25, title: "Project corruption recovery" },
+        { id: 26, title: "File browser shows correct directory structure" },
+        { id: 27, title: "File operations (create, delete, rename) work" },
+        { id: 28, title: "External file changes detected" },
+        { id: 29, title: "Large project handling (1000+ files)" },
+        { id: 30, title: "Network drive compatibility" },
+
+        // UI Framework & Layout
+        {
+          id: 31,
+          title:
+            "All panels (Viewport, Hierarchy, Inspector, Assets) functional",
+        },
+        { id: 32, title: "Panel resizing and docking works" },
+        { id: 33, title: "Panel state persistence" },
+        { id: 34, title: "Panel overflow handling" },
+        { id: 35, title: "Responsive layout on different screen sizes" },
+        { id: 36, title: "Dark/light theme switching" },
+        { id: 37, title: "Theme persistence between sessions" },
+        { id: 38, title: "Consistent styling across all components" },
+        { id: 39, title: "High contrast accessibility support" },
+        { id: 40, title: "Custom theme support" },
+        { id: 41, title: "All UI components render correctly" },
+        { id: 42, title: "Form validation and error display" },
+        { id: 43, title: "Button states and interactions" },
+        { id: 44, title: "Input field behavior" },
+        { id: 45, title: "Drag and drop functionality" },
+
+        // Viewport & Rendering
+        { id: 46, title: "Three.js integration working" },
+        { id: 47, title: "Camera controls (orbit, pan, zoom)" },
+        { id: 48, title: "Object selection and highlighting" },
+        { id: 49, title: "Transform gizmos functional" },
+        { id: 50, title: "Grid and axis helpers visible" },
+        { id: 51, title: "Performance with 1000+ objects" },
+        { id: 52, title: "Pixi.js integration working" },
+        { id: 53, title: "2D camera controls" },
+        { id: 54, title: "Sprite rendering and manipulation" },
+        { id: 55, title: "Layer management" },
+        { id: 56, title: "2D physics visualization" },
+        { id: 57, title: "Smooth viewport switching" },
+        { id: 58, title: "Maintains 60fps with typical scenes" },
+        { id: 59, title: "Frustum culling working" },
+        { id: 60, title: "LOD system functional" },
+        { id: 61, title: "Memory usage under 2GB" },
+        { id: 62, title: "GPU compatibility testing" },
+
+        // Scene Hierarchy System
+        { id: 63, title: "Create/delete entities" },
+        { id: 64, title: "Drag and drop reparenting" },
+        { id: 65, title: "Multi-selection operations" },
+        { id: 66, title: "Undo/redo for hierarchy changes" },
+        { id: 67, title: "Copy/paste entities with components" },
+        { id: 68, title: "Node visibility toggles" },
+        { id: 69, title: "Node locking functionality" },
+        { id: 70, title: "Node search and filtering" },
+        { id: 71, title: "Bulk operations on selected nodes" },
+        { id: 72, title: "Hierarchy validation and repair" },
+        { id: 73, title: "Save/load scene files (.scene.json)" },
+        { id: 74, title: "Scene file versioning" },
+        { id: 75, title: "Scene merging capabilities" },
+        { id: 76, title: "Large scene handling (10,000+ entities)" },
+        { id: 77, title: "Scene corruption recovery" },
+
+        // Component System
+        { id: 78, title: "Transform component functionality" },
+        { id: 79, title: "Render component (2D/3D)" },
+        { id: 80, title: "Physics components (RigidBody, Collider)" },
+        { id: 81, title: "Audio components (Source, Listener)" },
+        { id: 82, title: "Script component integration" },
+        { id: 83, title: "Add/remove components from entities" },
+        { id: 84, title: "Component property editing" },
+        { id: 85, title: "Component validation and error handling" },
+        { id: 86, title: "Component dependencies management" },
+        { id: 87, title: "Component copy/paste between entities" },
+        { id: 88, title: "Real-time property updates" },
+        { id: 89, title: "Property validation and constraints" },
+        { id: 90, title: "Custom property editors" },
+        { id: 91, title: "Component help documentation" },
+        { id: 92, title: "Bulk property editing" },
+
+        // Asset Management
+        { id: 93, title: "File explorer functionality" },
+        { id: 94, title: "Asset preview generation" },
+        { id: 95, title: "Asset search and filtering" },
+        { id: 96, title: "Asset metadata display" },
+        { id: 97, title: "Asset organization (folders, tags)" },
+        { id: 98, title: "Image import (PNG, JPG, GIF, WebP)" },
+        { id: 99, title: "3D model import (GLTF, OBJ, FBX)" },
+        { id: 100, title: "Audio import (MP3, WAV, OGG)" },
+        { id: 101, title: "Font import (TTF, WOFF)" },
+        { id: 102, title: "Batch import operations" },
+        { id: 103, title: "Automatic optimization" },
+        { id: 104, title: "Thumbnail generation" },
+        { id: 105, title: "Asset validation" },
+        { id: 106, title: "Dependency tracking" },
+        { id: 107, title: "Asset usage reporting" },
+
+        // Script Editor
+        { id: 108, title: "TypeScript syntax highlighting" },
+        { id: 109, title: "WORLDSRC syntax highlighting" },
+        { id: 110, title: "Auto-completion functionality" },
+        { id: 111, title: "Error detection and reporting" },
+        { id: 112, title: "Code formatting and linting" },
+        { id: 113, title: "Create/edit/delete scripts" },
+        { id: 114, title: "Script templates and snippets" },
+        { id: 115, title: "Script search and navigation" },
+        { id: 116, title: "Multiple file editing" },
+        { id: 117, title: "Script backup and recovery" },
+        { id: 118, title: "Hot-reload during development" },
+        { id: 119, title: "Debugging support" },
+        { id: 120, title: "Console output integration" },
+        { id: 121, title: "Performance profiling" },
+        { id: 122, title: "Script documentation generation" },
+
+        // Build System
+        { id: 123, title: "Build settings dialog" },
+        { id: 124, title: "Platform target selection" },
+        { id: 125, title: "Optimization level settings" },
+        { id: 126, title: "Asset processing options" },
+        { id: 127, title: "Output directory configuration" },
+        { id: 128, title: "Incremental builds" },
+        { id: 129, title: "Build progress reporting" },
+        { id: 130, title: "Error handling and recovery" },
+        { id: 131, title: "Build cancellation" },
+        { id: 132, title: "Build artifact validation" },
+        { id: 133, title: "Web deployment package" },
+        { id: 134, title: "Desktop application package" },
+        { id: 135, title: "Progressive Web App package" },
+        { id: 136, title: "Development builds" },
+        { id: 137, title: "Distribution packages" },
+
+        // II. WORLDSRC Language Testing
+        { id: 138, title: "C/C++ syntax compatibility" },
+        { id: 139, title: "TypeScript syntax integration" },
+        { id: 140, title: "Mixed-language constructs" },
+        { id: 141, title: "Preprocessor directives" },
+        { id: 142, title: "Comment styles (// and /* */)" },
+        { id: 143, title: "Primitive types (int, float, char, bool)" },
+        { id: 144, title: "Complex types (struct, class, interface)" },
+        { id: 145, title: "Array and vector types" },
+        { id: 146, title: "Function types and signatures" },
+        { id: 147, title: "Generic type parameters" },
+        { id: 148, title: "Type inference and checking" },
+        { id: 149, title: "stdio.h equivalents" },
+        { id: 150, title: "stdlib.h equivalents" },
+        { id: 151, title: "string.h equivalents" },
+        { id: 152, title: "math.h equivalents" },
+        { id: 153, title: "time.h equivalents" },
+        { id: 154, title: "WORLDSRC-specific libraries" },
+
+        // Compilation Pipeline
+        { id: 155, title: "Token recognition accuracy" },
+        { id: 156, title: "Error reporting for invalid tokens" },
+        { id: 157, title: "Comment and whitespace handling" },
+        { id: 158, title: "String and number literal parsing" },
+        { id: 159, title: "Preprocessor integration" },
+        { id: 160, title: "AST generation correctness" },
+        { id: 161, title: "Syntax error detection and recovery" },
+        { id: 162, title: "Expression precedence handling" },
+        { id: 163, title: "Statement parsing accuracy" },
+        { id: 164, title: "Function and class parsing" },
+        { id: 165, title: "Symbol table management" },
+        { id: 166, title: "Type checking and inference" },
+        { id: 167, title: "Scope resolution" },
+        { id: 168, title: "Function overload resolution" },
+        { id: 169, title: "Template instantiation" },
+        { id: 170, title: "TypeScript output quality" },
+        { id: 171, title: "AssemblyScript output quality" },
+        { id: 172, title: "Source map generation" },
+        { id: 173, title: "Optimization passes" },
+        { id: 174, title: "Platform-specific adaptations" },
+
+        // Runtime Integration
+        { id: 175, title: "WORLDENV API access" },
+        { id: 176, title: "Component system integration" },
+        { id: 177, title: "Event system integration" },
+        { id: 178, title: "Resource management" },
+        { id: 179, title: "Performance monitoring" },
+        { id: 180, title: "TypeScript compatibility" },
+        { id: 181, title: "Module system integration" },
+        { id: 182, title: "Async/await support" },
+        { id: 183, title: "Promise handling" },
+        { id: 184, title: "Error propagation" },
+        { id: 185, title: "WASM module generation" },
+        { id: 186, title: "Memory management" },
+        { id: 187, title: "Function imports/exports" },
+        { id: 188, title: "Performance characteristics" },
+        { id: 189, title: "Browser compatibility" },
+
+        // Development Tools
+        { id: 190, title: "Auto-completion accuracy" },
+        { id: 191, title: "Error diagnostics" },
+        { id: 192, title: "Hover information" },
+        { id: 193, title: "Go-to definition" },
+        { id: 194, title: "Find references" },
+        { id: 195, title: "Breakpoint functionality" },
+        { id: 196, title: "Variable inspection" },
+        { id: 197, title: "Call stack navigation" },
+        { id: 198, title: "Step-through debugging" },
+        { id: 199, title: "Expression evaluation" },
+        { id: 200, title: "Code change detection" },
+        { id: 201, title: "Incremental compilation" },
+        { id: 202, title: "State preservation" },
+        { id: 203, title: "Error handling" },
+        { id: 204, title: "Performance impact" },
+
+        // III. Performance & Scalability Testing
+        { id: 205, title: "Application startup <5 seconds" },
+        { id: 206, title: "Project loading <10 seconds" },
+        { id: 207, title: "Large scene loading <30 seconds" },
+        { id: 208, title: "Asset browser refresh <5 seconds" },
+        { id: 209, title: "Script compilation <2 seconds" },
+        { id: 210, title: "Base memory usage <500MB" },
+        { id: 211, title: "Large project handling <2GB" },
+        { id: 212, title: "Memory leak detection" },
+        { id: 213, title: "Garbage collection optimization" },
+        { id: 214, title: "Resource cleanup verification" },
+        { id: 215, title: "UI interactions <100ms" },
+        { id: 216, title: "File operations <500ms" },
+        { id: 217, title: "Viewport navigation <16ms (60fps)" },
+        { id: 218, title: "Asset preview generation <2 seconds" },
+        { id: 219, title: "Search operations <1 second" },
+
+        // Compilation Performance
+        { id: 220, title: "Small project (<1MB) <30 seconds" },
+        { id: 221, title: "Medium project (<10MB) <2 minutes" },
+        { id: 222, title: "Large project (<100MB) <10 minutes" },
+        { id: 223, title: "Incremental builds <10 seconds" },
+        { id: 224, title: "Clean builds reproducible" },
+        { id: 225, title: "CPU usage <80% during builds" },
+        { id: 226, title: "Memory usage <4GB during builds" },
+        { id: 227, title: "Disk space usage reasonable" },
+        { id: 228, title: "Network usage for dependencies" },
+        { id: 229, title: "Parallel processing efficiency" },
+
+        // Runtime Performance
+        { id: 230, title: "60fps for typical games" },
+        { id: 231, title: "30fps for complex scenes" },
+        { id: 232, title: "Low latency input handling" },
+        { id: 233, title: "Smooth animations" },
+        { id: 234, title: "Stable frame times" },
+        { id: 235, title: "Efficient asset loading" },
+        { id: 236, title: "Memory pool management" },
+        { id: 237, title: "Garbage collection tuning" },
+        { id: 238, title: "GPU resource utilization" },
+        { id: 239, title: "Battery life on mobile" },
+      ];
+      // --- END OF AGENT EDITABLE SECTION ---
+
+      const STORAGE_KEY = "hitl_testing_state";
+      let state = [];
+      let currentEditingId = null;
+      let screenshotDataUrl = null;
+
+      const checklistEl = document.getElementById("checklist");
+      const modalEl = document.getElementById("modal");
+      const modalTitleEl = document.getElementById("modal-title");
+      const notesInput = document.getElementById("notes");
+      const priorityInput = document.getElementById("priority");
+      const softlockedInput = document.getElementById("softlocked");
+      const softlockFeedbackGroup = document.getElementById(
+        "softlock-feedback-group",
+      );
+      const softlockFeedbackInput =
+        document.getElementById("softlock-feedback");
+      const saveBtn = document.getElementById("save-btn");
+      const cancelBtn = document.getElementById("cancel-btn");
+      const submitBtn = document.getElementById("submit-report");
+      const reportOutputEl = document.getElementById("report-output");
+      const screenshotInput = document.getElementById("screenshot");
+      const screenshotPreviewContainer = document.getElementById(
+        "screenshot-preview-container",
+      );
+      const screenshotPreview = document.getElementById("screenshot-preview");
+      const removeScreenshotBtn = document.getElementById(
+        "remove-screenshot-btn",
+      );
+      const progressCounterEl = document.getElementById("progress-counter");
+
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      function loadState() {
+        const savedState = localStorage.getItem(STORAGE_KEY);
+        if (savedState) {
+          // A simple check to ensure the loaded data structure matches the expected one.
+          const parsedState = JSON.parse(savedState);
+          if (
+            parsedState.length === checklistData.length &&
+            parsedState[0].hasOwnProperty("id")
+          ) {
+            return parsedState;
+          }
+        }
+        return null;
+      }
+
+      function initializeState() {
+        const loadedState = loadState();
+        state =
+          loadedState ||
+          checklistData.map((item) => ({
+            ...item,
+            status: "pending",
+            notes: "",
+            priority: "low",
+            isSoftlocked: false,
+            softlockFeedback: "",
+            screenshot: null,
+          }));
+      }
+
+      function renderChecklist() {
+        checklistEl.innerHTML = "";
+        let completedCount = 0;
+        state.forEach((item) => {
+          if (item.status !== "pending") {
+            completedCount++;
+          }
+          const li = document.createElement("li");
+          li.className = `checklist-item status-${item.status}`;
+          li.dataset.id = item.id;
+          li.innerHTML = `<div class="item-status"></div><div class="item-title">${item.title}</div>`;
+          li.addEventListener("click", () => openModal(item.id));
+          checklistEl.appendChild(li);
+        });
+        progressCounterEl.textContent = `(${completedCount}/${state.length} Completed)`;
+      }
+
+      function openModal(id) {
+        currentEditingId = id;
+        const item = state.find((i) => i.id === id);
+
+        modalTitleEl.textContent = `Testing: "${item.title}"`;
+        notesInput.value = item.notes;
+        priorityInput.value = item.priority;
+        softlockedInput.checked = item.isSoftlocked;
+        softlockFeedbackInput.value = item.softlockFeedback;
+
+        screenshotDataUrl = item.screenshot;
+        updateScreenshotPreview();
+        screenshotInput.value = "";
+
+        toggleSoftlockFeedback();
+        modalEl.classList.add("active");
+        setTimeout(() => notesInput.focus(), 150); // Auto-focus notes input
+      }
+
+      function closeModal() {
+        modalEl.classList.remove("active");
+        currentEditingId = null;
+        screenshotDataUrl = null;
+      }
+
+      function saveChanges() {
+        if (currentEditingId === null) return;
+
+        const itemIndex = state.findIndex((i) => i.id === currentEditingId);
+        if (itemIndex > -1) {
+          const item = state[itemIndex];
+          item.notes = notesInput.value.trim();
+          item.priority = priorityInput.value;
+          item.isSoftlocked = softlockedInput.checked;
+          item.softlockFeedback = item.isSoftlocked
+            ? softlockFeedbackInput.value.trim()
+            : "";
+          item.screenshot = screenshotDataUrl;
+
+          item.status = item.isSoftlocked
+            ? "softlocked"
+            : item.notes || item.screenshot
+              ? "completed"
+              : "pending";
+        }
+
+        saveState();
+        renderChecklist();
+        closeModal();
+      }
+
+      function generateReport() {
+        const report = JSON.stringify(state, null, 2);
+        reportOutputEl.textContent = report;
+        reportOutputEl.style.display = "block";
+
+        // Generate filename with timestamp
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const filename = `worldenv-testing-report-${timestamp}.json`;
+
+        // Create download link
+        const blob = new Blob([report], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const downloadLink = document.createElement("a");
+        downloadLink.href = url;
+        downloadLink.download = filename;
+
+        // Trigger download
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(url);
+
+        // Also copy to clipboard
+        navigator.clipboard
+          .writeText(report)
+          .then(() => {
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = "Downloaded & Copied!";
+            submitBtn.classList.add("copied");
+            setTimeout(() => {
+              submitBtn.textContent = originalText;
+              submitBtn.classList.remove("copied");
+            }, 3000);
+          })
+          .catch((err) => {
+            console.error("Failed to copy report: ", err);
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = "Downloaded!";
+            submitBtn.classList.add("copied");
+            setTimeout(() => {
+              submitBtn.textContent = originalText;
+              submitBtn.classList.remove("copied");
+            }, 3000);
+          });
+
+        reportOutputEl.scrollIntoView({ behavior: "smooth" });
+      }
+
+      function toggleSoftlockFeedback() {
+        softlockFeedbackGroup.style.display = softlockedInput.checked
+          ? "block"
+          : "none";
+      }
+
+      function handleScreenshotUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            screenshotDataUrl = e.target.result;
+            updateScreenshotPreview();
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      function updateScreenshotPreview() {
+        if (screenshotDataUrl) {
+          screenshotPreview.src = screenshotDataUrl;
+          screenshotPreviewContainer.style.display = "block";
+        } else {
+          screenshotPreview.src = "#";
+          screenshotPreviewContainer.style.display = "none";
+        }
+      }
+
+      function removeScreenshot() {
+        screenshotDataUrl = null;
+        screenshotInput.value = "";
+        updateScreenshotPreview();
+      }
+
+      // Event Listeners
+      softlockedInput.addEventListener("change", toggleSoftlockFeedback);
+      saveBtn.addEventListener("click", saveChanges);
+      cancelBtn.addEventListener("click", closeModal);
+      submitBtn.addEventListener("click", generateReport);
+      screenshotInput.addEventListener("change", handleScreenshotUpload);
+      removeScreenshotBtn.addEventListener("click", removeScreenshot);
+      modalEl.addEventListener("click", (e) => {
+        if (e.target === modalEl) closeModal();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modalEl.classList.contains("active")) {
+          closeModal();
+        }
+      });
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", () => {
+        initializeState();
+        renderChecklist();
+      });
+    </script>
+  </body>
+</html>

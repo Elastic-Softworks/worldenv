@@ -22,6 +22,7 @@ export interface ProjectData {
   modified: number;
   settings: ProjectSettings;
   scenes: string[];
+  prefabs: string[];
   assets: AssetManifest;
 }
 
@@ -85,6 +86,8 @@ export interface AssetManifest {
   scripts: AssetEntry[];
   fonts: AssetEntry[];
   data: AssetEntry[];
+  materials: AssetEntry[];
+  shaders: AssetEntry[];
 }
 
 /**
@@ -313,4 +316,57 @@ export class ValidationError extends EditorError {
     super(message, 'VALIDATION_ERROR', details);
     this.name = 'ValidationError';
   }
+}
+
+/**
+ * Build configuration
+ */
+export interface BuildConfiguration {
+  outputDirectory: string;
+  buildTarget: string;
+  optimizationLevel: string;
+  entryScene: string;
+  includeAssets: boolean;
+  includeScripts: boolean;
+  generateSourceMaps: boolean;
+  minifyOutput: boolean;
+}
+
+/**
+ * Build progress
+ */
+export interface BuildProgress {
+  stage: string;
+  progress: number;
+  message: string;
+  error?: string;
+}
+
+/**
+ * Build result
+ */
+export interface BuildResult {
+  success: boolean;
+  outputPath: string;
+  errors: string[];
+  warnings: string[];
+  buildTime: number;
+}
+
+/**
+ * Build target
+ */
+export interface BuildTarget {
+  id: string;
+  name: string;
+  description: string;
+}
+
+/**
+ * Optimization level
+ */
+export interface OptimizationLevel {
+  id: string;
+  name: string;
+  description: string;
 }

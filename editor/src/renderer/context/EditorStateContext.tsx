@@ -47,6 +47,7 @@ interface UIState {
     inspector: PanelState;
     assets: PanelState;
     viewport: PanelState;
+    script: PanelState;
   };
   activeViewportMode: '2d' | '3d';
   showGrid: boolean;
@@ -97,7 +98,8 @@ const initialState: EditorState = {
       hierarchy: { visible: true, collapsed: false, size: 250 },
       inspector: { visible: true, collapsed: false, size: 300 },
       assets: { visible: true, collapsed: false, size: 200 },
-      viewport: { visible: true, collapsed: false, size: 600 }
+      viewport: { visible: true, collapsed: false, size: 600 },
+      script: { visible: false, collapsed: false, size: 400 }
     },
     activeViewportMode: '3d',
     showGrid: true,

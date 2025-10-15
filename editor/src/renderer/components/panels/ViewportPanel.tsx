@@ -14,11 +14,13 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useEditorState } from '../../context/EditorStateContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useUndoRedo } from '../../hooks/useUndoRedo';
 import { ViewportManager, ViewportMode, ViewportStats } from '../../viewport/ViewportManager';
 import { CameraPreset } from '../../viewport/EditorCamera';
 import { ViewportToolbar } from '../ui/ViewportToolbar';
 import { createDemoScene, animateObjects } from '../../viewport/DemoContent';
 import { EngineInterface } from '../../engine/EngineInterface';
+import { ManipulatorManager, ManipulatorMode, TransformSpace } from '../../viewport/manipulators';
 import * as THREE from 'three';
 import * as PIXI from 'pixi.js';
 
@@ -31,6 +33,7 @@ import * as PIXI from 'pixi.js';
 export function ViewportPanel(): JSX.Element {
   const { state, actions } = useEditorState();
   const { theme } = useTheme();
+  const undoRedo = useUndoRedo();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const viewportManagerRef = useRef<ViewportManager | null>(null);
@@ -41,6 +44,13 @@ export function ViewportPanel(): JSX.Element {
   const [fps, setFps] = useState(0);
   const [isEngineMode, setIsEngineMode] = useState(false);
   const [engineReady, setEngineReady] = useState(false);
+
+  /* MANIPULATOR STATE */
+  const manipulatorManagerRef = useRef<ManipulatorManager | null>(null);
+  const [manipulatorMode, setManipulatorMode] = useState<ManipulatorMode>(
+    ManipulatorMode.Translate
+  );
+  const [transformSpace, setTransformSpace] = useState<TransformSpace>(TransformSpace.World);
 
   /* VIEWPORT SETTINGS STATE */
   const [showGrid, setShowGrid] = useState(true);
@@ -54,6 +64,49 @@ export function ViewportPanel(): JSX.Element {
 
   /* ENGINE INTERFACE */
   const engineInterfaceRef = useRef<EngineInterface | null>(null);
+
+  /**
+   * initializeManipulators()
+   *
+   * Initialize manipulator system.
+   */
+  const initializeManipulators = useCallback((): void => {
+    if (!viewportManagerRef.current || manipulatorManagerRef.current) {
+      return;
+    }
+
+    try {
+      const manipulatorManager = new ManipulatorManager();
+      manipulatorManagerRef.current = manipulatorManager;
+
+      /* GET VIEWPORT COMPONENTS */
+      const camera = viewportManagerRef.current.getCamera();
+      const domElement = canvasRef.current;
+
+      if (camera && domElement) {
+        manipulatorManager.initialize(camera.getCamera3D(), domElement);
+
+        /* ADD MANIPULATOR TO SCENE */
+        const scene = viewportManagerRef.current.getScene();
+        if (scene && 'add' in scene) {
+          scene.add(manipulatorManager);
+        }
+
+        /* SET UP EVENT HANDLERS */
+        manipulatorManager.addChangeListener((event) => {
+          console.log('[VIEWPORT] Transform changed:', event);
+          /* Transform changes are now handled by undo/redo system in manipulators */
+        });
+
+        /* APPLY INITIAL SETTINGS */
+        manipulatorManager.setMode(manipulatorMode);
+        manipulatorManager.setSpace(transformSpace);
+        manipulatorManager.setSnapEnabled(snapToGrid);
+      }
+    } catch (error) {
+      console.error('[VIEWPORT] Manipulator initialization failed:', error);
+    }
+  }, [manipulatorMode, transformSpace, snapToGrid]);
 
   /**
    * initializeEngine()
@@ -195,12 +248,49 @@ export function ViewportPanel(): JSX.Element {
     /* INITIALIZE ENGINE AFTER VIEWPORT */
     initializeEngine();
 
+    /* INITIALIZE MANIPULATORS */
+    setTimeout(() => {
+      initializeManipulators();
+    }, 100); /* Delay to ensure viewport is fully initialized */
+
+    /* ADD KEYBOARD EVENT LISTENER */
+    const keyHandler = (event: KeyboardEvent) => {
+      /* Handle undo/redo first */
+      if (undoRedo.handleKeyDown(event)) {
+        return;
+      }
+
+      if (manipulatorManagerRef.current) {
+        const handled = manipulatorManagerRef.current.handleKeyDown(event);
+        if (handled) {
+          event.preventDefault();
+          return;
+        }
+      }
+
+      /* Handle other viewport shortcuts */
+      switch (event.code) {
+        case 'KeyG':
+          if (!event.ctrlKey && !event.altKey && !event.metaKey) {
+            handleToggleSnap();
+            event.preventDefault();
+          }
+          break;
+      }
+    };
+    window.addEventListener('keydown', keyHandler);
+
     /* CLEANUP FUNCTION */
     return (): void => {
       window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener('keydown', keyHandler);
       if (viewportManagerRef.current) {
         viewportManagerRef.current.dispose();
         viewportManagerRef.current = null;
+      }
+      if (manipulatorManagerRef.current) {
+        manipulatorManagerRef.current.dispose();
+        manipulatorManagerRef.current = null;
       }
       if (engineInterfaceRef.current) {
         engineInterfaceRef.current = null;
@@ -339,7 +429,36 @@ export function ViewportPanel(): JSX.Element {
     if (viewportManagerRef.current) {
       viewportManagerRef.current.updateSettings({ snapToGrid: newSnapToGrid });
     }
+    if (manipulatorManagerRef.current) {
+      manipulatorManagerRef.current.setSnapEnabled(newSnapToGrid);
+    }
   }, [snapToGrid]);
+
+  /**
+   * handleManipulatorModeChange()
+   *
+   * Change manipulator mode (translate/rotate/scale).
+   */
+  const handleManipulatorModeChange = useCallback((mode: ManipulatorMode) => {
+    setManipulatorMode(mode);
+    if (manipulatorManagerRef.current) {
+      manipulatorManagerRef.current.setMode(mode);
+    }
+  }, []);
+
+  /**
+   * handleTransformSpaceToggle()
+   *
+   * Toggle between world and local transform space.
+   */
+  const handleTransformSpaceToggle = useCallback(() => {
+    const newSpace =
+      transformSpace === TransformSpace.World ? TransformSpace.Local : TransformSpace.World;
+    setTransformSpace(newSpace);
+    if (manipulatorManagerRef.current) {
+      manipulatorManagerRef.current.setSpace(newSpace);
+    }
+  }, [transformSpace]);
 
   /**
    * handleCanvasClick()
@@ -486,6 +605,10 @@ export function ViewportPanel(): JSX.Element {
         onToggleGizmos={handleToggleGizmos}
         onToggleAxes={handleToggleAxes}
         onToggleSnap={handleToggleSnap}
+        manipulatorMode={manipulatorMode}
+        transformSpace={transformSpace}
+        onManipulatorModeChange={handleManipulatorModeChange}
+        onTransformSpaceToggle={handleTransformSpaceToggle}
       />
 
       {/* Viewport Content */}

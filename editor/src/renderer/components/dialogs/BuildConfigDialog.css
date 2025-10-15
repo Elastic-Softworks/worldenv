@@ -1,0 +1,265 @@
+/*
+ * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
+ * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
+ * See LICENSE.txt for full license texts
+ */
+
+/**
+ * WORLDEDIT - Build Configuration Dialog Styles
+ *
+ * Styles for build configuration dialog component.
+ * Provides clean, organized interface for build settings.
+ */
+
+.build-config-dialog {
+  width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.build-config-dialog .dialog-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.build-config-dialog .form-section {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 16px;
+  background: var(--color-background-secondary);
+}
+
+.build-config-dialog .form-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 8px;
+}
+
+.build-config-dialog .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.build-config-dialog .form-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.build-config-dialog .input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.build-config-dialog .input-group input[type="text"] {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-size: 12px;
+}
+
+.build-config-dialog .input-group input[type="text"]:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+}
+
+.build-config-dialog .browse-button {
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.build-config-dialog .browse-button:hover {
+  background: var(--color-background-hover);
+  border-color: var(--color-accent);
+}
+
+.build-config-dialog .radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.build-config-dialog .radio-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-background);
+  transition: all 0.2s ease;
+}
+
+.build-config-dialog .radio-item:hover {
+  background: var(--color-background-hover);
+  border-color: var(--color-accent);
+}
+
+.build-config-dialog .radio-item input[type="radio"] {
+  margin: 2px 0 0 0;
+  cursor: pointer;
+}
+
+.build-config-dialog .radio-item label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  flex: 1;
+  margin: 0;
+}
+
+.build-config-dialog .radio-item label strong {
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.build-config-dialog .radio-item label .description {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.build-config-dialog select {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.build-config-dialog select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+}
+
+.build-config-dialog .checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.build-config-dialog .checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-background);
+  transition: all 0.2s ease;
+}
+
+.build-config-dialog .checkbox-item:hover {
+  background: var(--color-background-hover);
+  border-color: var(--color-accent);
+}
+
+.build-config-dialog .checkbox-item input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.build-config-dialog .checkbox-item label {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.build-config-dialog .dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-background-secondary);
+}
+
+.build-config-dialog .btn {
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.build-config-dialog .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.build-config-dialog .btn-secondary {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.build-config-dialog .btn-secondary:hover:not(:disabled) {
+  background: var(--color-background-hover);
+  border-color: var(--color-accent);
+}
+
+.build-config-dialog .btn-primary {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}
+
+.build-config-dialog .btn-primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.build-config-dialog .btn-success {
+  background: var(--color-success);
+  color: white;
+  border-color: var(--color-success);
+}
+
+.build-config-dialog .btn-success:hover:not(:disabled) {
+  background: var(--color-success-hover);
+  border-color: var(--color-success-hover);
+}
+
+/* Scrollbar styling for dialog content */
+.build-config-dialog::-webkit-scrollbar {
+  width: 8px;
+}
+
+.build-config-dialog::-webkit-scrollbar-track {
+  background: var(--color-background-secondary);
+  border-radius: 4px;
+}
+
+.build-config-dialog::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.build-config-dialog::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}

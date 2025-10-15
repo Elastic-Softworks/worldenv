@@ -14,8 +14,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useEditorState } from '../../context/EditorStateContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useUndoRedo } from '../../hooks/useUndoRedo';
 import { SceneManager, SceneManagerEvent } from '../../core/hierarchy/SceneManager';
 import { Node, NodeType } from '../../core/hierarchy/Node';
+import { CreateEntityCommand, DeleteEntityCommand } from '../../core/undo';
 
 /**
  * Drag and drop data
@@ -44,6 +46,7 @@ interface ContextMenuState {
 export function HierarchyPanel(): JSX.Element {
   const { state, actions } = useEditorState();
   const { theme } = useTheme();
+  const undoRedo = useUndoRedo();
   const sceneManager = SceneManager.getInstance();
 
   // Component state
@@ -130,27 +133,27 @@ export function HierarchyPanel(): JSX.Element {
   const getNodeIcon = (type: NodeType): string => {
     switch (type) {
       case NodeType.SCENE:
-        return '🎬';
+        return 'Scene';
       case NodeType.CAMERA:
-        return '📷';
+        return 'Camera';
       case NodeType.LIGHT:
-        return '💡';
+        return 'Light';
       case NodeType.ENTITY_2D:
-        return '🟦';
+        return '2D';
       case NodeType.ENTITY_3D:
-        return '📦';
+        return '3D';
       case NodeType.SPRITE:
-        return '🖼️';
+        return 'Sprite';
       case NodeType.MESH:
-        return '🔺';
+        return 'Mesh';
       case NodeType.AUDIO_SOURCE:
-        return '🔊';
+        return 'Audio';
       case NodeType.SCRIPT:
-        return '📜';
+        return 'Script';
       case NodeType.GROUP:
-        return '📁';
+        return 'Group';
       default:
-        return '❓';
+        return '?';
     }
   };
 
@@ -300,35 +303,45 @@ export function HierarchyPanel(): JSX.Element {
   /**
    * handleCreateNode()
    *
-   * Creates new node.
+   * Creates new node with undo/redo support.
    */
   const handleCreateNode = (type: NodeType, parentId?: string): void => {
     const parent = parentId ? sceneManager.getNode(parentId) : null;
     const name = `New ${type.charAt(0).toUpperCase() + type.slice(1)}`;
 
-    const newNode = sceneManager.createNode(name, type, parent || undefined);
-    if (newNode) {
-      actions.selectEntities([newNode.id]);
-      setEditingNode(newNode.id);
-      setEditingName(newNode.name);
-    }
+    // Create entity data for undo command
+    const entityData = {
+      id: `entity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name,
+      type,
+      parentId: parent?.id
+    };
 
-    setContextMenu((prev) => ({ ...prev, visible: false }));
+    // Create undo command
+    const command = new CreateEntityCommand(entityData, parent, sceneManager);
+    undoRedo.executeCommand(command);
+
+    // Update UI state
+    actions.selectEntities([entityData.id]);
+    setEditingNode(entityData.id);
+    setEditingName(entityData.name);
   };
 
   /**
    * handleDeleteNode()
    *
-   * Deletes selected node.
+   * Deletes selected node with undo/redo support.
    */
   const handleDeleteNode = (nodeId: string): void => {
     const node = sceneManager.getNode(nodeId);
     if (node && node.type !== NodeType.SCENE) {
-      sceneManager.removeNode(node);
+      // Create undo command
+      const command = new DeleteEntityCommand(node, sceneManager);
+      undoRedo.executeCommand(command);
+
+      // Update UI state
       actions.clearSelection();
     }
-
-    setContextMenu((prev) => ({ ...prev, visible: false }));
   };
 
   /**
@@ -433,9 +446,9 @@ export function HierarchyPanel(): JSX.Element {
       <div style={menuStyle}>
         {/* Create submenu */}
         <div style={menuItemStyle} onClick={(e) => e.stopPropagation()}>
-          <span>➕</span>
+          <span>+</span>
           <span>Create</span>
-          <div style={{ marginLeft: 'auto' }}>▶</div>
+          <div style={{ marginLeft: 'auto' }}>{'>'}</div>
         </div>
 
         {/* Rename */}
@@ -449,7 +462,7 @@ export function HierarchyPanel(): JSX.Element {
             e.currentTarget.style.backgroundColor = 'transparent';
           }}
         >
-          <span>✏️</span>
+          <span>Edit</span>
           <span>Rename</span>
         </div>
 
@@ -465,7 +478,7 @@ export function HierarchyPanel(): JSX.Element {
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            <span>📋</span>
+            <span>Copy</span>
             <span>Duplicate</span>
           </div>
         )}
@@ -488,7 +501,7 @@ export function HierarchyPanel(): JSX.Element {
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            <span>🗑️</span>
+            <span>Delete</span>
             <span>Delete</span>
           </div>
         )}
@@ -613,7 +626,7 @@ export function HierarchyPanel(): JSX.Element {
               }
             }}
           >
-            {hasChildren ? (isExpanded ? '▼' : '▶') : ''}
+            {hasChildren ? (isExpanded ? 'v' : '>') : ''}
           </div>
 
           {/* Icon */}
@@ -649,7 +662,7 @@ export function HierarchyPanel(): JSX.Element {
               onClick={(e) => handleVisibilityToggle(node, e)}
               title={node.visible ? 'Hide node' : 'Show node'}
             >
-              {node.visible ? '👁' : '🚫'}
+              {node.visible ? 'Show' : 'Hide'}
             </div>
           )}
         </div>
@@ -733,7 +746,7 @@ export function HierarchyPanel(): JSX.Element {
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            ➕
+            +
           </button>
           <button
             style={iconButtonStyle}
@@ -753,7 +766,7 @@ export function HierarchyPanel(): JSX.Element {
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            🗑️
+            Delete
           </button>
           <button
             style={iconButtonStyle}

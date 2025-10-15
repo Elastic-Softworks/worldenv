@@ -7,14 +7,17 @@
 /**
  * WORLDEDIT - Welcome Screen Component
  *
- * Displays welcome screen with project management options.
- * Provides interface for creating and opening projects.
+ * Initial screen displayed when no project is open.
+ * Provides options to create or open projects.
  */
 
 import React, { useState } from 'react';
 import { useEditorState } from '../context/EditorStateContext';
 import { useTheme } from '../context/ThemeContext';
+import { ProjectData } from '../../shared/types';
 import { Button } from './ui/Button';
+import { NewProjectDialog } from './dialogs/NewProjectDialog';
+import { RecentProjectsDialog } from './dialogs/RecentProjectsDialog';
 
 /**
  * WelcomeScreen component
@@ -27,44 +30,49 @@ export function WelcomeScreen(): JSX.Element {
   const { theme, toggleTheme, themeType } = useTheme();
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [isOpeningProject, setIsOpeningProject] = useState(false);
+  const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
+  const [showRecentProjectsDialog, setShowRecentProjectsDialog] = useState(false);
 
   /**
    * handleNewProject()
    *
-   * Handles new project creation workflow.
+   * Shows new project dialog.
    */
-  const handleNewProject = async (): Promise<void> => {
+  const handleNewProject = (): void => {
+    setShowNewProjectDialog(true);
+  };
+
+  /**
+   * handleCreateProject()
+   *
+   * Handles project creation from wizard.
+   */
+  const handleCreateProject = async (config: {
+    name: string;
+    location: string;
+    template: any;
+  }): Promise<void> => {
     try {
       setIsCreatingProject(true);
 
-      const dirPath = await window.worldedit.dialog.openDirectory({
-        title: 'Select Project Directory',
-        properties: ['createDirectory']
-      });
+      const projectPath = `${config.location}/${config.name}`;
 
-      if (!dirPath) {
-        return;
-      }
-
-      const projectName = dirPath.split('/').pop() || 'New Project';
-
-      const project = await window.worldedit.project.create(dirPath, projectName);
+      const project = (await window.worldedit.project.create(
+        projectPath,
+        config.name
+      )) as ProjectData;
 
       actions.openProject({
-        path: dirPath,
+        path: projectPath,
         name: project.name,
         version: project.version,
         engineVersion: project.engine_version,
         isModified: false,
-        lastSaved: new Date(project.modified),
+        lastSaved: new Date(project.modified)
       });
     } catch (error) {
       console.error('[WELCOME] Failed to create project:', error);
-
-      await window.worldedit.dialog.showError(
-        'Project Creation Error',
-        `Failed to create new project: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      throw error;
     } finally {
       setIsCreatingProject(false);
     }
@@ -73,29 +81,21 @@ export function WelcomeScreen(): JSX.Element {
   /**
    * handleOpenProject()
    *
-   * Handles project opening workflow.
+   * Handles project opening from path.
    */
-  const handleOpenProject = async (): Promise<void> => {
+  const handleOpenProject = async (projectPath: string): Promise<void> => {
     try {
       setIsOpeningProject(true);
 
-      const dirPath = await window.worldedit.dialog.openDirectory({
-        title: 'Open Project'
-      });
-
-      if (!dirPath) {
-        return;
-      }
-
-      const project = await window.worldedit.project.open(dirPath);
+      const project = (await window.worldedit.project.open(projectPath)) as ProjectData;
 
       actions.openProject({
-        path: dirPath,
+        path: projectPath,
         name: project.name,
         version: project.version,
         engineVersion: project.engine_version,
         isModified: false,
-        lastSaved: new Date(project.modified),
+        lastSaved: new Date(project.modified)
       });
     } catch (error) {
       console.error('[WELCOME] Failed to open project:', error);
@@ -109,6 +109,25 @@ export function WelcomeScreen(): JSX.Element {
     }
   };
 
+  /**
+   * handleBrowseProject()
+   *
+   * Shows file browser for project selection.
+   */
+  const handleBrowseProject = async (): Promise<void> => {
+    try {
+      const dirPath = await window.worldedit.dialog.openDirectory({
+        title: 'Open Project'
+      });
+
+      if (dirPath) {
+        await handleOpenProject(dirPath);
+      }
+    } catch (error) {
+      console.error('[WELCOME] Failed to browse for project:', error);
+    }
+  };
+
   return (
     <div
       style={{
@@ -117,7 +136,7 @@ export function WelcomeScreen(): JSX.Element {
         height: '100vh',
         backgroundColor: theme.colors.background.primary,
         color: theme.colors.foreground.primary,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}
     >
       {/* Header */}
@@ -128,20 +147,18 @@ export function WelcomeScreen(): JSX.Element {
           alignItems: 'center',
           padding: theme.spacing.md,
           borderBottom: `1px solid ${theme.colors.border.primary}`,
-          backgroundColor: theme.colors.background.secondary,
+          backgroundColor: theme.colors.background.secondary
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md }}>
-          <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
-            WORLDEDIT
-          </h1>
+          <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>WORLDEDIT</h1>
           <span
             style={{
               fontSize: '12px',
               color: theme.colors.foreground.tertiary,
               backgroundColor: theme.colors.background.tertiary,
               padding: '2px 6px',
-              borderRadius: theme.borderRadius.sm,
+              borderRadius: theme.borderRadius.sm
             }}
           >
             v{state.version}
@@ -154,7 +171,7 @@ export function WelcomeScreen(): JSX.Element {
           onClick={toggleTheme}
           title={`Switch to ${themeType === 'dark' ? 'light' : 'dark'} theme`}
         >
-          {themeType === 'dark' ? '☀️' : '🌙'}
+          {themeType === 'dark' ? 'Light' : 'Dark'}
         </Button>
       </div>
 
@@ -165,7 +182,7 @@ export function WelcomeScreen(): JSX.Element {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: theme.spacing.xl,
+          padding: theme.spacing.xl
         }}
       >
         <div style={{ textAlign: 'center', maxWidth: '600px' }}>
@@ -178,7 +195,7 @@ export function WelcomeScreen(): JSX.Element {
               background: `linear-gradient(135deg, ${theme.colors.accent.primary}, ${theme.colors.accent.secondary})`,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              backgroundClip: 'text'
             }}
           >
             WORLDEDIT
@@ -190,7 +207,7 @@ export function WelcomeScreen(): JSX.Element {
               marginBottom: theme.spacing.xl,
               fontSize: '18px',
               color: theme.colors.foreground.secondary,
-              lineHeight: 1.5,
+              lineHeight: 1.5
             }}
           >
             Game Development Editor for WORLDENV Engine
@@ -201,7 +218,7 @@ export function WelcomeScreen(): JSX.Element {
               display: 'flex',
               gap: theme.spacing.md,
               justifyContent: 'center',
-              marginBottom: theme.spacing.xl,
+              marginBottom: theme.spacing.xl
             }}
           >
             <Button
@@ -216,7 +233,7 @@ export function WelcomeScreen(): JSX.Element {
             <Button
               variant="secondary"
               size="lg"
-              onClick={handleOpenProject}
+              onClick={() => setShowRecentProjectsDialog(true)}
               disabled={isCreatingProject || isOpeningProject}
             >
               {isOpeningProject ? 'Opening...' : 'Open Project'}
@@ -230,7 +247,7 @@ export function WelcomeScreen(): JSX.Element {
               border: `1px solid ${theme.colors.border.primary}`,
               borderRadius: theme.borderRadius.md,
               padding: theme.spacing.lg,
-              textAlign: 'left',
+              textAlign: 'left'
             }}
           >
             <h3
@@ -238,10 +255,10 @@ export function WelcomeScreen(): JSX.Element {
                 margin: 0,
                 marginBottom: theme.spacing.md,
                 fontSize: '16px',
-                color: theme.colors.accent.primary,
+                color: theme.colors.accent.primary
               }}
             >
-              Phase 3: UI Framework & Layout
+              Phase 11: Project Management
             </h3>
 
             <p
@@ -249,7 +266,7 @@ export function WelcomeScreen(): JSX.Element {
                 margin: 0,
                 marginBottom: theme.spacing.sm,
                 fontSize: '14px',
-                color: theme.colors.foreground.secondary,
+                color: theme.colors.foreground.secondary
               }}
             >
               Current implementation features:
@@ -260,14 +277,14 @@ export function WelcomeScreen(): JSX.Element {
                 margin: 0,
                 paddingLeft: theme.spacing.lg,
                 fontSize: '14px',
-                color: theme.colors.foreground.secondary,
+                color: theme.colors.foreground.secondary
               }}
             >
-              <li>React-based UI framework</li>
-              <li>Theme system (dark/light modes)</li>
-              <li>Application state management</li>
-              <li>Dockable panel architecture</li>
-              <li>Project management integration</li>
+              <li>Project creation wizard with templates</li>
+              <li>Recent projects management</li>
+              <li>Enhanced project structure with prefabs</li>
+              <li>Project settings configuration</li>
+              <li>Script editor integration</li>
             </ul>
           </div>
         </div>
@@ -279,19 +296,34 @@ export function WelcomeScreen(): JSX.Element {
           padding: theme.spacing.md,
           borderTop: `1px solid ${theme.colors.border.primary}`,
           backgroundColor: theme.colors.background.secondary,
-          textAlign: 'center',
+          textAlign: 'center'
         }}
       >
         <p
           style={{
             margin: 0,
             fontSize: '12px',
-            color: theme.colors.foreground.tertiary,
+            color: theme.colors.foreground.tertiary
           }}
         >
           WORLDEDIT - Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
         </p>
       </div>
+
+      {/* Project Creation Dialog */}
+      <NewProjectDialog
+        isOpen={showNewProjectDialog}
+        onClose={() => setShowNewProjectDialog(false)}
+        onCreateProject={handleCreateProject}
+      />
+
+      {/* Recent Projects Dialog */}
+      <RecentProjectsDialog
+        isOpen={showRecentProjectsDialog}
+        onClose={() => setShowRecentProjectsDialog(false)}
+        onOpenProject={handleOpenProject}
+        onBrowseProject={handleBrowseProject}
+      />
     </div>
   );
 }

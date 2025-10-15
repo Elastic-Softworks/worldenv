@@ -35,6 +35,22 @@ const api = {
 
     quit: (): Promise<void> => {
       return ipcRenderer.invoke('app:quit') as Promise<void>;
+    },
+
+    getRecentProjects: (): Promise<unknown[]> => {
+      return ipcRenderer.invoke('app:get-recent-projects') as Promise<unknown[]>;
+    },
+
+    addRecentProject: (project: unknown): Promise<void> => {
+      return ipcRenderer.invoke('app:add-recent-project', project) as Promise<void>;
+    },
+
+    removeRecentProject: (path: string): Promise<void> => {
+      return ipcRenderer.invoke('app:remove-recent-project', path) as Promise<void>;
+    },
+
+    clearRecentProjects: (): Promise<void> => {
+      return ipcRenderer.invoke('app:clear-recent-projects') as Promise<void>;
     }
   },
 
@@ -162,6 +178,10 @@ const api = {
 
     markModified: (): Promise<void> => {
       return ipcRenderer.invoke('project:mark-modified') as Promise<void>;
+    },
+
+    updateSettings: (settings: unknown): Promise<void> => {
+      return ipcRenderer.invoke('project:update-settings', settings) as Promise<void>;
     }
   },
 
@@ -235,6 +255,60 @@ const api = {
   },
 
   /**
+   * Build operations
+   */
+  build: {
+    buildProject: (config: unknown): Promise<unknown> => {
+      return ipcRenderer.invoke('build:build-project', config) as Promise<unknown>;
+    },
+
+    cancelBuild: (): Promise<unknown> => {
+      return ipcRenderer.invoke('build:cancel-build') as Promise<unknown>;
+    },
+
+    openBuildLocation: (outputPath: string): Promise<unknown> => {
+      return ipcRenderer.invoke('build:open-build-location', outputPath) as Promise<unknown>;
+    },
+
+    getAvailableScenes: (): Promise<unknown> => {
+      return ipcRenderer.invoke('build:get-available-scenes') as Promise<unknown>;
+    },
+
+    setProjectPath: (projectPath: string): Promise<unknown> => {
+      return ipcRenderer.invoke('build:set-project-path', projectPath) as Promise<unknown>;
+    }
+  },
+
+  /**
+   * Script operations
+   */
+  script: {
+    readFile: (filePath: string): Promise<string> => {
+      return ipcRenderer.invoke('script:read-file', filePath) as Promise<string>;
+    },
+
+    writeFile: (filePath: string, content: string): Promise<void> => {
+      return ipcRenderer.invoke('script:write-file', { filePath, content }) as Promise<void>;
+    },
+
+    createNew: (scriptType: 'typescript' | 'assemblyscript'): Promise<string> => {
+      return ipcRenderer.invoke('script:create-new', scriptType) as Promise<string>;
+    },
+
+    deleteFile: (filePath: string): Promise<void> => {
+      return ipcRenderer.invoke('script:delete-file', filePath) as Promise<void>;
+    },
+
+    renameFile: (oldPath: string, newPath: string): Promise<void> => {
+      return ipcRenderer.invoke('script:rename-file', { oldPath, newPath }) as Promise<void>;
+    },
+
+    listScripts: (): Promise<string[]> => {
+      return ipcRenderer.invoke('script:list-scripts') as Promise<string[]>;
+    }
+  },
+
+  /**
    * General IPC invoke method
    */
   invoke: (channel: string, ...args: unknown[]): Promise<unknown> => {
@@ -250,6 +324,10 @@ const api = {
     };
 
     ipcRenderer.on(channel, subscription);
+  },
+
+  removeListener: (channel: string, callback: (...args: unknown[]) => void): void => {
+    ipcRenderer.removeListener(channel, callback);
   },
 
   off: (channel: string, callback: (...args: unknown[]) => void): void => {

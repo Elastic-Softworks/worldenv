@@ -14,6 +14,7 @@
 import * as path from 'path';
 import { fileSystem } from './file-system';
 import { logger } from './logger';
+import { buildManager } from './build-manager';
 import { ProjectData, ProjectError } from '../shared/types';
 
 const PROJECT_VERSION = '0.1.0';
@@ -26,15 +27,12 @@ interface ProjectInfo {
 }
 
 class ProjectManager {
-
   private current_project: ProjectInfo | null;
   private project_file_name: string;
 
   constructor() {
-
     this.current_project = null;
     this.project_file_name = 'project.worldenv';
-
   }
 
   /**
@@ -43,13 +41,8 @@ class ProjectManager {
    * Creates new project at specified directory.
    * Initializes project structure and default files.
    */
-  public async createProject(
-    project_path: string,
-    project_name: string
-  ): Promise<ProjectData> {
-
+  public async createProject(project_path: string, project_name: string): Promise<ProjectData> {
     try {
-
       logger.info('PROJECT', 'Creating project', {
         path: project_path,
         name: project_name
@@ -58,40 +51,31 @@ class ProjectManager {
       const exists = await fileSystem.exists(project_path);
 
       if (!exists) {
-
         await fileSystem.ensureDirectory(project_path);
-
       }
 
       const is_dir = await fileSystem.isDirectory(project_path);
 
       if (!is_dir) {
-
         throw new ProjectError('Project path is not a directory', {
           path: project_path
         });
-
       }
 
       const entries = await fileSystem.listDirectory(project_path);
 
       if (entries.length > 0) {
-
         throw new ProjectError('Project directory must be empty', {
           path: project_path,
           entry_count: entries.length
         });
-
       }
 
       await this.createProjectStructure(project_path);
 
       const project_data = this.createDefaultProjectData(project_name);
 
-      const project_file_path = path.join(
-        project_path,
-        this.project_file_name
-      );
+      const project_file_path = path.join(project_path, this.project_file_name);
 
       await fileSystem.writeJSON(project_file_path, project_data, {
         create_dirs: false
@@ -103,18 +87,17 @@ class ProjectManager {
         modified: false
       };
 
+      /* SET BUILD MANAGER PROJECT PATH */
+      buildManager.setProjectPath(project_path);
+
       logger.info('PROJECT', 'Project created successfully', {
         path: project_path
       });
 
       return project_data;
-
     } catch (error) {
-
       if (error instanceof ProjectError) {
-
         throw error;
-
       }
 
       logger.error('PROJECT', 'Project creation failed', {
@@ -126,9 +109,7 @@ class ProjectManager {
         path: project_path,
         error: error
       });
-
     }
-
   }
 
   /**
@@ -138,39 +119,28 @@ class ProjectManager {
    * Validates project structure and loads project data.
    */
   public async openProject(project_path: string): Promise<ProjectData> {
-
     try {
-
       logger.info('PROJECT', 'Opening project', { path: project_path });
 
       const is_dir = await fileSystem.isDirectory(project_path);
 
       if (!is_dir) {
-
         throw new ProjectError('Project path is not a directory', {
           path: project_path
         });
-
       }
 
-      const project_file_path = path.join(
-        project_path,
-        this.project_file_name
-      );
+      const project_file_path = path.join(project_path, this.project_file_name);
 
       const file_exists = await fileSystem.exists(project_file_path);
 
       if (!file_exists) {
-
         throw new ProjectError('Project file not found', {
           path: project_file_path
         });
-
       }
 
-      const project_data = await fileSystem.readJSON<ProjectData>(
-        project_file_path
-      );
+      const project_data = await fileSystem.readJSON<ProjectData>(project_file_path);
 
       this.validateProjectData(project_data);
 
@@ -182,19 +152,18 @@ class ProjectManager {
         modified: false
       };
 
+      /* SET BUILD MANAGER PROJECT PATH */
+      buildManager.setProjectPath(project_path);
+
       logger.info('PROJECT', 'Project opened successfully', {
         path: project_path,
         name: project_data.name
       });
 
       return project_data;
-
     } catch (error) {
-
       if (error instanceof ProjectError) {
-
         throw error;
-
       }
 
       logger.error('PROJECT', 'Project open failed', {
@@ -206,9 +175,7 @@ class ProjectManager {
         path: project_path,
         error: error
       });
-
     }
-
   }
 
   /**
@@ -218,37 +185,25 @@ class ProjectManager {
    * Updates modification timestamp.
    */
   public async saveProject(): Promise<void> {
-
     if (!this.current_project) {
-
       throw new ProjectError('No project is currently open');
-
     }
 
     try {
-
       logger.info('PROJECT', 'Saving project', {
         path: this.current_project.path
       });
 
       this.current_project.data.modified = Date.now();
 
-      const project_file_path = path.join(
-        this.current_project.path,
-        this.project_file_name
-      );
+      const project_file_path = path.join(this.current_project.path, this.project_file_name);
 
-      await fileSystem.writeJSON(
-        project_file_path,
-        this.current_project.data
-      );
+      await fileSystem.writeJSON(project_file_path, this.current_project.data);
 
       this.current_project.modified = false;
 
       logger.info('PROJECT', 'Project saved successfully');
-
     } catch (error) {
-
       logger.error('PROJECT', 'Project save failed', {
         path: this.current_project.path,
         error: error
@@ -258,9 +213,7 @@ class ProjectManager {
         path: this.current_project.path,
         error: error
       });
-
     }
-
   }
 
   /**
@@ -270,19 +223,18 @@ class ProjectManager {
    * Does not save unless explicitly requested.
    */
   public closeProject(): void {
-
     if (!this.current_project) {
-
       return;
-
     }
 
     logger.info('PROJECT', 'Closing project', {
       path: this.current_project.path
     });
 
-    this.current_project = null;
+    /* CLEAR BUILD MANAGER PROJECT PATH */
+    buildManager.setProjectPath('');
 
+    this.current_project = null;
   }
 
   /**
@@ -291,9 +243,7 @@ class ProjectManager {
    * Returns current project info or null if no project open.
    */
   public getCurrentProject(): ProjectInfo | null {
-
     return this.current_project;
-
   }
 
   /**
@@ -302,9 +252,7 @@ class ProjectManager {
    * Returns true if project is currently open.
    */
   public isProjectOpen(): boolean {
-
     return this.current_project !== null;
-
   }
 
   /**
@@ -313,9 +261,7 @@ class ProjectManager {
    * Returns true if project has unsaved changes.
    */
   public isProjectModified(): boolean {
-
     return this.current_project?.modified || false;
-
   }
 
   /**
@@ -324,13 +270,9 @@ class ProjectManager {
    * Marks project as modified.
    */
   public markModified(): void {
-
     if (this.current_project) {
-
       this.current_project.modified = true;
-
     }
-
   }
 
   /**
@@ -338,19 +280,13 @@ class ProjectManager {
    *
    * Updates project data and marks as modified.
    */
-  public updateProjectData(
-    updater: (data: ProjectData) => ProjectData
-  ): void {
-
+  public updateProjectData(updater: (data: ProjectData) => ProjectData): void {
     if (!this.current_project) {
-
       throw new ProjectError('No project is currently open');
-
     }
 
     this.current_project.data = updater(this.current_project.data);
     this.current_project.modified = true;
-
   }
 
   /**
@@ -359,30 +295,29 @@ class ProjectManager {
    * Creates default project directory structure.
    */
   private async createProjectStructure(project_path: string): Promise<void> {
-
     const directories = [
       'assets',
       'assets/textures',
       'assets/audio',
       'assets/fonts',
       'assets/data',
+      'assets/materials',
+      'assets/shaders',
       'scenes',
       'scripts',
-      'build'
+      'scripts/components',
+      'scripts/systems',
+      'prefabs',
+      'build',
+      'temp'
     ];
 
     for (const dir of directories) {
-
       const dir_path = path.join(project_path, dir);
       await fileSystem.ensureDirectory(dir_path);
-
     }
 
-    const default_scene_path = path.join(
-      project_path,
-      'scenes',
-      'main.worldscene'
-    );
+    const default_scene_path = path.join(project_path, 'scenes', 'main.worldscene');
 
     const default_scene = {
       version: PROJECT_VERSION,
@@ -393,6 +328,24 @@ class ProjectManager {
 
     await fileSystem.writeJSON(default_scene_path, default_scene);
 
+    // Create .gitkeep files for empty directories
+    const gitkeep_dirs = [
+      'assets/textures',
+      'assets/audio',
+      'assets/fonts',
+      'assets/data',
+      'assets/materials',
+      'assets/shaders',
+      'scripts/components',
+      'scripts/systems',
+      'prefabs',
+      'temp'
+    ];
+
+    for (const dir of gitkeep_dirs) {
+      const gitkeep_path = path.join(project_path, dir, '.gitkeep');
+      await fileSystem.writeFile(gitkeep_path, '');
+    }
   }
 
   /**
@@ -401,7 +354,6 @@ class ProjectManager {
    * Creates default project data structure.
    */
   private createDefaultProjectData(project_name: string): ProjectData {
-
     const now = Date.now();
 
     return {
@@ -438,15 +390,17 @@ class ProjectManager {
         }
       },
       scenes: ['scenes/main.worldscene'],
+      prefabs: [],
       assets: {
         textures: [],
         audio: [],
         scripts: [],
         fonts: [],
-        data: []
+        data: [],
+        materials: [],
+        shaders: []
       }
     };
-
   }
 
   /**
@@ -455,37 +409,30 @@ class ProjectManager {
    * Validates project data structure.
    */
   private validateProjectData(data: ProjectData): void {
-
     if (!data.version) {
-
       throw new ProjectError('Project data missing version');
-
     }
 
     if (!data.name) {
-
       throw new ProjectError('Project data missing name');
-
     }
 
     if (!data.settings) {
-
       throw new ProjectError('Project data missing settings');
-
     }
 
     if (!data.scenes || !Array.isArray(data.scenes)) {
-
       throw new ProjectError('Project data missing or invalid scenes array');
-
     }
 
     if (!data.assets) {
-
       throw new ProjectError('Project data missing assets manifest');
-
     }
 
+    if (!data.prefabs || !Array.isArray(data.prefabs)) {
+      logger.warn('PROJECT', 'Project missing prefabs array, adding default');
+      data.prefabs = [];
+    }
   }
 
   /**
@@ -493,31 +440,22 @@ class ProjectManager {
    *
    * Validates project directory structure.
    */
-  private async validateProjectStructure(
-    project_path: string
-  ): Promise<void> {
-
-    const required_dirs = ['assets', 'scenes', 'scripts'];
+  private async validateProjectStructure(project_path: string): Promise<void> {
+    const required_dirs = ['assets', 'scenes', 'scripts', 'prefabs'];
 
     for (const dir of required_dirs) {
-
       const dir_path = path.join(project_path, dir);
       const exists = await fileSystem.exists(dir_path);
 
       if (!exists) {
-
         logger.warn('PROJECT', 'Required directory missing', {
           path: dir_path
         });
 
         await fileSystem.ensureDirectory(dir_path);
-
       }
-
     }
-
   }
-
 }
 
 export const projectManager = new ProjectManager();

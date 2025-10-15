@@ -249,6 +249,20 @@ export class ViewportManager {
   }
 
   /**
+   * getScene()
+   *
+   * Get current scene instance.
+   */
+  getScene(): THREE.Scene | PIXI.Container | null {
+    if (this.currentMode === '3d' && this.renderer3D) {
+      return this.renderer3D.getScene();
+    } else if (this.currentMode === '2d' && this.renderer2D) {
+      return this.renderer2D.getScene();
+    }
+    return null;
+  }
+
+  /**
    * addObject()
    *
    * Add object to current scene.

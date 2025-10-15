@@ -141,6 +141,179 @@ export class RenameEntityCommand implements ICommand {
 }
 
 /**
+ * Transform command for position changes
+ */
+export class TransformPositionCommand implements ICommand {
+  public description: string;
+
+  constructor(
+    private targets: any[],
+    private oldPositions: THREE.Vector3[],
+    private newPositions: THREE.Vector3[]
+  ) {
+    const targetCount = targets.length;
+    this.description =
+      targetCount === 1 ? `Move ${targets[0].name || 'entity'}` : `Move ${targetCount} entities`;
+  }
+
+  execute(): void {
+    this.targets.forEach((target, index) => {
+      if (this.newPositions[index]) {
+        target.position.copy(this.newPositions[index]);
+      }
+    });
+  }
+
+  undo(): void {
+    this.targets.forEach((target, index) => {
+      if (this.oldPositions[index]) {
+        target.position.copy(this.oldPositions[index]);
+      }
+    });
+  }
+}
+
+/**
+ * Transform command for rotation changes
+ */
+export class TransformRotationCommand implements ICommand {
+  public description: string;
+
+  constructor(
+    private targets: any[],
+    private oldRotations: THREE.Euler[],
+    private newRotations: THREE.Euler[]
+  ) {
+    const targetCount = targets.length;
+    this.description =
+      targetCount === 1
+        ? `Rotate ${targets[0].name || 'entity'}`
+        : `Rotate ${targetCount} entities`;
+  }
+
+  execute(): void {
+    this.targets.forEach((target, index) => {
+      if (this.newRotations[index]) {
+        target.rotation.copy(this.newRotations[index]);
+      }
+    });
+  }
+
+  undo(): void {
+    this.targets.forEach((target, index) => {
+      if (this.oldRotations[index]) {
+        target.rotation.copy(this.oldRotations[index]);
+      }
+    });
+  }
+}
+
+/**
+ * Transform command for scale changes
+ */
+export class TransformScaleCommand implements ICommand {
+  public description: string;
+
+  constructor(
+    private targets: any[],
+    private oldScales: THREE.Vector3[],
+    private newScales: THREE.Vector3[]
+  ) {
+    const targetCount = targets.length;
+    this.description =
+      targetCount === 1 ? `Scale ${targets[0].name || 'entity'}` : `Scale ${targetCount} entities`;
+  }
+
+  execute(): void {
+    this.targets.forEach((target, index) => {
+      if (this.newScales[index]) {
+        target.scale.copy(this.newScales[index]);
+      }
+    });
+  }
+
+  undo(): void {
+    this.targets.forEach((target, index) => {
+      if (this.oldScales[index]) {
+        target.scale.copy(this.oldScales[index]);
+      }
+    });
+  }
+}
+
+/**
+ * Create entity command
+ */
+export class CreateEntityCommand implements ICommand {
+  public description: string;
+  private createdNode: any = null;
+
+  constructor(
+    private entityData: any,
+    private parentEntity: any,
+    private sceneManager: any
+  ) {
+    this.description = `Create entity "${entityData.name}"`;
+  }
+
+  execute(): void {
+    this.createdNode = this.sceneManager.createNode(
+      this.entityData.name,
+      this.entityData.type,
+      this.parentEntity
+    );
+  }
+
+  undo(): void {
+    if (this.createdNode) {
+      this.sceneManager.removeNode(this.createdNode);
+    }
+  }
+}
+
+/**
+ * Delete entity command
+ */
+export class DeleteEntityCommand implements ICommand {
+  public description: string;
+  private nodeData: any;
+  private parentNode: any;
+
+  constructor(
+    private node: any,
+    private sceneManager: any
+  ) {
+    this.description = `Delete entity "${node.name}"`;
+
+    // Store node data and parent before deletion
+    this.nodeData = {
+      id: node.id,
+      name: node.name,
+      type: node.type,
+      transform: node.transform,
+      properties: node.properties
+    };
+    this.parentNode = node.parent;
+  }
+
+  execute(): void {
+    this.sceneManager.removeNode(this.node);
+  }
+
+  undo(): void {
+    const restoredNode = this.sceneManager.createNode(
+      this.nodeData.name,
+      this.nodeData.type,
+      this.parentNode
+    );
+    if (restoredNode && this.nodeData.transform) {
+      restoredNode.setTransform(this.nodeData.transform);
+    }
+    return restoredNode;
+  }
+}
+
+/**
  * UndoRedoManager
  *
  * Manages command history for undo/redo operations.
@@ -314,6 +487,6 @@ export class UndoRedoManager {
    * Notifies all listeners of state changes.
    */
   private notifyListeners(): void {
-    this.listeners.forEach(listener => listener());
+    this.listeners.forEach((listener) => listener());
   }
 }

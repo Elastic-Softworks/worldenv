@@ -279,27 +279,27 @@ export function AssetBrowserPanel(): JSX.Element {
   const getAssetIcon = (type: AssetItem['type']): string => {
     switch (type) {
       case 'folder':
-        return '📁';
+        return 'Folder';
       case 'image':
-        return '🖼️';
+        return 'IMG';
       case 'model':
-        return '🧊';
+        return 'Model';
       case 'audio':
-        return '🎵';
+        return 'AUD';
       case 'script':
-        return '📄';
+        return 'Script';
       case 'scene':
-        return '🎬';
+        return 'Scene';
       case 'material':
-        return '🎨';
+        return 'MAT';
       case 'font':
-        return '🔤';
+        return 'Font';
       case 'data':
-        return '📊';
+        return 'DAT';
       case 'shader':
-        return '✨';
+        return 'Shader';
       default:
-        return '📄';
+        return 'File';
     }
   };
 
@@ -639,7 +639,7 @@ export function AssetBrowserPanel(): JSX.Element {
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            📁+
+            New Folder
           </button>
           <button
             style={iconButtonStyle}
@@ -668,14 +668,14 @@ export function AssetBrowserPanel(): JSX.Element {
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            🔄
+            Refresh
           </button>
         </div>
       </div>
 
       {/* Path Bar */}
       <div style={pathBarStyle}>
-        <span>📍 {currentPath || 'assets'}</span>
+        <span>Path: {currentPath || 'assets'}</span>
         {selectedAssets.length > 0 && (
           <span style={{ marginLeft: theme.spacing.md }}>({selectedAssets.length} selected)</span>
         )}

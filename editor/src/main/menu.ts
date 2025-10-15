@@ -28,6 +28,9 @@ interface MenuHandlers {
   onPaste?: () => void;
   onDelete?: () => void;
   onSelectAll?: () => void;
+  onBuildProject?: () => void;
+  onBuildConfiguration?: () => void;
+  onOpenBuildLocation?: () => void;
   onToggleDevTools?: () => void;
   onReload?: () => void;
   onToggleFullScreen?: () => void;
@@ -68,6 +71,7 @@ class MenuManager {
       ...(is_mac ? [this.buildMacAppMenu()] : []),
       this.buildFileMenu(),
       this.buildEditMenu(),
+      this.buildBuildMenu(),
       this.buildViewMenu(),
       this.buildWindowMenu(),
       this.buildHelpMenu()
@@ -250,6 +254,40 @@ class MenuManager {
           accelerator: 'CmdOrCtrl+A',
           click: () => {
             this.handlers.onSelectAll?.();
+          }
+        }
+      ]
+    };
+  }
+
+  /**
+   * buildBuildMenu()
+   *
+   * Builds Build menu.
+   */
+  private buildBuildMenu(): Electron.MenuItemConstructorOptions {
+    return {
+      label: 'Build',
+      submenu: [
+        {
+          label: 'Build Project',
+          accelerator: 'CmdOrCtrl+B',
+          click: () => {
+            this.handlers.onBuildProject?.();
+          }
+        },
+        {
+          label: 'Build Configuration...',
+          accelerator: 'CmdOrCtrl+Shift+B',
+          click: () => {
+            this.handlers.onBuildConfiguration?.();
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Open Build Location',
+          click: () => {
+            this.handlers.onOpenBuildLocation?.();
           }
         }
       ]

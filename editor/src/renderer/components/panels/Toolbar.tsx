@@ -237,7 +237,7 @@ export function Toolbar(): JSX.Element {
         }}
         disabled={!state.project.isOpen || !state.project.isModified}
         title="Save Project (Ctrl+S)"
-        icon="💾"
+        icon="Save"
       >
         Save
       </Button>
@@ -293,14 +293,14 @@ export function Toolbar(): JSX.Element {
         }}
         disabled={!state.project.isOpen || !isEngineReady}
         title={isPlayMode ? 'Stop Play Mode (F5)' : 'Start Play Mode (F5)'}
-        icon={isPlayMode ? '⏹' : '▶'}
+        icon={isPlayMode ? 'Stop' : 'Play'}
       >
         {isPlayMode ? 'Stop' : 'Play'}
       </Button>
 
       {isPlayMode && (
         <IconButton
-          icon={isPaused ? '▶' : '⏸'}
+          icon={isPaused ? 'Resume' : 'Pause'}
           title={isPaused ? 'Resume (F6)' : 'Pause (F6)'}
           onClick={handlePauseMode}
         />

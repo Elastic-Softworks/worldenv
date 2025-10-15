@@ -1,0 +1,401 @@
+/*
+ * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
+ * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
+ * See LICENSE.txt for full license texts
+ */
+
+/**
+ * WORLDEDIT - Build Progress Dialog Styles
+ *
+ * Styles for build progress dialog component.
+ * Provides real-time visual feedback during build operations.
+ */
+
+.build-progress-dialog {
+  width: 500px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.build-progress-dialog .dialog-content {
+  padding: 20px;
+}
+
+.build-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stage-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.stage-info p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--color-background-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar.success {
+  background: rgba(46, 160, 67, 0.2);
+}
+
+.progress-bar.error {
+  background: rgba(255, 59, 48, 0.2);
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-bar.success .progress-fill {
+  background: var(--color-success);
+}
+
+.progress-bar.error .progress-fill {
+  background: var(--color-error);
+}
+
+.progress-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  min-width: 40px;
+  text-align: right;
+}
+
+.error-message {
+  padding: 12px;
+  background: rgba(255, 59, 48, 0.1);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  border-radius: 6px;
+}
+
+.error-message h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-error);
+}
+
+.error-message p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+}
+
+.build-stages {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-background-secondary);
+}
+
+.stage-list {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stage-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.stage-item.active {
+  background: rgba(0, 122, 255, 0.1);
+  border: 1px solid rgba(0, 122, 255, 0.3);
+}
+
+.stage-item.completed {
+  background: rgba(46, 160, 67, 0.1);
+  border: 1px solid rgba(46, 160, 67, 0.3);
+}
+
+.stage-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-border);
+  transition: all 0.2s ease;
+}
+
+.stage-item.active .stage-indicator {
+  background: var(--color-accent);
+  box-shadow: 0 0 8px rgba(0, 122, 255, 0.4);
+}
+
+.stage-item.completed .stage-indicator {
+  background: var(--color-success);
+  position: relative;
+}
+
+.stage-item.completed .stage-indicator::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8px;
+  color: white;
+  font-weight: bold;
+}
+
+.stage-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.stage-item.active .stage-name {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.stage-item.completed .stage-name {
+  color: var(--color-text-primary);
+}
+
+.build-result {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.result-header {
+  padding: 16px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.result-header.success {
+  background: rgba(46, 160, 67, 0.1);
+  border: 1px solid rgba(46, 160, 67, 0.3);
+}
+
+.result-header.error {
+  background: rgba(255, 59, 48, 0.1);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+.result-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.result-header.success h3 {
+  color: var(--color-success);
+}
+
+.result-header.error h3 {
+  color: var(--color-error);
+}
+
+.result-header p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.success-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.success-info p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.output-path {
+  padding: 12px;
+  background: var(--color-background-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+
+.output-path strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.output-path code {
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 11px;
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  padding: 4px 8px;
+  border-radius: 3px;
+  word-break: break-all;
+}
+
+.error-list,
+.warning-list {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-background-secondary);
+  padding: 16px;
+}
+
+.error-list h4,
+.warning-list h4 {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.error-list h4 {
+  color: var(--color-error);
+}
+
+.warning-list h4 {
+  color: var(--color-warning);
+}
+
+.error-list ul,
+.warning-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.error-item,
+.warning-item {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.error-item {
+  background: rgba(255, 59, 48, 0.1);
+  border-left: 3px solid var(--color-error);
+  color: var(--color-text-primary);
+}
+
+.warning-item {
+  background: rgba(255, 149, 0, 0.1);
+  border-left: 3px solid var(--color-warning);
+  color: var(--color-text-primary);
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-background-secondary);
+}
+
+.result-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-background-hover);
+  border-color: var(--color-accent);
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.btn-danger {
+  background: var(--color-error);
+  color: white;
+  border-color: var(--color-error);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-error-hover);
+  border-color: var(--color-error-hover);
+}
+
+/* Scrollbar styling for dialog content */
+.build-progress-dialog::-webkit-scrollbar {
+  width: 8px;
+}
+
+.build-progress-dialog::-webkit-scrollbar-track {
+  background: var(--color-background-secondary);
+  border-radius: 4px;
+}
+
+.build-progress-dialog::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.build-progress-dialog::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
