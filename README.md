@@ -1,8 +1,8 @@
 # WORLDENV
 
-**Professional 2D/3D Game Development Environment**
+**2D/3D Game Development Environment**
 
-WORLDENV provides a comprehensive game development ecosystem consisting of **WORLDEDIT** (the visual editor) and **WORLDSRC** (the programming language). This monorepo contains both components organized for standalone use and integrated development.
+WORLDENV is a game development ecosystem consisting of **WORLDEDIT** (a visual editor) and **WORLDSRC** (a programming language). This monorepo contains both components organized for standalone use and integrated development.
 
 ## Project Structure
 
@@ -35,15 +35,15 @@ worldenv/
 
 ### WORLDEDIT - Visual Game Editor
 
-**Professional Electron-based game editor with real-time rendering**
+**Electron-based game editor with real-time rendering**
 
-- **Modern UI**: Dockable panels, customizable workspace
-- **Scene Editor**: Visual viewport with transform manipulators
-- **Entity-Component System**: Flexible game object architecture
-- **Asset Browser**: Integrated file management and preview
-- **Script Editor**: WORLDSRC integration with syntax highlighting
-- **Play Mode**: Real-time testing within the editor
-- **Build System**: Multi-platform export and deployment
+- Dockable panels, customizable workspace
+- Scene editor with viewport and transform manipulators
+- Entity-Component System for game object architecture
+- Asset browser with file management and preview
+- Script editor with WORLDSRC integration and syntax highlighting
+- Play mode for real-time testing
+- Multi-platform build system
 
 **Quick Start**: See [`editor/README.md`](editor/README.md) for detailed information.
 
@@ -51,12 +51,12 @@ worldenv/
 
 **C/C++/TypeScript hybrid language for game development**
 
-- **Familiar Syntax**: C/C++ syntax with TypeScript type system
-- **Multi-target**: Compiles to TypeScript and AssemblyScript
-- **Engine Integration**: Direct access to WORLDENV APIs
-- **Professional Tooling**: LSP support for all major editors
-- **Performance**: Hot compilation with optimization passes
-- **Type Safety**: Advanced type system with generics and pointers
+- C/C++ syntax with TypeScript type system
+- Compiles to TypeScript and AssemblyScript
+- Direct access to WORLDENV APIs
+- LSP support for IDE integration
+- Hot compilation with optimization passes
+- Type system with generics and pointers
 
 **Quick Start**: See [`worldsrc/README.md`](worldsrc/README.md) for detailed information.
 
@@ -209,27 +209,27 @@ void update(float deltaTime) {
 
 ### Completed Features
 
-- **WORLDEDIT**: Complete visual editor with all core features
-- **WORLDSRC**: Functional programming language with multi-target compilation
-- **Integration**: Editor and language work together seamlessly
-- **Documentation**: Comprehensive guides and references
-- **Build System**: Full compilation and deployment pipeline
+- WORLDEDIT: Visual editor with core features
+- WORLDSRC: Functional programming language with multi-target compilation
+- Integration: Editor and language integration
+- Documentation: User and developer guides
+- Build System: Compilation and deployment pipeline
 
 ### Upcoming Features
 
-- **Pre-Alpha Testing**: Comprehensive testing program
-- **Performance Optimization**: Editor and language performance improvements
-- **Mobile Support**: Android and iOS export targets
-- **Cloud Features**: Online collaboration and asset sharing
-- **Plugin System**: Third-party extensions and tools
+- Pre-Alpha Testing: Testing program
+- Performance Optimization: Editor and language performance improvements
+- Mobile Support: Android and iOS export targets
+- Cloud Features: Online collaboration and asset sharing
+- Plugin System: Third-party extensions and tools
 
 ## Documentation
 
-- **[Editor Quick Start](editor/docs/QUICKSTART.md)**: Start with WORLDEDIT
-- **[User Guide](editor/docs/USER-GUIDE.md)**: Complete editor manual
+- **[Editor Quick Start](editor/docs/QUICKSTART.md)**: Getting started with WORLDEDIT
+- **[User Guide](editor/docs/USER-GUIDE.md)**: Editor manual
 - **[Developer Guide](editor/docs/DEVELOPER-GUIDE.md)**: Contribution and development
 - **[Troubleshooting](editor/docs/TROUBLESHOOTING.md)**: Issue resolution
-- **[API Reference](editor/docs/API-REFERENCE.md)**: Technical API documentation
+- **[API Reference](editor/docs/API-REFERENCE.md)**: API documentation
 - **[WORLDSRC Manual](worldsrc/README.md)**: Programming language reference
 
 ## Community and Support
@@ -241,7 +241,7 @@ void update(float deltaTime) {
 
 ## Contributing
 
-Contribute to both WORLDEDIT and WORLDSRC:
+To contribute to WORLDEDIT and WORLDSRC:
 
 1. Fork the repository
 2. Create a feature branch
@@ -260,21 +260,21 @@ See LICENSE.txt for complete license texts.
 
 ### Editor Technology
 
-- **Electron**: Cross-platform desktop application framework
-- **React**: Modern UI component framework
-- **TypeScript**: Type-safe JavaScript development
-- **Three.js**: 3D rendering and WebGL integration
-- **Pixi.js**: High-performance 2D rendering
-- **Monaco Editor**: Professional code editing experience
+- Electron: Cross-platform desktop application framework
+- React: UI component framework
+- TypeScript: Type-safe JavaScript development
+- Three.js: 3D rendering and WebGL integration
+- Pixi.js: 2D rendering
+- Monaco Editor: Code editing component
 
 ### Language Technology
 
-- **TypeScript Compiler API**: Parsing and analysis
-- **Custom AST**: Hybrid language syntax tree
-- **Multi-target Codegen**: TypeScript and AssemblyScript output
-- **Language Server Protocol**: IDE integration
-- **Incremental Compilation**: Fast development iteration
+- TypeScript Compiler API: Parsing and analysis
+- Custom AST: Hybrid language syntax tree
+- Multi-target Codegen: TypeScript and AssemblyScript output
+- Language Server Protocol: IDE integration
+- Incremental Compilation: Development iteration
 
 ---
 
-**WORLDENV** - Professional game development made accessible
+[![Hippocratic License HL3-FULL](https://img.shields.io/static/v1?label=Hippocratic%20License&message=HL3-FULL&labelColor=5e2751&color=bc8c3d)](https://firstdonoharm.dev/version/3/0/full.html)
