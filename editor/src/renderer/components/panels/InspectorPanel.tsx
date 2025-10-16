@@ -61,6 +61,7 @@ interface MultiSelectionData {
  * Enhanced property inspector for selected entities.
  */
 export function InspectorPanel(): JSX.Element {
+  console.log('[INSPECTOR PANEL] Component mounting...');
   const { state, actions } = useEditorState();
   const { theme } = useTheme();
   const [componentData, setComponentData] = useState<UIComponentData[]>([]);
@@ -191,6 +192,7 @@ export function InspectorPanel(): JSX.Element {
 
   // Update component data when selection changes
   useEffect(() => {
+    console.log('[INSPECTOR PANEL] Panel mounted and visible');
     updateComponentData();
   }, [updateComponentData]);
 

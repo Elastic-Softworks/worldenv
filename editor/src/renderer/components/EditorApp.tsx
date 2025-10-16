@@ -25,8 +25,12 @@ import { EditorShell } from './EditorShell';
  * This ensures UI is always visible and accessible.
  */
 export function EditorApp(): JSX.Element {
+  console.log('[EDITOR APP] Component rendering...');
   const { state } = useEditorState();
   const { theme } = useTheme();
+
+  console.log('[EDITOR APP] State:', { initialized: state.initialized });
+  console.log('[EDITOR APP] Theme:', theme);
 
   /* DEBUG: Log current state */
   console.log('[EDITOR APP] Rendering with state:', {

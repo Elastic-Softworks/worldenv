@@ -28,7 +28,9 @@ import './styles/main.css';
  */
 async function initializeRenderer(): Promise<void> {
   try {
-    console.log('[RENDERER] Initializing React application...');
+    console.log('[RENDERER] Starting React initialization...');
+    console.log('[RENDERER] DOM ready state:', document.readyState);
+    console.log('[RENDERER] Root element:', document.getElementById('root'));
 
     // Initialize component system first
     initializeComponentSystem();
@@ -40,6 +42,7 @@ async function initializeRenderer(): Promise<void> {
     }
 
     const root = createRoot(container);
+    console.log('[RENDERER] React root created successfully');
 
     root.render(
       <React.StrictMode>
@@ -52,6 +55,7 @@ async function initializeRenderer(): Promise<void> {
         </ThemeProvider>
       </React.StrictMode>
     );
+    console.log('[RENDERER] React tree rendered');
 
     console.log('[RENDERER] React application initialized successfully');
   } catch (error) {

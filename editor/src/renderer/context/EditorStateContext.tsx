@@ -371,6 +371,7 @@ interface EditorStateProviderProps {
  * Handles state persistence and IPC communication.
  */
 export function EditorStateProvider({ children }: EditorStateProviderProps): JSX.Element {
+  console.log('[STATE] EditorStateProvider mounting...');
   const [state, dispatch] = useReducer(editorReducer, initialState);
   const sceneManager = SceneManager.getInstance();
 
@@ -455,6 +456,8 @@ export function EditorStateProvider({ children }: EditorStateProviderProps): JSX
         undoRedoManager.addListener(() => {
           actions.updateUndoRedoState();
         });
+
+        console.log('[STATE] Editor state initialized:', state);
       } catch (error) {
         console.error('[EDITOR_STATE] Failed to initialize:', error);
       }

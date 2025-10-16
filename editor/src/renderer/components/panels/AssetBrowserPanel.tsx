@@ -56,6 +56,7 @@ interface AssetItem {
  * File browser for project assets with preview and management.
  */
 export function AssetBrowserPanel(): JSX.Element {
+  console.log('[ASSETS PANEL] Component mounting...');
   const { state } = useEditorState();
   const { theme } = useTheme();
   const [currentPath, setCurrentPath] = useState('assets');
@@ -70,6 +71,7 @@ export function AssetBrowserPanel(): JSX.Element {
    * Load assets for current path
    */
   useEffect(() => {
+    console.log('[ASSETS PANEL] Panel mounted and visible');
     if (state.project.isOpen) {
       void loadAssets(currentPath);
     } else {

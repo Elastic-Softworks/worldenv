@@ -210,7 +210,7 @@ class SplashScreen {
 
     .company {
       font-size: 13px;
-      color: ${textSecondary};
+      color: ${textPrimary};
       margin-bottom: 32px;
       letter-spacing: 2px;
       font-weight: 600;
@@ -257,7 +257,7 @@ class SplashScreen {
 
     .tagline {
       font-size: 12px;
-      color: ${textSecondary};
+      color: ${textPrimary};
       margin-bottom: 48px;
       letter-spacing: 1.5px;
       font-weight: 600;
@@ -285,7 +285,7 @@ class SplashScreen {
 
     .message {
       font-size: 13px;
-      color: ${textSecondary};
+      color: ${textPrimary};
       text-align: center;
       min-height: 20px;
       font-weight: 500;
@@ -295,7 +295,7 @@ class SplashScreen {
       position: absolute;
       bottom: 20px;
       font-size: 11px;
-      color: ${isDark ? '#4a5568' : '#999999'};
+      color: ${textSecondary};
       font-weight: 500;
     }
 

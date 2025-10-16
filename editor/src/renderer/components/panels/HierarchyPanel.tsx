@@ -44,6 +44,7 @@ interface ContextMenuState {
  * Tree view panel with full scene hierarchy management.
  */
 export function HierarchyPanel(): JSX.Element {
+  console.log('[HIERARCHY PANEL] Component mounting...');
   const { state, actions } = useEditorState();
   const { theme } = useTheme();
   const undoRedo = useUndoRedo();
@@ -89,6 +90,7 @@ export function HierarchyPanel(): JSX.Element {
    * Scene manager event handler
    */
   useEffect(() => {
+    console.log('[HIERARCHY PANEL] Panel mounted and visible');
     const handleSceneEvent = () => {
       updateHierarchy();
     };

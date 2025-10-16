@@ -35,6 +35,7 @@ import * as PIXI from 'pixi.js';
  * Manages 2D/3D rendering with full editor integration.
  */
 export function ViewportPanel(): JSX.Element {
+  console.log('[VIEWPORT PANEL] Component mounting...');
   const { state, actions } = useEditorState();
   const { theme } = useTheme();
   const undoRedo = useUndoRedo();
@@ -319,6 +320,7 @@ export function ViewportPanel(): JSX.Element {
 
   /* INITIALIZE VIEWPORT ON MOUNT */
   useEffect(() => {
+    console.log('[VIEWPORT PANEL] Panel mounted and visible');
     const cleanup = initializeViewport();
     return cleanup;
   }, [initializeViewport]);

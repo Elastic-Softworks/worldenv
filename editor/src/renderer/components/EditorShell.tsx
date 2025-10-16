@@ -32,8 +32,12 @@ import { ScriptEditorPanel } from './panels/ScriptEditorPanel';
  * Provides split pane layout with resizable panels.
  */
 export function EditorShell(): JSX.Element {
+  console.log('[EDITOR SHELL] Component rendering...');
   const { state, actions } = useEditorState();
   const { theme } = useTheme();
+
+  console.log('[EDITOR SHELL] State:', { initialized: state.initialized });
+  console.log('[EDITOR SHELL] Theme:', theme);
 
   /**
    * handleLeftPanelResize()

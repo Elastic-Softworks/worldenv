@@ -88,59 +88,59 @@ const darkTheme: Theme = {
     background: {
       primary: '#1e1e1e',
       secondary: '#2d2d2d',
-      tertiary: '#3c3c3c',
+      tertiary: '#3c3c3c'
     },
     foreground: {
       primary: '#ffffff',
       secondary: '#cccccc',
-      tertiary: '#999999',
+      tertiary: '#999999'
     },
     border: {
       primary: '#404040',
-      secondary: '#555555',
+      secondary: '#555555'
     },
     accent: {
       primary: '#007acc',
       secondary: '#005a9e',
       danger: '#f85149',
       warning: '#d29922',
-      success: '#3fb950',
+      success: '#3fb950'
     },
     panel: {
       background: '#252526',
       border: '#3c3c3c',
-      header: '#2d2d2d',
+      header: '#2d2d2d'
     },
     button: {
       background: '#0e639c',
       backgroundHover: '#1177bb',
       backgroundActive: '#005a9e',
-      text: '#ffffff',
+      text: '#ffffff'
     },
     input: {
       background: '#3c3c3c',
       border: '#555555',
       text: '#ffffff',
-      placeholder: '#999999',
-    },
+      placeholder: '#999999'
+    }
   },
   spacing: {
     xs: '4px',
     sm: '8px',
     md: '16px',
     lg: '24px',
-    xl: '32px',
+    xl: '32px'
   },
   borderRadius: {
     sm: '2px',
     md: '4px',
-    lg: '8px',
+    lg: '8px'
   },
   shadows: {
     sm: '0 1px 3px rgba(0, 0, 0, 0.3)',
     md: '0 4px 6px rgba(0, 0, 0, 0.3)',
-    lg: '0 10px 15px rgba(0, 0, 0, 0.3)',
-  },
+    lg: '0 10px 15px rgba(0, 0, 0, 0.3)'
+  }
 };
 
 /**
@@ -152,59 +152,59 @@ const lightTheme: Theme = {
     background: {
       primary: '#ffffff',
       secondary: '#f8f8f8',
-      tertiary: '#f0f0f0',
+      tertiary: '#f0f0f0'
     },
     foreground: {
       primary: '#333333',
       secondary: '#666666',
-      tertiary: '#999999',
+      tertiary: '#999999'
     },
     border: {
       primary: '#d0d0d0',
-      secondary: '#c0c0c0',
+      secondary: '#c0c0c0'
     },
     accent: {
       primary: '#007acc',
       secondary: '#005a9e',
       danger: '#d13438',
       warning: '#bf8803',
-      success: '#28a745',
+      success: '#28a745'
     },
     panel: {
       background: '#f8f8f8',
       border: '#d0d0d0',
-      header: '#e8e8e8',
+      header: '#e8e8e8'
     },
     button: {
       background: '#0e639c',
       backgroundHover: '#1177bb',
       backgroundActive: '#005a9e',
-      text: '#ffffff',
+      text: '#ffffff'
     },
     input: {
       background: '#ffffff',
       border: '#d0d0d0',
       text: '#333333',
-      placeholder: '#999999',
-    },
+      placeholder: '#999999'
+    }
   },
   spacing: {
     xs: '4px',
     sm: '8px',
     md: '16px',
     lg: '24px',
-    xl: '32px',
+    xl: '32px'
   },
   borderRadius: {
     sm: '2px',
     md: '4px',
-    lg: '8px',
+    lg: '8px'
   },
   shadows: {
     sm: '0 1px 3px rgba(0, 0, 0, 0.1)',
     md: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    lg: '0 10px 15px rgba(0, 0, 0, 0.1)',
-  },
+    lg: '0 10px 15px rgba(0, 0, 0, 0.1)'
+  }
 };
 
 /**
@@ -236,6 +236,7 @@ interface ThemeProviderProps {
  * Handles theme switching and persistence.
  */
 export function ThemeProvider({ children }: ThemeProviderProps): JSX.Element {
+  console.log('[THEME] ThemeProvider mounting...');
   const [themeType, setThemeType] = useState<ThemeType>('dark');
 
   /**
@@ -300,6 +301,11 @@ export function ThemeProvider({ children }: ThemeProviderProps): JSX.Element {
     root.className = `theme-${themeType}`;
   }, [themeType]);
 
+  useEffect(() => {
+    const currentTheme = themeType === 'dark' ? darkTheme : lightTheme;
+    console.log('[THEME] ThemeProvider mounted with theme:', themeType, currentTheme);
+  }, [themeType]);
+
   /**
    * setTheme()
    *
@@ -326,7 +332,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): JSX.Element {
     theme: currentTheme,
     themeType,
     setTheme,
-    toggleTheme,
+    toggleTheme
   };
 
   return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
