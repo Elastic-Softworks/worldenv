@@ -219,8 +219,8 @@ export function ViewportPanel(): JSX.Element {
     viewportManagerRef.current.setMode(initialMode);
     setCurrentMode(initialMode);
 
-    /* LOAD DEMO CONTENT IF PROJECT IS OPEN */
-    if (state.project.isOpen && !hasLoadedDemo) {
+    /* LOAD DEMO CONTENT TO DEMONSTRATE VIEWPORT FUNCTIONALITY */
+    if (!hasLoadedDemo) {
       const demo = createDemoScene(initialMode);
       demo.forEach((obj) => viewportManagerRef.current?.addObject(obj));
       setDemoObjects(demo);
@@ -345,18 +345,23 @@ export function ViewportPanel(): JSX.Element {
 
   /* LOAD DEMO CONTENT WHEN PROJECT OPENS */
   useEffect(() => {
-    if (state.project.isOpen && viewportManagerRef.current && !hasLoadedDemo) {
+    if (viewportManagerRef.current && !hasLoadedDemo) {
       const demo = createDemoScene(currentMode);
       demo.forEach((obj) => viewportManagerRef.current?.addObject(obj));
       setDemoObjects(demo);
       setHasLoadedDemo(true);
-    } else if (!state.project.isOpen && hasLoadedDemo) {
-      /* CLEAR DEMO CONTENT WHEN PROJECT CLOSES */
+    } else if (
+      viewportManagerRef.current &&
+      hasLoadedDemo &&
+      currentMode !== (demoObjects.length > 0 ? '3d' : '2d')
+    ) {
+      /* RELOAD DEMO CONTENT WHEN MODE CHANGES */
       demoObjects.forEach((obj) => viewportManagerRef.current?.removeObject(obj));
-      setDemoObjects([]);
-      setHasLoadedDemo(false);
+      const demo = createDemoScene(currentMode);
+      demo.forEach((obj) => viewportManagerRef.current?.addObject(obj));
+      setDemoObjects(demo);
     }
-  }, [state.project.isOpen, currentMode, hasLoadedDemo, demoObjects]);
+  }, [currentMode, hasLoadedDemo, demoObjects]);
 
   /**
    * handleModeToggle()
@@ -651,7 +656,7 @@ export function ViewportPanel(): JSX.Element {
     flex: 1,
     position: 'relative',
     overflow: 'hidden',
-    backgroundColor: theme.colors.background.primary
+    backgroundColor: theme.type === 'light' ? '#f5f5f5' : theme.colors.background.primary
   };
 
   const canvasStyle: React.CSSProperties = {
@@ -678,7 +683,7 @@ export function ViewportPanel(): JSX.Element {
     position: 'absolute',
     top: theme.spacing.sm,
     left: theme.spacing.sm,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: theme.type === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.7)',
     color: theme.colors.foreground.primary,
     padding: theme.spacing.xs,
     borderRadius: theme.borderRadius.sm,
@@ -694,7 +699,15 @@ export function ViewportPanel(): JSX.Element {
       <div style={headerStyle}>
         <span>Viewport</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
-          <span style={{ fontSize: '12px', color: theme.colors.foreground.tertiary }}>
+          <span
+            style={{
+              fontSize: '12px',
+              color:
+                theme.type === 'light'
+                  ? theme.colors.foreground.secondary
+                  : theme.colors.foreground.tertiary
+            }}
+          >
             {currentMode.toUpperCase()} • {fps} FPS
           </span>
         </div>
@@ -736,7 +749,9 @@ export function ViewportPanel(): JSX.Element {
               style={{
                 ...overlayStyle,
                 pointerEvents: 'auto',
-                backgroundColor: 'rgba(30, 30, 30, 0.95)'
+                backgroundColor:
+                  theme.type === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(30, 30, 30, 0.8)',
+                backdropFilter: 'blur(4px)'
               }}
             >
               <div
@@ -746,9 +761,9 @@ export function ViewportPanel(): JSX.Element {
                 <h1
                   style={{
                     margin: 0,
-                    marginBottom: theme.spacing.xl,
-                    fontSize: 'clamp(2rem, 8vw, 4rem)',
-                    fontWeight: 700,
+                    marginBottom: theme.spacing.lg,
+                    fontSize: 'clamp(1.5rem, 6vw, 2.5rem)',
+                    fontWeight: 600,
                     fontFamily:
                       'Hothouse, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                     color: theme.colors.foreground.primary
@@ -760,13 +775,14 @@ export function ViewportPanel(): JSX.Element {
                 <p
                   style={{
                     margin: 0,
-                    marginBottom: theme.spacing.xl,
-                    fontSize: 'clamp(0.875rem, 2.5vw, 1rem)',
+                    marginBottom: theme.spacing.lg,
+                    fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
                     color: theme.colors.foreground.secondary,
-                    lineHeight: 1.5
+                    lineHeight: 1.4,
+                    opacity: 0.9
                   }}
                 >
-                  Get started by creating a new project or opening an existing one
+                  Demo scene loaded. Create or open a project to get started.
                 </p>
 
                 <div
@@ -777,7 +793,7 @@ export function ViewportPanel(): JSX.Element {
                     gap: theme.spacing.md,
                     justifyContent: 'center',
                     alignItems: 'center',
-                    marginBottom: theme.spacing.xl,
+                    marginBottom: theme.spacing.md,
                     width: '100%',
                     maxWidth: '400px',
                     margin: '0 auto'
@@ -789,8 +805,8 @@ export function ViewportPanel(): JSX.Element {
                     onClick={handleNewProject}
                     disabled={isCreatingProject || isOpeningProject}
                     style={{
-                      minWidth: '140px',
-                      fontSize: 'clamp(0.875rem, 2.5vw, 1rem)'
+                      minWidth: '120px',
+                      fontSize: 'clamp(0.75rem, 2vw, 0.875rem)'
                     }}
                   >
                     {isCreatingProject ? 'Creating...' : 'New Project'}
@@ -802,8 +818,8 @@ export function ViewportPanel(): JSX.Element {
                     onClick={() => setShowRecentProjectsDialog(true)}
                     disabled={isCreatingProject || isOpeningProject}
                     style={{
-                      minWidth: '140px',
-                      fontSize: 'clamp(0.875rem, 2.5vw, 1rem)'
+                      minWidth: '120px',
+                      fontSize: 'clamp(0.75rem, 2vw, 0.875rem)'
                     }}
                   >
                     {isOpeningProject ? 'Opening...' : 'Open Project'}

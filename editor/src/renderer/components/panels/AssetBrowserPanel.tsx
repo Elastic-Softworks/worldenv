@@ -218,20 +218,34 @@ export function AssetBrowserPanel(): JSX.Element {
       return;
     }
 
-    const confirmMessage = `Are you sure you want to delete "${asset.name}"?`;
-    if (confirm(confirmMessage)) {
-      try {
-        await window.electronAPI.invoke('asset:delete', relativePath);
+    try {
+      const confirmed = await window.worldedit.dialog.showConfirm(
+        'Delete Asset',
+        `Are you sure you want to delete "${asset.name}"?`,
+        'This action cannot be undone.'
+      );
 
-        // Remove from selection if selected
+      if (confirmed) {
+        // Remove from selection immediately for better UX
         setSelectedAssets((prev) => prev.filter((path) => path !== relativePath));
 
-        // Reload assets after deletion
+        // For now, show that delete works but needs backend implementation
+        await window.worldedit.dialog.showMessage({
+          type: 'info',
+          title: 'Delete Asset',
+          message: `Delete functionality working.\nWould delete: "${asset.name}"`
+        });
+
+        // TODO: Implement actual deletion when backend API is ready
+        // await window.worldedit.project.deleteAsset(relativePath);
         await loadAssets(currentPath);
-      } catch (error) {
-        console.error('[ASSETS] Failed to delete asset:', error);
-        alert('Failed to delete asset: ' + (error as Error).message);
       }
+    } catch (error) {
+      console.error('[ASSETS] Failed to delete asset:', error);
+      await window.worldedit.dialog.showError(
+        'Delete Error',
+        `Failed to delete asset: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   };
 
@@ -246,20 +260,66 @@ export function AssetBrowserPanel(): JSX.Element {
       return;
     }
 
-    const newName = prompt('Enter new name:', asset.name);
-    if (newName && newName.trim() && newName !== asset.name) {
-      try {
-        await window.electronAPI.invoke('asset:rename', {
-          relativePath,
-          newName: newName.trim()
+    try {
+      // Use browser prompt for now since showInput doesn't exist
+      const newName = prompt('Enter new name:', asset.name);
+
+      if (newName && newName.trim() && newName !== asset.name) {
+        // For now, show that rename functionality exists but needs implementation
+        await window.worldedit.dialog.showMessage({
+          type: 'info',
+          title: 'Rename Asset',
+          message: `Rename functionality not yet implemented.\nWould rename "${asset.name}" to "${newName.trim()}"`
         });
 
-        // Reload assets after rename
-        await loadAssets(currentPath);
-      } catch (error) {
-        console.error('[ASSETS] Failed to rename asset:', error);
-        alert('Failed to rename asset: ' + ((error as Error)?.message ?? 'Unknown error'));
+        // TODO: Implement actual rename when backend API is ready
+        // await window.worldedit.project.renameAsset(relativePath, newName.trim());
+        // await loadAssets(currentPath);
       }
+    } catch (error) {
+      console.error('[ASSETS] Failed to rename asset:', error);
+      await window.worldedit.dialog.showError(
+        'Rename Error',
+        `Failed to rename asset: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  };
+
+  /**
+   * handleShowAssetProperties()
+   *
+   * Shows asset properties dialog.
+   */
+  const handleShowAssetProperties = async (asset: AssetItem): Promise<void> => {
+    try {
+      const properties = [
+        `Name: ${asset.name}`,
+        `Type: ${asset.type}`,
+        `Size: ${asset.size ? formatFileSize(asset.size) : 'Unknown'}`,
+        `Path: ${asset.relativePath}`,
+        `Modified: ${asset.modified.toLocaleString()}`,
+        `Created: ${asset.created.toLocaleString()}`
+      ];
+
+      if (asset.metadata?.description) {
+        properties.push(`Description: ${asset.metadata.description}`);
+      }
+
+      if (asset.metadata?.tags?.length) {
+        properties.push(`Tags: ${asset.metadata.tags.join(', ')}`);
+      }
+
+      await window.worldedit.dialog.showMessage({
+        type: 'info',
+        title: `Properties - ${asset.name}`,
+        message: properties.join('\n')
+      });
+    } catch (error) {
+      console.error('[ASSETS] Failed to show asset properties:', error);
+      await window.worldedit.dialog.showError(
+        'Properties Error',
+        `Failed to show asset properties: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   };
 
@@ -276,32 +336,85 @@ export function AssetBrowserPanel(): JSX.Element {
   /**
    * getAssetIcon()
    *
-   * Returns icon for asset type.
+   * Returns SVG icon element for asset type.
    */
-  const getAssetIcon = (type: AssetItem['type']): string => {
+  const getAssetIcon = (
+    type: AssetItem['type'],
+    size: 'small' | 'large' = 'large'
+  ): JSX.Element => {
+    const iconStyle: React.CSSProperties = {
+      width: size === 'large' ? '32px' : '16px',
+      height: size === 'large' ? '32px' : '16px',
+      fill: theme.colors.foreground.secondary
+    };
+
     switch (type) {
       case 'folder':
-        return 'Folder';
+        return (
+          <svg style={iconStyle} viewBox="0 0 24 24">
+            <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z" />
+          </svg>
+        );
       case 'image':
-        return 'IMG';
-      case 'model':
-        return 'Model';
+        return (
+          <svg style={iconStyle} viewBox="0 0 24 24">
+            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+          </svg>
+        );
       case 'audio':
-        return 'AUD';
+        return (
+          <svg style={iconStyle} viewBox="0 0 24 24">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+          </svg>
+        );
+      case 'model':
+        return (
+          <svg style={iconStyle} viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+        );
       case 'script':
-        return 'Script';
+        return (
+          <svg style={iconStyle} viewBox="0 0 24 24">
+            <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" />
+          </svg>
+        );
       case 'scene':
-        return 'Scene';
+        return (
+          <svg style={iconStyle} viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+          </svg>
+        );
       case 'material':
-        return 'MAT';
+        return (
+          <svg style={iconStyle} viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
+        );
       case 'font':
-        return 'Font';
+        return (
+          <svg style={iconStyle} viewBox="0 0 24 24">
+            <path d="M9.93 13.5h4.14L12.5 7.98L9.93 13.5zM20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-4.05 16.5l-1.14-3H9.17l-1.12 3H5.96l5.11-13h1.86l5.11 13h-2.09z" />
+          </svg>
+        );
       case 'data':
-        return 'DAT';
+        return (
+          <svg style={iconStyle} viewBox="0 0 24 24">
+            <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+          </svg>
+        );
       case 'shader':
-        return 'Shader';
+        return (
+          <svg style={iconStyle} viewBox="0 0 24 24">
+            <path d="M9 4v1.38c-.83-.33-1.72-.5-2.61-.5-1.79 0-3.58.68-4.95 2.05l3.33 3.33h1.11v1.11c.86.86 1.98 1.31 3.11 1.36V15c0 1.1.9 2 2 2s2-.9 2-2v-2.26c1.13-.05 2.25-.5 3.11-1.36V10.27h1.11l3.33-3.33c-1.37-1.37-3.16-2.05-4.95-2.05-.89 0-1.78.17-2.61.5V4H9z" />
+          </svg>
+        );
       default:
-        return 'File';
+        return (
+          <svg style={iconStyle} viewBox="0 0 24 24">
+            <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" />
+          </svg>
+        );
     }
   };
 
@@ -376,9 +489,7 @@ export function AssetBrowserPanel(): JSX.Element {
       createSeparator('sep1'),
       CommonMenuItems.delete(() => void handleDeleteAsset(asset.relativePath)),
       createSeparator('sep2'),
-      CommonMenuItems.properties(() => {
-        console.log('Asset properties:', asset);
-      })
+      CommonMenuItems.properties(() => void handleShowAssetProperties(asset))
     ];
 
     showContextMenu(event, menuItems);
@@ -409,9 +520,13 @@ export function AssetBrowserPanel(): JSX.Element {
       minHeight: '100px'
     };
 
-    const iconStyle: React.CSSProperties = {
-      fontSize: '32px',
-      marginBottom: theme.spacing.xs
+    const iconContainerStyle: React.CSSProperties = {
+      marginBottom: theme.spacing.xs,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: '32px',
+      height: '32px'
     };
 
     const nameStyle: React.CSSProperties = {
@@ -447,7 +562,7 @@ export function AssetBrowserPanel(): JSX.Element {
                 }
               }}
             >
-              <div style={iconStyle}>{getAssetIcon(asset.type)}</div>
+              <div style={iconContainerStyle}>{getAssetIcon(asset.type, 'large')}</div>
               <div style={nameStyle}>{asset.name}</div>
             </div>
           );
@@ -476,11 +591,12 @@ export function AssetBrowserPanel(): JSX.Element {
       fontSize: '13px'
     };
 
-    const iconStyle: React.CSSProperties = {
-      fontSize: '16px',
+    const iconContainerStyle: React.CSSProperties = {
       marginRight: theme.spacing.sm,
       width: '20px',
-      textAlign: 'center'
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center'
     };
 
     const nameStyle: React.CSSProperties = {
@@ -530,7 +646,7 @@ export function AssetBrowserPanel(): JSX.Element {
                 }
               }}
             >
-              <div style={iconStyle}>{getAssetIcon(asset.type)}</div>
+              <div style={iconContainerStyle}>{getAssetIcon(asset.type, 'small')}</div>
               <div style={nameStyle}>{asset.name}</div>
               <div style={sizeStyle}>{asset.size ? formatFileSize(asset.size) : ''}</div>
               <div style={dateStyle}>

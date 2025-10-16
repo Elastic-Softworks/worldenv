@@ -279,7 +279,7 @@ export function ProjectSettingsDialog({
             )}
 
             {/* Rendering Settings */}
-            {activeTab === 'rendering' && (
+            {activeTab === 'rendering' && settings?.rendering && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.lg }}>
                 <h3
                   style={{
@@ -305,7 +305,7 @@ export function ProjectSettingsDialog({
                     Renderer
                   </label>
                   <select
-                    value={settings.rendering.renderer}
+                    value={settings.rendering.renderer || 'webgl'}
                     onChange={(e) => updateSetting('rendering.renderer', e.target.value)}
                     style={{
                       width: '100%',
@@ -342,7 +342,7 @@ export function ProjectSettingsDialog({
                       type="number"
                       min="30"
                       max="120"
-                      value={settings.rendering.target_fps}
+                      value={settings.rendering.target_fps || 60}
                       onChange={(e) =>
                         updateSetting('rendering.target_fps', parseInt(e.target.value))
                       }
@@ -375,7 +375,7 @@ export function ProjectSettingsDialog({
                       min="0.25"
                       max="2.0"
                       step="0.25"
-                      value={settings.rendering.resolution_scale}
+                      value={settings.rendering.resolution_scale || 1.0}
                       onChange={(e) =>
                         updateSetting('rendering.resolution_scale', parseFloat(e.target.value))
                       }
@@ -405,7 +405,7 @@ export function ProjectSettingsDialog({
                   >
                     <input
                       type="checkbox"
-                      checked={settings.rendering.antialias}
+                      checked={settings.rendering.antialias || false}
                       onChange={(e) => updateSetting('rendering.antialias', e.target.checked)}
                     />
                     Antialiasing
@@ -423,7 +423,7 @@ export function ProjectSettingsDialog({
                   >
                     <input
                       type="checkbox"
-                      checked={settings.rendering.vsync}
+                      checked={settings.rendering.vsync || false}
                       onChange={(e) => updateSetting('rendering.vsync', e.target.checked)}
                     />
                     Vertical Sync

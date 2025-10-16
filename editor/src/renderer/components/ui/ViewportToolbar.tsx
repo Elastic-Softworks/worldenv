@@ -223,9 +223,6 @@ export function ViewportToolbar({
           onClick={onTransformSpaceToggle}
           title={`Transform space: ${transformSpace} (Tab to toggle)`}
         >
-          <span style={{ fontSize: '10px' }}>
-            {transformSpace === TransformSpace.World ? 'World' : 'Local'}
-          </span>
           {transformSpace === TransformSpace.World ? 'World' : 'Local'}
         </button>
       </div>

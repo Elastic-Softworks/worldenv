@@ -233,11 +233,11 @@ export function Toolbar(): JSX.Element {
         variant="secondary"
         size="sm"
         onClick={() => {
+          console.log('[TOOLBAR] Save button clicked');
           handleSaveProject().catch(console.error);
         }}
         disabled={!state.project.isOpen || !state.project.isModified}
         title="Save Project (Ctrl+S)"
-        icon="Save"
       >
         Save
       </Button>
@@ -249,22 +249,48 @@ export function Toolbar(): JSX.Element {
         icon="↶"
         title={`Undo (Ctrl+Z)${state.undo.canUndo ? '' : ' - Nothing to undo'}`}
         disabled={!state.undo.canUndo}
-        onClick={actions.undo}
+        onClick={() => {
+          console.log('[TOOLBAR] Undo button clicked');
+          actions.undo();
+        }}
       />
       <IconButton
         icon="↷"
         title={`Redo (Ctrl+Y)${state.undo.canRedo ? '' : ' - Nothing to redo'}`}
         disabled={!state.undo.canRedo}
-        onClick={actions.redo}
+        onClick={() => {
+          console.log('[TOOLBAR] Redo button clicked');
+          actions.redo();
+        }}
       />
 
       <div style={separatorStyle} />
 
       {/* Transform Tools */}
-      <IconButton icon="↖" title="Select Tool (Q)" active={true} />
-      <IconButton icon="⌘" title="Move Tool (W)" disabled={true} />
-      <IconButton icon="↻" title="Rotate Tool (E)" disabled={true} />
-      <IconButton icon="⤢" title="Scale Tool (R)" disabled={true} />
+      <IconButton
+        icon="↖"
+        title="Select Tool (Q)"
+        active={true}
+        onClick={() => console.log('[TOOLBAR] Select tool clicked (active)')}
+      />
+      <IconButton
+        icon="⌘"
+        title="Move Tool (W)"
+        disabled={true}
+        onClick={() => console.log('[TOOLBAR] Move tool clicked (disabled)')}
+      />
+      <IconButton
+        icon="↻"
+        title="Rotate Tool (E)"
+        disabled={true}
+        onClick={() => console.log('[TOOLBAR] Rotate tool clicked (disabled)')}
+      />
+      <IconButton
+        icon="⤢"
+        title="Scale Tool (R)"
+        disabled={true}
+        onClick={() => console.log('[TOOLBAR] Scale tool clicked (disabled)')}
+      />
 
       <div style={separatorStyle} />
 
@@ -273,13 +299,19 @@ export function Toolbar(): JSX.Element {
         icon="2D"
         title="2D View"
         active={state.ui.activeViewportMode === '2d'}
-        onClick={() => actions.setViewportMode('2d')}
+        onClick={() => {
+          console.log('[TOOLBAR] 2D View button clicked');
+          actions.setViewportMode('2d');
+        }}
       />
       <IconButton
         icon="3D"
         title="3D View"
         active={state.ui.activeViewportMode === '3d'}
-        onClick={() => actions.setViewportMode('3d')}
+        onClick={() => {
+          console.log('[TOOLBAR] 3D View button clicked');
+          actions.setViewportMode('3d');
+        }}
       />
 
       <div style={separatorStyle} />
@@ -289,6 +321,7 @@ export function Toolbar(): JSX.Element {
         variant={isPlayMode ? 'danger' : 'primary'}
         size="sm"
         onClick={() => {
+          console.log('[TOOLBAR] Play/Stop button clicked', { isPlayMode, isEngineReady });
           handlePlayMode().catch(console.error);
         }}
         disabled={!state.project.isOpen || !isEngineReady}
@@ -301,7 +334,10 @@ export function Toolbar(): JSX.Element {
         <IconButton
           icon={isPaused ? 'Resume' : 'Pause'}
           title={isPaused ? 'Resume (F6)' : 'Pause (F6)'}
-          onClick={handlePauseMode}
+          onClick={() => {
+            console.log('[TOOLBAR] Pause/Resume button clicked', { isPaused });
+            handlePauseMode();
+          }}
         />
       )}
 
@@ -312,19 +348,28 @@ export function Toolbar(): JSX.Element {
         icon="⊞"
         title="Toggle Grid (Ctrl+G)"
         active={state.ui.showGrid}
-        onClick={() => actions.toggleGrid(!state.ui.showGrid)}
+        onClick={() => {
+          console.log('[TOOLBAR] Toggle Grid clicked', { current: state.ui.showGrid });
+          actions.toggleGrid(!state.ui.showGrid);
+        }}
       />
       <IconButton
         icon="⌘"
         title="Toggle Gizmos"
         active={state.ui.showGizmos}
-        onClick={() => actions.toggleGizmos(!state.ui.showGizmos)}
+        onClick={() => {
+          console.log('[TOOLBAR] Toggle Gizmos clicked', { current: state.ui.showGizmos });
+          actions.toggleGizmos(!state.ui.showGizmos);
+        }}
       />
       <IconButton
         icon="⊡"
         title="Snap to Grid"
         active={state.ui.snapToGrid}
-        onClick={() => actions.toggleSnapToGrid(!state.ui.snapToGrid)}
+        onClick={() => {
+          console.log('[TOOLBAR] Snap to Grid clicked', { current: state.ui.snapToGrid });
+          actions.toggleSnapToGrid(!state.ui.snapToGrid);
+        }}
       />
 
       <div style={{ flex: 1 }} />

@@ -50,6 +50,9 @@ async function initializeApplication(): Promise<void> {
       arch: process.arch
     });
 
+    // Clear any cached session data to prevent startup issues
+    await clearApplicationCache();
+
     await splashScreen.show();
 
     splashScreen.updateMessage('Initializing...');
@@ -88,6 +91,36 @@ async function initializeApplication(): Promise<void> {
 }
 
 /**
+ * clearApplicationCache()
+ *
+ * Clears application cache and session data to prevent startup issues.
+ */
+async function clearApplicationCache(): Promise<void> {
+  try {
+    const { session } = require('electron');
+    const defaultSession = session.defaultSession;
+
+    // Clear cache and storage data
+    await defaultSession.clearCache();
+    await defaultSession.clearStorageData({
+      storages: [
+        'appcache',
+        'filesystem',
+        'indexdb',
+        'localstorage',
+        'shadercache',
+        'websql',
+        'serviceworkers'
+      ]
+    });
+
+    logger.info('MAIN', 'Application cache cleared successfully');
+  } catch (error) {
+    logger.warn('MAIN', 'Failed to clear application cache', { error });
+  }
+}
+
+/**
  * createMainWindow()
  *
  * Creates and configures the main editor window.
@@ -99,6 +132,7 @@ function createMainWindow(): void {
     minHeight: 600,
     title: 'WORLDEDIT',
     backgroundColor: '#1e1e1e',
+    show: false, // Don't show until ready to prevent flashing
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -124,7 +158,7 @@ function createMainWindow(): void {
     }
   }
 
-  // Add debugging for renderer process
+  // Add comprehensive debugging for renderer process
   mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
     logger.error(
       'MAIN',
@@ -141,12 +175,32 @@ function createMainWindow(): void {
     logger.info('MAIN', 'Renderer DOM ready');
   });
 
-  mainWindow.once('ready-to-show', () => {
-    if (mainWindow) {
-      mainWindow.show();
-      mainWindow.focus();
+  mainWindow.webContents.on('crashed', (event, killed) => {
+    logger.error('MAIN', 'Renderer process crashed', { killed });
+  });
 
-      logger.info('MAIN', 'Main window shown');
+  mainWindow.webContents.on('render-process-gone', (event, details) => {
+    logger.error('MAIN', 'Render process gone', details);
+  });
+
+  mainWindow.webContents.on('unresponsive', () => {
+    logger.warn('MAIN', 'Renderer became unresponsive');
+  });
+
+  mainWindow.webContents.on('responsive', () => {
+    logger.info('MAIN', 'Renderer became responsive again');
+  });
+
+  mainWindow.once('ready-to-show', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      // Add a small delay to ensure renderer is fully ready
+      setTimeout(() => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.show();
+          mainWindow.focus();
+          logger.info('MAIN', 'Main window shown');
+        }
+      }, 100);
     }
   });
 
@@ -199,7 +253,10 @@ function createMainWindow(): void {
     });
   });
 
-  menuManager.buildMenu(mainWindow);
+  // Remove system menu bar to avoid duplicate with custom MenuBar component
+  // Set application menu to null to completely disable it
+  const { Menu } = require('electron');
+  Menu.setApplicationMenu(null);
 }
 
 /**

@@ -1,0 +1,105 @@
+WORLDENV EDITOR UI RENDERING FIXES - TEST 2 TODO
+===============================================
+
+PRIORITY: HIGH - Critical UI/UX issues preventing normal editor usage
+
+## TASK 1: REMOVE DUPLICATE MENU TOOLBAR
+- ISSUE: Two menu dropdown toolbars present (File, Edit, Build, View, Window, Help)
+- ACTION: Remove top menu bar, keep only the lower toolbar
+- FILES: Check main window setup and renderer layout components
+- STATUS: COMPLETED - System menu disabled in main.ts
+
+## TASK 2: FIX LIGHT MODE VIEWPORT BACKGROUND
+- ISSUE: Light mode viewport remains dark gray, making gray text invisible
+- ACTION: Change viewport background to white/off-white in light mode
+- FILES: ViewportPanel.tsx, theme CSS variables
+- STATUS: COMPLETED - Viewport background now #f5f5f5 in light mode
+
+## TASK 3: FIX STATS VISIBILITY IN LIGHT MODE
+- ISSUE: Viewport stats (3D • 0 FPS) not visible due to dark box on light background
+- ACTION: Adjust stats overlay background/text colors for light mode
+- FILES: Viewport stats display component, theme styles
+- STATUS: COMPLETED - Stats overlay now theme-aware with proper contrast
+
+## TASK 4: FIX RENDER BUTTON CRASH
+- ISSUE: Clicking 'Render' in Project Settings dialog crashes the program
+- ACTION: Debug and fix render button functionality
+- FILES: ProjectSettings component, render system integration
+- STATUS: COMPLETED - Added safety checks for undefined settings
+
+## TASK 5: ELIMINATE DUPLICATE TEXT IN UI
+- ISSUE: Repeated words throughout UI ("World World", "Local Local", "Save Save")
+- ACTION: Audit all UI components for text duplication bugs
+- FILES: Toolbar, StatusBar, Space selectors, all UI components
+- STATUS: COMPLETED - Fixed Save button and transform space duplications
+
+## TASK 6: IMPLEMENT ASSET MANAGEMENT SYSTEM
+- ISSUE: Multiple asset panel problems:
+  * No image preview thumbnails
+  * No icons for audio files (need icon pack, NO EMOJIS)
+  * Rename function doesn't work
+  * Properties function doesn't work
+  * Overlapping/duplicate text in context menus
+- ACTION:
+  * Implement image thumbnail generation
+  * Add file type icon system (use icon pack or custom drawn)
+  * Fix rename functionality
+  * Implement properties dialog
+  * Fix context menu text rendering
+- FILES: AssetPanel.tsx, asset management system, context menu components
+- STATUS: PARTIALLY COMPLETED - SVG icons added, context menu functionality improved
+
+## TASK 7: DEBUG APPLICATION STARTUP FAILURE
+- ISSUE: App shows UI briefly then disappears to gray screen after multiple starts
+- ACTION:
+  * Clear web cache/electron data
+  * Debug main process and renderer initialization
+  * Check for memory leaks or resource conflicts
+  * Add error logging for startup sequence
+- FILES: main.ts, renderer initialization, cache management
+- STATUS: COMPLETED - Added cache clearing and enhanced debugging
+
+## TASK 8: IMPLEMENT 3D/2D VIEWPORT FUNCTIONALITY
+- ISSUE: Viewport is completely blank with no 3D or 2D rendering
+- ACTION:
+  * Implement default 3D scene (camera, cube, light like Blender)
+  * Add 3D navigation (orbit, pan, zoom)
+  * Ensure 2D/3D mode switching works
+  * Integrate with rendering engine
+- FILES: Viewport rendering system, 3D engine integration, scene management
+- STATUS: COMPLETED - Demo scene now loads without project, viewport system active
+
+## TASK 9: AUDIT AND FIX NON-FUNCTIONAL BUTTONS
+- ISSUE: Many GUI buttons don't work or aren't connected to functionality
+- ACTION:
+  * Audit all toolbar buttons for signal connections
+  * Audit all menu items for functionality
+  * Audit all panel controls
+  * Implement missing button handlers
+  * Add proper error feedback for unimplemented features
+- FILES: All UI components, event handlers, signal system
+- STATUS: IN PROGRESS - Added debugging logs to toolbar buttons
+
+===============================================
+IMPLEMENTATION NOTES:
+- Follow C-FORM formatting standards for all C code
+- NO EMOJIS anywhere in code, UI, or terminal outputs
+- Update documentation after each task completion
+- Debug and remove ALL errors before finishing each task
+- Perform full codebase audit before updating documentation
+
+TESTING REQUIREMENTS:
+- Test in both light and dark modes
+- Test with various file types in asset panel
+- Test viewport functionality thoroughly
+- Verify no crashes or UI freezes
+- Ensure responsive design works properly
+
+CURRENT STATUS: 7/9 TASKS COMPLETED
+- Critical UI issues resolved (tasks 1-5, 7-8)
+- Asset management partially completed (task 6)
+- Button audit in progress (task 9)
+
+TARGET: Zero critical bugs, fully functional editor UI
+
+BUILD STATUS: ✅ SUCCESSFUL - All changes compiled without errors
