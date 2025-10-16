@@ -229,14 +229,19 @@ class SplashScreen {
     .logo-letter {
       font-size: 48px;
       font-weight: 700;
-      background: linear-gradient(135deg, #00d4ff, #0091ff, #00d4ff, #0091ff);
+      color: ${isDark ? 'transparent' : '#000000'};
+      background: ${isDark ? 'linear-gradient(135deg, #00d4ff, #0091ff, #00d4ff, #0091ff)' : 'none'};
       background-size: 300% 300%;
       background-clip: text;
       -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      -webkit-text-fill-color: ${isDark ? 'transparent' : '#000000'};
       letter-spacing: 2px;
       opacity: 0;
-      transform: translateY(-100px);
+      transform: translateY(-100px) scale(0.3);
+      animation: letterDrop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .logo-letter.dark-mode {
       animation: letterDrop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
                  rainbowShift 4s ease-in-out infinite;
     }
@@ -297,18 +302,18 @@ class SplashScreen {
     @keyframes letterDrop {
       0% {
         opacity: 0;
-        transform: translateY(-100px);
+        transform: translateY(-100px) scale(0.3);
       }
       60% {
         opacity: 1;
-        transform: translateY(10px);
+        transform: translateY(10px) scale(1.2);
       }
       80% {
-        transform: translateY(-5px);
+        transform: translateY(-5px) scale(0.95);
       }
       100% {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1.0);
       }
     }
 
@@ -351,14 +356,14 @@ class SplashScreen {
     <div class="company">ELASTIC SOFTWORKS 2025</div>
 
     <div class="logo-container">
-      <span class="logo-letter">W</span>
-      <span class="logo-letter">O</span>
-      <span class="logo-letter">R</span>
-      <span class="logo-letter">L</span>
-      <span class="logo-letter">D</span>
-      <span class="logo-letter">E</span>
-      <span class="logo-letter">N</span>
-      <span class="logo-letter">V</span>
+      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">W</span>
+      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">O</span>
+      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">R</span>
+      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">L</span>
+      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">D</span>
+      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">E</span>
+      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">N</span>
+      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">V</span>
     </div>
 
     <div class="tagline">NEW WORLD APPLICATIONS</div>

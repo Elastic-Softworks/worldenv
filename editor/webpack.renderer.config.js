@@ -45,7 +45,33 @@ module.exports = {
       '@renderer': path.resolve(__dirname, 'src/renderer'),
       '@shared': path.resolve(__dirname, 'src/shared'),
       '@engine': path.resolve(__dirname, 'src/engine')
+    },
+    fallback: {
+      path: false,
+      fs: false,
+      child_process: false,
+      crypto: false,
+      url: false,
+      buffer: false,
+      util: false,
+      assert: false,
+      stream: false,
+      os: false,
+      net: false,
+      tls: false,
+      zlib: false,
+      http: false,
+      https: false,
+      querystring: false,
+      timers: false
     }
+  },
+  externals: {
+    electron: 'commonjs2 electron'
+  },
+  node: {
+    __dirname: false,
+    __filename: false
   },
   plugins: [
     new HtmlWebpackPlugin({
