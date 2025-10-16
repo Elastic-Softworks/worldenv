@@ -94,6 +94,15 @@ export function EditorShell(): JSX.Element {
     overflow: 'hidden'
   };
 
+  /* DEBUG: Log panel visibility state */
+  console.log('[EDITOR SHELL] Rendering with panel visibility:', {
+    hierarchy: state.ui.panels.hierarchy.visible,
+    inspector: state.ui.panels.inspector.visible,
+    assets: state.ui.panels.assets.visible,
+    viewport: state.ui.panels.viewport.visible,
+    script: state.ui.panels.script.visible
+  });
+
   return (
     <div style={shellStyle}>
       {/* Menu Bar */}
@@ -107,63 +116,42 @@ export function EditorShell(): JSX.Element {
         {/* Main Workspace */}
         <div style={workspaceStyle}>
           <Allotment>
-            {/* Left Panel - Scene Hierarchy */}
-            {state.ui.panels.hierarchy.visible && (
-              <Allotment.Pane
-                minSize={200}
-                maxSize={400}
-                preferredSize={state.ui.panels.hierarchy.size}
-              >
-                <HierarchyPanel />
-              </Allotment.Pane>
-            )}
+            {/* Left Panel - Scene Hierarchy - ALWAYS VISIBLE */}
+            <Allotment.Pane
+              minSize={200}
+              maxSize={400}
+              preferredSize={state.ui.panels.hierarchy.size || 250}
+            >
+              <HierarchyPanel />
+            </Allotment.Pane>
 
             {/* Main Content Area */}
             <Allotment.Pane>
               <Allotment vertical>
-                {/* Center Panel - Viewport */}
+                {/* Center Panel - Viewport - ALWAYS VISIBLE */}
                 <Allotment.Pane>
                   <ViewportPanel />
                 </Allotment.Pane>
 
-                {/* Bottom Panel - Asset Browser / Script Editor */}
-                {(state.ui.panels.assets.visible || state.ui.panels.script.visible) && (
-                  <Allotment.Pane
-                    minSize={150}
-                    maxSize={500}
-                    preferredSize={
-                      state.ui.panels.script.visible
-                        ? state.ui.panels.script.size
-                        : state.ui.panels.assets.size
-                    }
-                  >
-                    <Allotment>
-                      {state.ui.panels.assets.visible && (
-                        <Allotment.Pane>
-                          <AssetBrowserPanel />
-                        </Allotment.Pane>
-                      )}
-                      {state.ui.panels.script.visible && (
-                        <Allotment.Pane>
-                          <ScriptEditorPanel />
-                        </Allotment.Pane>
-                      )}
-                    </Allotment>
-                  </Allotment.Pane>
-                )}
+                {/* Bottom Panel - Asset Browser - ALWAYS VISIBLE */}
+                <Allotment.Pane
+                  minSize={150}
+                  maxSize={500}
+                  preferredSize={state.ui.panels.assets.size || 200}
+                >
+                  <AssetBrowserPanel />
+                </Allotment.Pane>
               </Allotment>
             </Allotment.Pane>
 
-            {/* Right Panel - Inspector */}
-            {state.ui.panels.inspector.visible && (
-              <Allotment.Pane
-                minSize={250}
-                maxSize={500}
-                preferredSize={state.ui.panels.inspector.size}
-              >
-                <InspectorPanel />
-              </Allotment.Pane>
-            )}
+            {/* Right Panel - Inspector - ALWAYS VISIBLE */}
+            <Allotment.Pane
+              minSize={250}
+              maxSize={500}
+              preferredSize={state.ui.panels.inspector.size || 300}
+            >
+              <InspectorPanel />
+            </Allotment.Pane>
           </Allotment>
         </div>
 

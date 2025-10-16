@@ -11,7 +11,7 @@
  * Shows loading progress and version information.
  */
 
-import { BrowserWindow, screen } from 'electron';
+import { BrowserWindow, screen, nativeTheme } from 'electron';
 import { logger } from './logger';
 
 class SplashScreen {
@@ -159,6 +159,12 @@ class SplashScreen {
    * Generates HTML content for splash screen.
    */
   private generateSplashHTML(): string {
+    const isDark = nativeTheme.shouldUseDarkColors;
+    const bgColor = isDark ? '#2a2a2a' : '#ffffff';
+    const textPrimary = isDark ? '#ffffff' : '#1a1a1a';
+    const textSecondary = isDark ? '#8892b0' : '#666666';
+    const borderColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -167,6 +173,8 @@ class SplashScreen {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WORLDEDIT</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
     * {
       margin: 0;
       padding: 0;
@@ -179,7 +187,7 @@ class SplashScreen {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: transparent;
       overflow: hidden;
     }
@@ -188,64 +196,74 @@ class SplashScreen {
       position: relative;
       width: 600px;
       height: 400px;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      background: ${bgColor};
       border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 60px 40px 40px 40px;
+      border: 1px solid ${borderColor};
       overflow: hidden;
     }
 
-    .logo {
+    .company {
+      font-size: 13px;
+      color: ${textSecondary};
+      margin-bottom: 32px;
+      letter-spacing: 2px;
+      font-weight: 600;
+      text-transform: uppercase;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .logo-container {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 32px;
+      height: 56px;
+      align-items: center;
+    }
+
+    .logo-letter {
       font-size: 48px;
       font-weight: 700;
-      background: linear-gradient(45deg, #00d4ff, #0091ff, #00d4ff, #0091ff);
-      background-size: 400% 400%;
+      background: linear-gradient(135deg, #00d4ff, #0091ff, #00d4ff, #0091ff);
+      background-size: 300% 300%;
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 20px;
-      text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
       letter-spacing: 2px;
-      animation: logoGlow 3s ease-in-out infinite, gradientShift 4s ease-in-out infinite;
+      opacity: 0;
+      transform: translateY(-100px);
+      animation: letterDrop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+                 rainbowShift 4s ease-in-out infinite;
     }
 
-    .subtitle {
-      font-size: 16px;
-      color: #8892b0;
-      margin-bottom: 20px;
-      letter-spacing: 1px;
-    }
-
-    .company {
-      font-size: 14px;
-      background: linear-gradient(90deg, #00d4ff, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #00d4ff);
-      background-size: 400% 400%;
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 10px;
-      letter-spacing: 1px;
-      font-weight: 600;
-      animation: rainbow 6s ease-in-out infinite, fadeInUp 1s ease-out;
-    }
+    .logo-letter:nth-child(1) { animation-delay: 0.1s, 0s; }
+    .logo-letter:nth-child(2) { animation-delay: 0.2s, 0s; }
+    .logo-letter:nth-child(3) { animation-delay: 0.3s, 0s; }
+    .logo-letter:nth-child(4) { animation-delay: 0.4s, 0s; }
+    .logo-letter:nth-child(5) { animation-delay: 0.5s, 0s; }
+    .logo-letter:nth-child(6) { animation-delay: 0.6s, 0s; }
+    .logo-letter:nth-child(7) { animation-delay: 0.7s, 0s; }
+    .logo-letter:nth-child(8) { animation-delay: 0.8s, 0s; }
 
     .tagline {
       font-size: 12px;
-      color: #8892b0;
-      margin-bottom: 40px;
-      letter-spacing: 0.5px;
-      animation: fadeInUp 1.5s ease-out 0.5s both;
+      color: ${textSecondary};
+      margin-bottom: 48px;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      animation: fadeInUp 1.2s ease-out 0.8s both;
     }
 
     .progress-container {
       width: 400px;
       height: 4px;
-      background: rgba(255, 255, 255, 0.1);
+      background: ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
       border-radius: 2px;
       overflow: hidden;
       margin-bottom: 20px;
@@ -261,51 +279,40 @@ class SplashScreen {
     }
 
     .message {
-      font-size: 14px;
-      color: #8892b0;
+      font-size: 13px;
+      color: ${textSecondary};
       text-align: center;
       min-height: 20px;
+      font-weight: 500;
     }
 
     .version {
       position: absolute;
       bottom: 20px;
-      font-size: 12px;
-      color: #4a5568;
+      font-size: 11px;
+      color: ${isDark ? '#4a5568' : '#999999'};
+      font-weight: 500;
     }
 
-    @keyframes pulse {
-      0%, 100% {
+    @keyframes letterDrop {
+      0% {
+        opacity: 0;
+        transform: translateY(-100px);
+      }
+      60% {
         opacity: 1;
+        transform: translateY(10px);
       }
-      50% {
-        opacity: 0.6;
+      80% {
+        transform: translateY(-5px);
       }
-    }
-
-    .loading {
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes logoGlow {
-      0%, 100% {
-        text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-      }
-      50% {
-        text-shadow: 0 0 30px rgba(0, 212, 255, 0.6), 0 0 40px rgba(0, 212, 255, 0.3);
+      100% {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
 
-    @keyframes gradientShift {
-      0%, 100% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-    }
-
-    @keyframes rainbow {
+    @keyframes rainbowShift {
       0%, 100% {
         background-position: 0% 50%;
       }
@@ -325,44 +332,43 @@ class SplashScreen {
       }
     }
 
-    .container::before {
-      content: 'WORLDENV';
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 120px;
-      font-weight: 100;
-      color: rgba(0, 212, 255, 0.03);
-      pointer-events: none;
-      z-index: 0;
-      letter-spacing: 8px;
-      transform: rotate(-15deg);
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.6;
+      }
     }
 
-    .container::after {
-      content: 'WORLDENV';
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      font-size: 80px;
-      font-weight: 100;
-      color: rgba(0, 212, 255, 0.05);
-      pointer-events: none;
-      z-index: 0;
-      letter-spacing: 4px;
-      transform: rotate(15deg);
+    .loading {
+      animation: pulse 2s ease-in-out infinite;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo">WORLDEDIT</div>
     <div class="company">ELASTIC SOFTWORKS 2025</div>
+
+    <div class="logo-container">
+      <span class="logo-letter">W</span>
+      <span class="logo-letter">O</span>
+      <span class="logo-letter">R</span>
+      <span class="logo-letter">L</span>
+      <span class="logo-letter">D</span>
+      <span class="logo-letter">E</span>
+      <span class="logo-letter">N</span>
+      <span class="logo-letter">V</span>
+    </div>
+
     <div class="tagline">NEW WORLD APPLICATIONS</div>
+
     <div class="progress-container">
       <div class="progress-bar" id="progress"></div>
     </div>
+
     <div class="message loading" id="message">Loading...</div>
+
     <div class="version">v0.1.0-prealpha</div>
   </div>
 </body>

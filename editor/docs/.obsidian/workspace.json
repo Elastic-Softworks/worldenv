@@ -78,7 +78,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "735a49c6602d3c86",
@@ -171,8 +172,8 @@
   },
   "active": "8e1733296d32d264",
   "lastOpenFiles": [
-    "TESTING-GUIDE.md",
     "QUICKSTART.md",
+    "TESTING-GUIDE.md",
     "phase4-summary.md",
     "quick-reference.md",
     "index.md",

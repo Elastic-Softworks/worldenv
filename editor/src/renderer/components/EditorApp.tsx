@@ -28,9 +28,17 @@ export function EditorApp(): JSX.Element {
   const { state } = useEditorState();
   const { theme } = useTheme();
 
+  /* DEBUG: Log current state */
+  console.log('[EDITOR APP] Rendering with state:', {
+    initialized: state.initialized,
+    projectOpen: state.project.isOpen,
+    projectPath: state.project.path
+  });
+
   /* show loading state during initial application setup */
 
   if (!state.initialized) {
+    console.log('[EDITOR APP] Showing initialization screen');
     return (
       <div
         style={{
@@ -72,5 +80,6 @@ export function EditorApp(): JSX.Element {
   /* always render the full editor shell */
   /* panels will display appropriate empty states when no project is open */
 
+  console.log('[EDITOR APP] Rendering EditorShell');
   return <EditorShell />;
 }

@@ -15,9 +15,68 @@
 - [Development Environment](#development-environment)
 - [Debugging Tips](#debugging-tips)
 
-## Installation Issues
+## Critical Issues
 
-### Node.js Version Conflicts
+### UI Panels Not Visible (Gray Screen)
+
+**Problem:** After launching WORLDEDIT, only the menu bar is visible with a gray screen. No panels (Hierarchy, Viewport, Inspector, Asset Browser) are showing.
+
+**Symptoms:**
+- Application launches successfully
+- Splash screen appears correctly
+- Main window opens but shows only gray background
+- Menu bar is present but panels are missing
+- No error messages in console
+
+**Root Cause:**
+Application was not built after source code changes, or build artifacts are outdated.
+
+**Solutions:**
+
+**Step 1: Verify Build Exists**
+```bash
+# Check if dist/ directory exists
+ls -la worldenv/editor/dist/
+
+# Should show dist/main/ and dist/renderer/ directories
+# If missing, build has not been run
+```
+
+**Step 2: Rebuild Application**
+```bash
+cd worldenv/editor
+
+# Clean previous build
+rm -rf dist
+
+# Install dependencies
+npm install
+
+# Build application
+npm run build
+
+# Or use combined command
+npm run build:main && npm run build:renderer
+
+# Launch
+npm start
+```
+
+**Step 3: Verify Build Success**
+```bash
+# Check for main process bundle
+ls -la worldenv/editor/dist/main/main.js
+
+# Check for renderer bundle
+ls -la worldenv/editor/dist/renderer/index.html
+
+# Both files must exist for application to work
+```
+
+**Step 4: Check Console for Errors**
+1. Open Developer Tools: `View > Toggle Developer Tools`
+2. Go to Console tab
+3. Look for `ion Conflicts
 
 **Problem:** WORLDEDIT requires Node.js 18+ but you have an older version.
 
@@ -915,6 +974,197 @@ tar -xzf project-backup-20240101.tar.gz
 
 # Import project settings
 # File → Import → Project Settings → settings.json
+```
+
+## Critical UI Issues
+
+### Gray Screen - No Panels Visible
+
+**Problem:** Editor launches but shows only gray screen with no UI panels.
+
+**Symptoms:**
+- Application starts successfully
+- Splash screen displays correctly
+- Main window opens but shows blank gray area
+- Menu bar visible but no panels (Hierarchy, Viewport, Inspector, Assets)
+
+**Root Cause:**
+Application was not built after source code changes. Running from stale or non-existent build artifacts.
+
+**Solutions:**
+```bash
+# Step 1: Verify build artifacts exist
+ls -la editor/dist/main/main.js
+ls -la editor/dist/renderer/
+
+# Step 2: Clean and rebuild
+cd editor
+rm -rf dist/
+npm run build
+
+# Step 3: Verify build succeeded
+ls -la dist/main/main.js
+ls -la dist/renderer/index.html
+
+# Step 4: Launch application
+npm start
+
+# Alternative: Use development mode with hot reload
+npm run dev
+```
+
+**Debugging:**
+```bash
+# Open Developer Tools to check console
+# View > Toggle Developer Tools > Console tab
+
+# Look for these debug messages:
+# [EDITOR APP] Rendering with state: ...
+# [EDITOR SHELL] Rendering with panel visibility: ...
+
+# If no messages appear, rebuild was unsuccessful
+# If panels show visible: false, check EditorStateContext
+```
+
+### Panels Not Rendering After Build
+
+**Problem:** Build succeeds but panels still don't appear.
+
+**Symptoms:**
+- Console shows `[EDITOR SHELL]` messages
+- Panel visibility states show `true`
+- Still seeing gray screen
+
+**Solutions:**
+```bash
+# Clear browser/Electron cache
+rm -rf ~/.config/worldedit/Cache/
+rm -rf ~/.config/worldedit/GPUCache/
+
+# Hard refresh in application
+# Ctrl+Shift+R (Linux/Windows)
+# Cmd+Shift+R (macOS)
+
+# Rebuild with fresh node_modules
+rm -rf node_modules/ dist/
+npm install
+npm run build
+npm start
+
+# Check Allotment library loaded
+# Console should not show errors about 'Allotment' undefined
+```
+
+### Build Process Issues
+
+**Problem:** Changes to source code not appearing in running application.
+
+**Critical Reminder:**
+Source code changes require compilation to `dist/` directory before they are visible.
+
+**Proper Workflow:**
+```bash
+# 1. Make source code changes
+vim src/renderer/components/EditorApp.tsx
+
+# 2. Build the application
+npm run build
+# OR for development with auto-rebuild:
+npm run dev
+
+# 3. Launch (if not using dev mode)
+npm start
+
+# 4. Verify changes appear
+```
+
+**Common Mistakes:**
+- Editing source files but not rebuilding
+- Running `npm start` without `npm run build` first
+- Assuming changes are live without checking `dist/` timestamps
+
+**Verification:**
+```bash
+# Check when dist files were last modified
+ls -lt dist/main/main.js
+ls -lt dist/renderer/renderer.js
+
+# Compare to source file modification times
+ls -lt src/main/main.ts
+ls -lt src/renderer/renderer.tsx
+
+# If source is newer than dist, rebuild required
+```
+
+### Splash Screen Not Updating
+
+**Problem:** Splash screen still shows old branding after updates.
+
+**Symptoms:**
+- Source code updated in `src/main/splash.ts`
+- Build completed successfully
+- Old splash screen still appears
+
+**Solutions:**
+```bash
+# Rebuild main process specifically
+npm run build:main
+
+# Clear application cache
+rm -rf ~/.config/worldedit/
+
+# Force fresh build
+rm -rf dist/
+npm run build
+npm start
+
+# Verify splash.ts was actually modified
+cat src/main/splash.ts | grep "ELASTIC SOFTWORKS"
+```
+
+### Menu Logging Not Appearing
+
+**Problem:** Menu actions don't produce console output.
+
+**Symptoms:**
+- Clicking File > New Project shows no `[MENU]` message
+- Console is accessible but empty
+
+**Solutions:**
+```bash
+# Verify main process was rebuilt
+ls -lt dist/main/main.js
+
+# Check if logging was added to source
+grep "console.log.*MENU" src/main/main.ts
+
+# Rebuild main process
+npm run build:main
+
+# Check console in both places:
+# 1. Terminal where npm start was run (main process logs)
+# 2. Developer Tools > Console (renderer process logs)
+```
+
+### Development vs Production Builds
+
+**Development Mode (Recommended):**
+```bash
+npm run dev
+# Auto-rebuilds on source changes
+# Faster iteration
+# Source maps enabled
+# Hot reload for renderer
+```
+
+**Production Build:**
+```bash
+npm run build
+npm start
+# Manual rebuild required
+# Optimized output
+# Smaller bundle sizes
+# No hot reload
 ```
 
 ---
