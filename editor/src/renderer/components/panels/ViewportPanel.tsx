@@ -651,7 +651,7 @@ export function ViewportPanel(): JSX.Element {
     flex: 1,
     position: 'relative',
     overflow: 'hidden',
-    backgroundColor: '#1e1e1e'
+    backgroundColor: theme.colors.background.primary
   };
 
   const canvasStyle: React.CSSProperties = {
@@ -739,41 +739,29 @@ export function ViewportPanel(): JSX.Element {
                 backgroundColor: 'rgba(30, 30, 30, 0.95)'
               }}
             >
-              <div style={{ textAlign: 'center', maxWidth: '500px', padding: theme.spacing.xl }}>
+              <div
+                className="viewport-welcome"
+                style={{ textAlign: 'center', maxWidth: '500px', padding: theme.spacing.xl }}
+              >
                 <h1
                   style={{
                     margin: 0,
-                    marginBottom: theme.spacing.lg,
-                    fontSize: '32px',
-                    fontWeight: 700,
-                    background: `linear-gradient(135deg, ${theme.colors.accent.primary}, ${theme.colors.accent.secondary})`,
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  }}
-                >
-                  WORLDEDIT
-                </h1>
-
-                <div style={{ marginBottom: theme.spacing.sm, color: theme.colors.accent.primary }}>
-                  ELASTIC SOFTWORKS 2025
-                </div>
-
-                <div
-                  style={{
                     marginBottom: theme.spacing.xl,
-                    color: theme.colors.foreground.secondary,
-                    fontSize: '14px'
+                    fontSize: 'clamp(2rem, 8vw, 4rem)',
+                    fontWeight: 700,
+                    fontFamily:
+                      'Hothouse, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                    color: theme.colors.foreground.primary
                   }}
                 >
-                  NEW WORLD APPLICATIONS
-                </div>
+                  WoRLDenV
+                </h1>
 
                 <p
                   style={{
                     margin: 0,
                     marginBottom: theme.spacing.xl,
-                    fontSize: '16px',
+                    fontSize: 'clamp(0.875rem, 2.5vw, 1rem)',
                     color: theme.colors.foreground.secondary,
                     lineHeight: 1.5
                   }}
@@ -782,11 +770,17 @@ export function ViewportPanel(): JSX.Element {
                 </p>
 
                 <div
+                  className="viewport-buttons"
                   style={{
                     display: 'flex',
+                    flexDirection: 'row',
                     gap: theme.spacing.md,
                     justifyContent: 'center',
-                    marginBottom: theme.spacing.xl
+                    alignItems: 'center',
+                    marginBottom: theme.spacing.xl,
+                    width: '100%',
+                    maxWidth: '400px',
+                    margin: '0 auto'
                   }}
                 >
                   <Button
@@ -794,6 +788,10 @@ export function ViewportPanel(): JSX.Element {
                     size="lg"
                     onClick={handleNewProject}
                     disabled={isCreatingProject || isOpeningProject}
+                    style={{
+                      minWidth: '140px',
+                      fontSize: 'clamp(0.875rem, 2.5vw, 1rem)'
+                    }}
                   >
                     {isCreatingProject ? 'Creating...' : 'New Project'}
                   </Button>
@@ -803,6 +801,10 @@ export function ViewportPanel(): JSX.Element {
                     size="lg"
                     onClick={() => setShowRecentProjectsDialog(true)}
                     disabled={isCreatingProject || isOpeningProject}
+                    style={{
+                      minWidth: '140px',
+                      fontSize: 'clamp(0.875rem, 2.5vw, 1rem)'
+                    }}
                   >
                     {isOpeningProject ? 'Opening...' : 'Open Project'}
                   </Button>
@@ -810,9 +812,9 @@ export function ViewportPanel(): JSX.Element {
 
                 <div
                   style={{
-                    fontSize: '12px',
+                    fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
                     color: theme.colors.foreground.tertiary,
-                    opacity: 0.7
+                    textAlign: 'center' as const
                   }}
                 >
                   All editor panels are visible and ready for use

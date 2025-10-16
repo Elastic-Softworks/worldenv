@@ -482,8 +482,8 @@ function setupMenuHandlers(): void {
 
       await dialogManager.showInfo(
         mainWindow,
-        'About WORLDEDIT',
-        `WORLDEDIT v${app.getVersion()}\n\nGame development editor for WORLDENV engine.`,
+        'About WoRLDenV',
+        `WoRLDenV v${app.getVersion()}\n\nGame development editor for WORLDENV engine.`,
         'Copyright © 2025 Elastic Softworks'
       );
     },

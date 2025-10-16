@@ -11,8 +11,10 @@
  * Shows loading progress and version information.
  */
 
-import { BrowserWindow, screen, nativeTheme } from 'electron';
+import { BrowserWindow, screen, nativeTheme, app } from 'electron';
 import { logger } from './logger';
+import * as path from 'path';
+import * as fs from 'fs';
 
 class SplashScreen {
   private window: BrowserWindow | null;
@@ -159,6 +161,17 @@ class SplashScreen {
    * Generates HTML content for splash screen.
    */
   private generateSplashHTML(): string {
+    // Load and encode font file
+    let fontData = '';
+    try {
+      const fontPath = path.join(__dirname, '../../font/hothouse.otf');
+      if (fs.existsSync(fontPath)) {
+        const fontBuffer = fs.readFileSync(fontPath);
+        fontData = fontBuffer.toString('base64');
+      }
+    } catch (error) {
+      logger.warn('SPLASH', 'Failed to load hothouse font, using fallback', { error });
+    }
     const isDark = nativeTheme.shouldUseDarkColors;
     const bgColor = isDark ? '#2a2a2a' : '#ffffff';
     const textPrimary = isDark ? '#ffffff' : '#1a1a1a';
@@ -174,6 +187,14 @@ class SplashScreen {
   <title>WORLDEDIT</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    @font-face {
+      font-family: 'Hothouse';
+      src: url('data:font/opentype;base64,${fontData}') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: fallback;
+    }
 
     * {
       margin: 0;
@@ -227,33 +248,26 @@ class SplashScreen {
     }
 
     .logo-letter {
-      font-size: 48px;
+      font-family: 'Hothouse', 'Inter', 'Arial Black', sans-serif;
+      font-size: clamp(32px, 8vw, 48px);
       font-weight: 700;
-      color: ${isDark ? 'transparent' : '#000000'};
-      background: ${isDark ? 'linear-gradient(135deg, #00d4ff, #0091ff, #00d4ff, #0091ff)' : 'none'};
-      background-size: 300% 300%;
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: ${isDark ? 'transparent' : '#000000'};
+      color: ${isDark ? '#ffffff' : '#000000'};
       letter-spacing: 2px;
       opacity: 0;
       transform: translateY(-100px) scale(0.3);
       animation: letterDrop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
-    .logo-letter.dark-mode {
-      animation: letterDrop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
-                 rainbowShift 4s ease-in-out infinite;
-    }
 
-    .logo-letter:nth-child(1) { animation-delay: 0.1s, 0s; }
-    .logo-letter:nth-child(2) { animation-delay: 0.2s, 0s; }
-    .logo-letter:nth-child(3) { animation-delay: 0.3s, 0s; }
-    .logo-letter:nth-child(4) { animation-delay: 0.4s, 0s; }
-    .logo-letter:nth-child(5) { animation-delay: 0.5s, 0s; }
-    .logo-letter:nth-child(6) { animation-delay: 0.6s, 0s; }
-    .logo-letter:nth-child(7) { animation-delay: 0.7s, 0s; }
-    .logo-letter:nth-child(8) { animation-delay: 0.8s, 0s; }
+
+    .logo-letter:nth-child(1) { animation-delay: 0.1s; }
+    .logo-letter:nth-child(2) { animation-delay: 0.2s; }
+    .logo-letter:nth-child(3) { animation-delay: 0.3s; }
+    .logo-letter:nth-child(4) { animation-delay: 0.4s; }
+    .logo-letter:nth-child(5) { animation-delay: 0.5s; }
+    .logo-letter:nth-child(6) { animation-delay: 0.6s; }
+    .logo-letter:nth-child(7) { animation-delay: 0.7s; }
+    .logo-letter:nth-child(8) { animation-delay: 0.8s; }
 
     .tagline {
       font-size: 12px;
@@ -317,14 +331,7 @@ class SplashScreen {
       }
     }
 
-    @keyframes rainbowShift {
-      0%, 100% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-    }
+
 
     @keyframes fadeInUp {
       from {
@@ -353,17 +360,17 @@ class SplashScreen {
 </head>
 <body>
   <div class="container">
-    <div class="company">ELASTIC SOFTWORKS 2025</div>
+    <div class="company">ELASTIC SOFTWORKS</div>
 
     <div class="logo-container">
-      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">W</span>
-      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">O</span>
-      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">R</span>
-      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">L</span>
-      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">D</span>
-      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">E</span>
-      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">N</span>
-      <span class="logo-letter ${isDark ? 'dark-mode' : ''}">V</span>
+      <span class="logo-letter">W</span>
+      <span class="logo-letter">o</span>
+      <span class="logo-letter">R</span>
+      <span class="logo-letter">L</span>
+      <span class="logo-letter">D</span>
+      <span class="logo-letter">e</span>
+      <span class="logo-letter">n</span>
+      <span class="logo-letter">V</span>
     </div>
 
     <div class="tagline">NEW WORLD APPLICATIONS</div>

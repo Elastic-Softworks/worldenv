@@ -151,7 +151,17 @@ export function WelcomeScreen(): JSX.Element {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md }}>
-          <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>WORLDEDIT</h1>
+          <h1
+            style={{
+              margin: 0,
+              fontSize: '18px',
+              fontWeight: 600,
+              fontFamily:
+                'Hothouse, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+            }}
+          >
+            WoRLDenV
+          </h1>
           <span
             style={{
               fontSize: '12px',
@@ -190,22 +200,21 @@ export function WelcomeScreen(): JSX.Element {
             style={{
               margin: 0,
               marginBottom: theme.spacing.lg,
-              fontSize: '48px',
+              fontSize: 'clamp(2.5rem, 8vw, 4rem)',
               fontWeight: 700,
-              background: `linear-gradient(135deg, ${theme.colors.accent.primary}, ${theme.colors.accent.secondary})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              fontFamily:
+                'Hothouse, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              color: theme.colors.foreground.primary
             }}
           >
-            WORLDEDIT
+            WoRLDenV
           </h1>
 
           <p
             style={{
               margin: 0,
               marginBottom: theme.spacing.xl,
-              fontSize: '18px',
+              fontSize: 'clamp(1rem, 3vw, 1.125rem)',
               color: theme.colors.foreground.secondary,
               lineHeight: 1.5
             }}
@@ -306,7 +315,7 @@ export function WelcomeScreen(): JSX.Element {
             color: theme.colors.foreground.tertiary
           }}
         >
-          WORLDEDIT - Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
+          WoRLDenV - Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
         </p>
       </div>
 

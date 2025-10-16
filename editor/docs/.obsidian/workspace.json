@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "TESTING-GUIDE.md",
+                "file": "QUICKSTART.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "TESTING-GUIDE"
+              "title": "QUICKSTART"
             }
           }
         ]
@@ -78,8 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "735a49c6602d3c86",
@@ -172,8 +171,8 @@
   },
   "active": "8e1733296d32d264",
   "lastOpenFiles": [
-    "QUICKSTART.md",
     "TESTING-GUIDE.md",
+    "QUICKSTART.md",
     "todo/ui-fix-todo.txt",
     "phase4-summary.md",
     "quick-reference.md",

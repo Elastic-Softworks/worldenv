@@ -293,7 +293,6 @@ export function Toolbar(): JSX.Element {
         }}
         disabled={!state.project.isOpen || !isEngineReady}
         title={isPlayMode ? 'Stop Play Mode (F5)' : 'Start Play Mode (F5)'}
-        icon={isPlayMode ? 'Stop' : 'Play'}
       >
         {isPlayMode ? 'Stop' : 'Play'}
       </Button>

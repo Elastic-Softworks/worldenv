@@ -211,7 +211,7 @@ export function StatusBar(): JSX.Element {
       {memoryUsage && (
         <>
           <div style={statusItemStyle}>
-            <span>🧠 {memoryUsage}</span>
+            <span>{memoryUsage}</span>
           </div>
           <div style={separatorStyle} />
         </>

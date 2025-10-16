@@ -12,6 +12,17 @@
  */
 
 /* ============================================
+   FONTS
+   ============================================ */
+
+@font-face {
+  font-family: 'Hothouse';
+  src: url('../../../font/hothouse.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* ============================================
    RESET & BASE
    ============================================ */
 
@@ -254,6 +265,62 @@ input[type='checkbox'] {
 }
 
 /* ============================================
+   RESPONSIVE TEXT SCALING
+   ============================================ */
+
+.text-responsive-hero {
+  font-size: clamp(2rem, 8vw, 4rem);
+}
+
+.text-responsive-large {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+}
+
+.text-responsive-medium {
+  font-size: clamp(1rem, 3vw, 1.5rem);
+}
+
+.text-responsive-small {
+  font-size: clamp(0.875rem, 2vw, 1rem);
+}
+
+/* Responsive viewport layout */
+@media (max-width: 768px) {
+  .viewport-welcome {
+    padding: var(--spacing-md) !important;
+  }
+
+  .viewport-welcome h1 {
+    font-size: clamp(1.5rem, 10vw, 2.5rem) !important;
+    margin-bottom: var(--spacing-md) !important;
+  }
+
+  .viewport-welcome p {
+    font-size: clamp(0.75rem, 3vw, 0.875rem) !important;
+  }
+
+  .viewport-buttons {
+    flex-direction: column !important;
+    gap: var(--spacing-sm) !important;
+  }
+
+  .viewport-buttons button {
+    width: 100% !important;
+    max-width: 200px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .viewport-welcome h1 {
+    font-size: clamp(1.25rem, 12vw, 2rem) !important;
+  }
+
+  .viewport-welcome {
+    padding: var(--spacing-sm) !important;
+  }
+}
+
+/* ============================================
    UTILITIES
    ============================================ */
 
@@ -386,13 +453,54 @@ input[type='checkbox'] {
    ============================================ */
 
 @media (max-width: 768px) {
-  /* Mobile adjustments if needed */
+  /* Tablet adjustments */
+  :root {
+    --spacing-xs: 3px;
+    --spacing-sm: 6px;
+    --spacing-md: 12px;
+    --spacing-lg: 18px;
+    --spacing-xl: 24px;
+  }
+
+  /* Reduce font sizes for smaller screens */
+  body {
+    font-size: 13px;
+  }
+
+  /* Make panels more touch-friendly */
+  .context-menu-item {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 14px;
+  }
+
+  /* Adjust status bar for smaller screens */
+  .status-bar {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Mobile adjustments */
   :root {
     --spacing-xs: 2px;
     --spacing-sm: 4px;
     --spacing-md: 8px;
     --spacing-lg: 12px;
     --spacing-xl: 16px;
+  }
+
+  body {
+    font-size: 12px;
+  }
+
+  /* Stack buttons vertically on very small screens */
+  .dialog {
+    max-width: 95vw !important;
+    margin: var(--spacing-sm);
+  }
+
+  .dialog-header {
+    padding: var(--spacing-sm) var(--spacing-md);
   }
 }
 
