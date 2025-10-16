@@ -291,7 +291,7 @@ const api = {
       return ipcRenderer.invoke('script:write-file', { filePath, content }) as Promise<void>;
     },
 
-    createNew: (scriptType: 'typescript' | 'assemblyscript'): Promise<string> => {
+    createNew: (scriptType: 'typescript' | 'assemblyscript' | 'worldc'): Promise<string> => {
       return ipcRenderer.invoke('script:create-new', scriptType) as Promise<string>;
     },
 

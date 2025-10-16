@@ -382,7 +382,7 @@ export function RecentProjectsDialog({
                       }}
                       title="Remove from recent projects"
                     >
-                      ✕
+                      ×
                     </button>
                   </div>
                 </div>

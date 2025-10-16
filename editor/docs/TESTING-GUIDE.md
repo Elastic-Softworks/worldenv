@@ -1,6 +1,6 @@
 # WORLDENV PRE-ALPHA TESTING GUIDE
 
-**Complete testing manual for WORLDEDIT and WORLDSRC systems**
+**Complete testing manual for WORLDEDIT and WORLDC systems**
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@
   - [1.7 Asset Management](#17-asset-management)
   - [1.8 Script Editor](#18-script-editor)
   - [1.9 Build System](#19-build-system)
-- [II. WORLDSRC Language Testing](#ii-worldsrc-language-testing)
+- [II. WORLDC Language Testing](#ii-worldc-language-testing)
   - [2.1 Language Foundation](#21-language-foundation)
   - [2.2 Compilation Pipeline](#22-compilation-pipeline)
   - [2.3 Runtime Integration](#23-runtime-integration)
@@ -52,7 +52,7 @@ WORLDENV Ecosystem
 │   ├── Renderer Process (React/TypeScript)
 │   ├── Viewport Engine (Three.js/Pixi.js)
 │   └── Asset Pipeline
-└── WORLDSRC (Language)
+└── WORLDC (Language)
     ├── Lexer/Parser
     ├── Semantic Analyzer
     ├── Code Generator
@@ -96,8 +96,8 @@ dxdiag                   # Windows
    npm install
    npm run build
    
-   # Build WORLDSRC
-   cd ../worldsrc
+   # Build WORLDC
+   cd ../worldc
    npm install
    npm run build
    npm test  # Verify basic functionality
@@ -105,8 +105,8 @@ dxdiag                   # Windows
 
 2. **Install Testing Tools**
    ```bash
-   # Global WORLDSRC compiler
-   npm install -g @worldenv/worldsrc
+   # Global WORLDC compiler
+   npm install -g @worldenv/worldc
    
    # Memory monitoring (optional)
    npm install -g clinic
@@ -1708,7 +1708,7 @@ cat scenes/TestScene.scene.json | jq .
 
 **Steps:**
 1. Add Script component
-2. Assign WORLDSRC script
+2. Assign WORLDC script
 3. Test script execution
 4. Verify component interaction
 
@@ -2161,18 +2161,18 @@ mkdir test-assets/images
 - Error highlighting accurate
 - Good color scheme
 
-#### Test 109: WORLDSRC syntax highlighting
+#### Test 109: WORLDC syntax highlighting
 
-**Objective:** Test WORLDSRC language support
+**Objective:** Test WORLDC language support
 
 **Steps:**
-1. Create new WORLDSRC file
-2. Write WORLDSRC code
+1. Create new WORLDC file
+2. Write WORLDC code
 3. Verify syntax highlighting
 4. Test mixed-language support
 
 **Expected Behavior:**
-- WORLDSRC syntax highlighted correctly
+- WORLDC syntax highlighted correctly
 - C/C++ features highlighted
 - TypeScript features highlighted
 - Mixed syntax handled well
@@ -2647,15 +2647,15 @@ python -m http.server 8000
 
 ---
 
-## II. WORLDSRC Language Testing
+## II. WORLDC Language Testing
 
 ### 2.1 Language Foundation
 
 #### Test 138: C/C++ syntax compatibility
 
-**Objective:** Verify C/C++ syntax support in WORLDSRC
+**Objective:** Verify C/C++ syntax support in WORLDC
 
-**Setup:** Create test WORLDSRC file
+**Setup:** Create test WORLDC file
 
 **Steps:**
 1. Write C-style code (structs, functions)
@@ -2664,7 +2664,7 @@ python -m http.server 8000
 4. Verify output correctness
 
 **Test Code:**
-```worldsrc
+```worldc
 // Test C syntax
 struct Point {
     float x, y;
@@ -2693,7 +2693,7 @@ public:
 
 #### Test 139: TypeScript syntax integration
 
-**Objective:** Test TypeScript features in WORLDSRC
+**Objective:** Test TypeScript features in WORLDC
 
 **Steps:**
 1. Use TypeScript type annotations
@@ -2702,7 +2702,7 @@ public:
 4. Verify compilation output
 
 **Test Code:**
-```worldsrc
+```worldc
 // TypeScript syntax
 interface IComponent {
     update(deltaTime: number): void;
@@ -2739,7 +2739,7 @@ class PlayerController implements IComponent {
 4. Test runtime behavior
 
 **Test Code:**
-```worldsrc
+```worldc
 #include <stdio.h>
 
 // C struct
@@ -2747,6 +2747,147 @@ struct GameState {
     int score;
     bool gameOver;
 };
+
+// TypeScript class
+class Player implements IMovable {
+    position: vec3;
+    velocity: vec3;
+    
+    move(direction: vec3): void {
+        this.velocity = direction;
+    }
+}
+
+// Mixed usage
+function updateGame(state: GameState, player: Player): void {
+    if (!state.gameOver) {
+        player.move(vec3(1, 0, 0));
+        state.score += 10;
+    }
+}
+```
+
+**Expected Behavior:**
+- All syntax types compile together
+- Type checking works across languages
+- Runtime behavior is correct
+- No syntax conflicts
+
+#### Test 141: WORLDC simplified verbiage
+
+**Objective:** Test WORLDC-specific simplified syntax keywords
+
+**Steps:**
+1. Test `edict` keyword for constants
+2. Test `pass` statement for no-ops
+3. Test `invoke` for explicit function calls
+4. Verify compilation and behavior
+
+**Test Code:**
+```worldc
+// Test edict (constant declaration)
+edict float GRAVITY = 9.81f;
+edict int MAX_PLAYERS = 4;
+edict string GAME_TITLE = "My Game";
+
+// Test pass statement
+function handleError(errorCode: int): void {
+    switch (errorCode) {
+        case 0:
+            pass;  // Do nothing for success
+            break;
+        case 1:
+            printf("Warning: Minor error\n");
+            break;
+        default:
+            printf("Error: Unknown error code\n");
+            break;
+    }
+}
+
+// Test invoke syntax
+function main(): int {
+    invoke printf("Starting game...\n");
+    invoke handleError(0);
+    
+    // Traditional calls still work
+    printf("Game initialized\n");
+    
+    // invoke with complex expressions
+    invoke updatePlayer(getPlayer(), getDeltaTime());
+    
+    return 0;
+}
+
+// Helper functions for testing
+function getPlayer(): Player { return new Player(); }
+function getDeltaTime(): float { return 0.016f; }
+function updatePlayer(player: Player, dt: float): void {
+    pass;  // No-op implementation
+}
+```
+
+**Expected Behavior:**
+- `edict` creates immutable constants
+- `pass` compiles as no-operation
+- `invoke` calls functions explicitly
+- Mixed syntax works seamlessly
+- All keywords generate proper code
+
+#### Test 142: Simplified verbiage integration
+
+**Objective:** Test simplified verbiage with other language features
+
+**Steps:**
+1. Mix simplified verbiage with C/C++/TypeScript
+2. Test in various contexts (classes, functions, loops)
+3. Verify semantic equivalence
+4. Check generated output
+
+**Test Code:**
+```worldc
+class GameEngine {
+    edict float TARGET_FPS = 60.0f;
+    
+    private running: bool = true;
+    
+    start(): void {
+        invoke this.initialize();
+        
+        while (this.running) {
+            invoke this.update();
+            invoke this.render();
+            
+            if (this.shouldExit()) {
+                this.running = false;
+            } else {
+                pass;  // Continue running
+            }
+        }
+        
+        invoke this.shutdown();
+    }
+    
+    private initialize(): void {
+        pass;  // Initialization logic would go here
+    }
+    
+    private update(): void {
+        pass;  // Update logic
+    }
+    
+    private render(): void {
+        pass;  // Render logic
+    }
+    
+    private shouldExit(): bool {
+        return false;  // Simple implementation
+    }
+    
+    private shutdown(): void {
+        invoke printf("Engine shutting down...\n");
+    }
+}
 
 // C++ class with TypeScript annotations
 class GameManager {
@@ -2782,7 +2923,7 @@ public:
 4. Test macro expansion
 
 **Test Code:**
-```worldsrc
+```worldc
 #include <worldenv.h>
 #include "custom_header.h"
 
@@ -2819,7 +2960,7 @@ void test_preprocessor() {
 4. Verify comment preservation
 
 **Test Code:**
-```worldsrc
+```worldc
 // Single-line comment
 int value = 42; // End-of-line comment
 
@@ -2853,7 +2994,7 @@ int value = 42; // End-of-line comment
 4. Test type conversions
 
 **Test Code:**
-```worldsrc
+```worldc
 void test_primitives() {
     int intValue = 42;
     float floatValue = 3.14f;
@@ -2889,7 +3030,7 @@ void test_primitives() {
 4. Test array operations
 
 **Test Code:**
-```worldsrc
+```worldc
 void test_arrays() {
     // C-style arrays
     int numbers[10];
@@ -2928,7 +3069,7 @@ void test_arrays() {
 4. Test function overloading
 
 **Test Code:**
-```worldsrc
+```worldc
 // Function declarations
 int add(int a, int b);
 float calculate(float x, float y, char operation);
@@ -2965,7 +3106,7 @@ void process(string value);
 4. Test template instantiation
 
 **Test Code:**
-```worldsrc
+```worldc
 // Template function
 template<typename T>
 T maximum(T a, T b) {
@@ -3006,7 +3147,7 @@ Container<string> names;
 4. Test implicit conversions
 
 **Test Code:**
-```worldsrc
+```worldc
 void test_type_inference() {
     // Auto type deduction
     auto value = 42;           // int
@@ -3044,7 +3185,7 @@ void test_type_inference() {
 4. Test formatted input/output
 
 **Test Code:**
-```worldsrc
+```worldc
 #include <worldenv.h>
 
 void test_stdio() {
@@ -3083,7 +3224,7 @@ void test_stdio() {
 4. Test utility functions
 
 **Test Code:**
-```worldsrc
+```worldc
 void test_stdlib() {
     // Memory allocation
     int* numbers = (int*)malloc(10 * sizeof(int));
@@ -3124,7 +3265,7 @@ void test_stdlib() {
 4. Test string manipulation
 
 **Test Code:**
-```worldsrc
+```worldc
 void test_strings() {
     char buffer[100];
     const char* source = "Hello, World!";
@@ -3164,7 +3305,7 @@ void test_strings() {
 4. Test utility math functions
 
 **Test Code:**
-```worldsrc
+```worldc
 void test_math() {
     float angle = 45.0f * M_PI / 180.0f; // Convert to radians
     
@@ -3206,7 +3347,7 @@ void test_math() {
 4. Test high-resolution timing
 
 **Test Code:**
-```worldsrc
+```worldc
 void test_time() {
     // Current time
     time_t currentTime = time(nullptr);
@@ -3237,7 +3378,7 @@ void test_time() {
 - High-resolution timing available
 - Game-specific time functions work
 
-#### Test 154: WORLDSRC-specific libraries
+#### Test 154: WORLDC-specific libraries
 
 **Objective:** Test game engine integration
 
@@ -3248,10 +3389,10 @@ void test_time() {
 4. Test performance helpers
 
 **Test Code:**
-```worldsrc
+```worldc
 #include <worldenv.h>
 
-void test_worldsrc_libs() {
+void test_worldc_libs() {
     // Entity management
     Entity* player = Engine.createEntity("Player");
     Transform* transform = player->getComponent<Transform>();
@@ -3301,10 +3442,10 @@ void test_worldsrc_libs() {
 
 **Commands:**
 ```bash
-# Test WORLDSRC compiler directly
-cd worldenv/worldsrc
-echo 'int main() { return 0; }' > test.wsrc
-npm run compile test.wsrc
+# Test WORLDC compiler directly
+cd worldenv/worldc
+echo 'int main() { return 0; }' > test.wc
+npm run compile test.wc
 ```
 
 **Expected Behavior:**
@@ -3324,7 +3465,7 @@ npm run compile test.wsrc
 4. Check recovery behavior
 
 **Test Code:**
-```worldsrc
+```worldc
 // Invalid tokens to test
 int value = 123@#$;  // Invalid characters
 float bad = 3.14.15; // Invalid number format
@@ -3365,7 +3506,7 @@ string broken = "unclosed string
 4. Test special values
 
 **Test Code:**
-```worldsrc
+```worldc
 void test_literals() {
     // String literals
     string simple = "Hello";
@@ -3425,7 +3566,7 @@ void test_literals() {
 **Commands:**
 ```bash
 # Test AST generation (if debugging available)
-npm run compile -- --dump-ast test.wsrc
+npm run compile -- --dump-ast test.wc
 ```
 
 **Expected Behavior:**
@@ -3445,7 +3586,7 @@ npm run compile -- --dump-ast test.wsrc
 4. Test multiple errors
 
 **Test Code:**
-```worldsrc
+```worldc
 // Syntax errors to test
 class TestClass {
     int value;
@@ -3476,7 +3617,7 @@ class TestClass {
 4. Test parentheses override
 
 **Test Code:**
-```worldsrc
+```worldc
 void test_precedence() {
     // Test precedence
     int result1 = 2 + 3 * 4;        // Should be 14, not 20
@@ -3619,7 +3760,7 @@ void test_precedence() {
 **Objective:** Test TypeScript code generation
 
 **Steps:**
-1. Compile WORLDSRC to TypeScript
+1. Compile WORLDC to TypeScript
 2. Verify output quality
 3. Test generated code functionality
 4. Check performance
@@ -3627,7 +3768,7 @@ void test_precedence() {
 **Commands:**
 ```bash
 # Test TypeScript generation
-npm run compile -- --target typescript test.wsrc
+npm run compile -- --target typescript test.wc
 cat test.ts  # Examine generated TypeScript
 ```
 
@@ -3650,7 +3791,7 @@ cat test.ts  # Examine generated TypeScript
 **Commands:**
 ```bash
 # Test AssemblyScript generation
-npm run compile -- --target assemblyscript test.wsrc
+npm run compile -- --target assemblyscript test.wc
 ```
 
 **Expected Behavior:**
@@ -3836,7 +3977,7 @@ npm run compile -- --target assemblyscript test.wsrc
 4. Test error propagation
 
 **Test Code:**
-```worldsrc
+```worldc
 async function loadAsset(path: string): Promise<Asset> {
     try {
         const asset = await AssetManager.loadAsync(path);
@@ -3906,7 +4047,7 @@ async void test_async() {
 **Commands:**
 ```bash
 # Test WASM generation
-npm run compile -- --target wasm test.wsrc
+npm run compile -- --target wasm test.wc
 ```
 
 **Expected Behavior:**
@@ -4328,7 +4469,7 @@ npm run start --profile
 
 #### Test 209: Script compilation <2 seconds
 
-**Objective:** Test WORLDSRC compilation speed
+**Objective:** Test WORLDC compilation speed
 
 **Setup:** Various script sizes
 
@@ -4341,8 +4482,8 @@ npm run start --profile
 **Commands:**
 ```bash
 # Test compilation directly
-cd worldenv/worldsrc
-time npm run compile large-script.wsrc
+cd worldenv/worldc
+time npm run compile large-script.wc
 ```
 
 **Expected Behavior:**
@@ -4924,11 +5065,11 @@ npm run start        # Launch editor
 npm run lint         # Code linting
 npm run test         # Run tests
 
-# WORLDSRC development
-cd ../worldsrc
+# WORLDC development
+cd ../worldc
 npm run build        # Build compiler
 npm run test         # Test compiler
-npm run compile      # Compile WORLDSRC files
+npm run compile      # Compile WORLDC files
 ```
 
 **Performance Monitoring:**
@@ -4990,10 +5131,10 @@ watch -n 1 'ls -la | wc -l'
 For each test item, provide:
 
 **Status:** Choose one:
-- ✅ **Passed** - Works as expected
-- ⚠️ **Minor Issue** - Works but has minor problems
-- ❌ **Failed** - Does not work or has major issues
-- 🚫 **Blocked** - Cannot test due to dependencies
+- **Passed** - Works as expected
+- **Minor Issue** - Works but has minor problems
+- **Failed** - Does not work or has major issues
+- **Blocked** - Cannot test due to dependencies
 
 **Notes:** Detailed description including:
 - What you observed
@@ -5017,7 +5158,7 @@ For each test item, provide:
 
 **Good Feedback:**
 ```
-Status: ❌ Failed
+Status: Failed
 Priority: High
 
 The viewport becomes unresponsive after loading a scene with 500+ entities. 
@@ -5031,7 +5172,7 @@ The issue seems related to GPU memory management. Reducing entity count to 300 w
 
 **Poor Feedback:**
 ```
-Status: ❌ Failed
+Status: Failed
 Priority: Medium
 
 Doesn't work.
@@ -5118,7 +5259,7 @@ Doesn't work.
 
 ## Conclusion
 
-This testing guide provides comprehensive coverage of the WORLDENV system across all major functional areas. The systematic approach ensures thorough validation of both WORLDEDIT and WORLDSRC components.
+This testing guide provides comprehensive coverage of the WORLDENV system across all major functional areas. The systematic approach ensures thorough validation of both WORLDEDIT and WORLDC components.
 
 **Key Testing Principles:**
 - Test systematically through each functional area
@@ -5145,4 +5286,4 @@ Your thorough testing and detailed feedback will be crucial for achieving a succ
 3. Provide detailed feedback using the HITL interface
 4. Generate the final report when complete
 
-Good luck with your testing! 🚀
+Good luck with your testing!

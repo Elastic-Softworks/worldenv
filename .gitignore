@@ -172,12 +172,12 @@ editor/build/
 editor/out/
 editor/.cache/
 
-# WORLDSRC language artifacts
-worldsrc/dist/
-worldsrc/build/
-worldsrc/out/
-worldsrc/.cache/
-worldsrc/node_modules/
+# WORLDC language artifacts
+worldc/dist/
+worldc/build/
+worldc/out/
+worldc/.cache/
+worldc/node_modules/
 
 # User preferences
 .user.prefs

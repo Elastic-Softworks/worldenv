@@ -782,7 +782,7 @@ export function HierarchyPanel(): JSX.Element {
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            📂
+            ⬜
           </button>
         </div>
       </div>

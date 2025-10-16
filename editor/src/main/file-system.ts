@@ -38,18 +38,16 @@ interface WriteOptions {
 }
 
 class FileSystem {
-
   private max_file_size: number;
   private allowed_extensions: Set<string>;
 
   constructor() {
-
     this.max_file_size = 100 * 1024 * 1024;
 
     this.allowed_extensions = new Set([
       '.worldenv',
       '.worldscene',
-      '.worldsrc',
+      '.wc',
       '.ts',
       '.js',
       '.json',
@@ -69,7 +67,6 @@ class FileSystem {
       '.gltf',
       '.glb'
     ]);
-
   }
 
   /**
@@ -78,33 +75,24 @@ class FileSystem {
    * Reads file contents with validation and error handling.
    * Returns file content as string or buffer.
    */
-  public async readFile(
-    file_path: string,
-    options: ReadOptions = {}
-  ): Promise<string> {
-
+  public async readFile(file_path: string, options: ReadOptions = {}): Promise<string> {
     try {
-
       this.validatePath(file_path);
 
       const stats = await statAsync(file_path);
 
       if (!stats.isFile()) {
-
         throw new FileSystemError('Path is not a file', {
           path: file_path
         });
-
       }
 
       if (stats.size > this.max_file_size) {
-
         throw new FileSystemError('File exceeds maximum size', {
           path: file_path,
           size: stats.size,
           max_size: this.max_file_size
         });
-
       }
 
       const encoding = options.encoding || 'utf8';
@@ -113,13 +101,9 @@ class FileSystem {
       logger.debug('FS', 'File read', { path: file_path, size: stats.size });
 
       return content;
-
     } catch (error) {
-
       if (error instanceof FileSystemError) {
-
         throw error;
-
       }
 
       logger.error('FS', 'File read failed', {
@@ -131,9 +115,7 @@ class FileSystem {
         path: file_path,
         error: error
       });
-
     }
-
   }
 
   /**
@@ -147,16 +129,12 @@ class FileSystem {
     content: string | Buffer,
     options: WriteOptions = {}
   ): Promise<void> {
-
     try {
-
       this.validatePath(file_path);
 
       if (options.create_dirs) {
-
         const dir_path = path.dirname(file_path);
         await this.ensureDirectory(dir_path);
-
       }
 
       const encoding = options.encoding || 'utf8';
@@ -173,13 +151,9 @@ class FileSystem {
         path: file_path,
         size: content.length
       });
-
     } catch (error) {
-
       if (error instanceof FileSystemError) {
-
         throw error;
-
       }
 
       logger.error('FS', 'File write failed', {
@@ -191,9 +165,7 @@ class FileSystem {
         path: file_path,
         error: error
       });
-
     }
-
   }
 
   /**
@@ -202,38 +174,28 @@ class FileSystem {
    * Reads and parses JSON file.
    */
   public async readJSON<T = unknown>(file_path: string): Promise<T> {
-
     try {
-
       const content = await this.readFile(file_path, { encoding: 'utf8' });
       const data = JSON.parse(content);
 
       return data as T;
-
     } catch (error) {
-
       if (error instanceof FileSystemError) {
-
         throw error;
-
       }
 
       if (error instanceof SyntaxError) {
-
         throw new FileSystemError('Invalid JSON format', {
           path: file_path,
           error: error
         });
-
       }
 
       throw new FileSystemError('Failed to read JSON file', {
         path: file_path,
         error: error
       });
-
     }
-
   }
 
   /**
@@ -246,27 +208,19 @@ class FileSystem {
     data: unknown,
     options: WriteOptions = {}
   ): Promise<void> {
-
     try {
-
       const content = JSON.stringify(data, null, 2);
       await this.writeFile(file_path, content, options);
-
     } catch (error) {
-
       if (error instanceof FileSystemError) {
-
         throw error;
-
       }
 
       throw new FileSystemError('Failed to write JSON file', {
         path: file_path,
         error: error
       });
-
     }
-
   }
 
   /**
@@ -275,18 +229,12 @@ class FileSystem {
    * Checks if file or directory exists.
    */
   public async exists(file_path: string): Promise<boolean> {
-
     try {
-
       await statAsync(file_path);
       return true;
-
     } catch (error) {
-
       return false;
-
     }
-
   }
 
   /**
@@ -295,18 +243,12 @@ class FileSystem {
    * Synchronous version of exists.
    */
   public existsSync(file_path: string): boolean {
-
     try {
-
       fs.statSync(file_path);
       return true;
-
     } catch (error) {
-
       return false;
-
     }
-
   }
 
   /**
@@ -315,18 +257,12 @@ class FileSystem {
    * Checks if path is a file.
    */
   public async isFile(file_path: string): Promise<boolean> {
-
     try {
-
       const stats = await statAsync(file_path);
       return stats.isFile();
-
     } catch (error) {
-
       return false;
-
     }
-
   }
 
   /**
@@ -335,18 +271,12 @@ class FileSystem {
    * Checks if path is a directory.
    */
   public async isDirectory(file_path: string): Promise<boolean> {
-
     try {
-
       const stats = await statAsync(file_path);
       return stats.isDirectory();
-
     } catch (error) {
-
       return false;
-
     }
-
   }
 
   /**
@@ -355,37 +285,27 @@ class FileSystem {
    * Creates directory and all parent directories if they do not exist.
    */
   public async ensureDirectory(dir_path: string): Promise<void> {
-
     try {
-
       this.validatePath(dir_path);
 
       if (await this.exists(dir_path)) {
-
         const is_dir = await this.isDirectory(dir_path);
 
         if (!is_dir) {
-
           throw new FileSystemError('Path exists but is not a directory', {
             path: dir_path
           });
-
         }
 
         return;
-
       }
 
       await mkdirAsync(dir_path, { recursive: true });
 
       logger.debug('FS', 'Directory created', { path: dir_path });
-
     } catch (error) {
-
       if (error instanceof FileSystemError) {
-
         throw error;
-
       }
 
       logger.error('FS', 'Directory creation failed', {
@@ -397,9 +317,7 @@ class FileSystem {
         path: dir_path,
         error: error
       });
-
     }
-
   }
 
   /**
@@ -408,19 +326,15 @@ class FileSystem {
    * Lists files and directories in a directory.
    */
   public async listDirectory(dir_path: string): Promise<string[]> {
-
     try {
-
       this.validatePath(dir_path);
 
       const is_dir = await this.isDirectory(dir_path);
 
       if (!is_dir) {
-
         throw new FileSystemError('Path is not a directory', {
           path: dir_path
         });
-
       }
 
       const entries = await readdirAsync(dir_path);
@@ -431,13 +345,9 @@ class FileSystem {
       });
 
       return entries;
-
     } catch (error) {
-
       if (error instanceof FileSystemError) {
-
         throw error;
-
       }
 
       logger.error('FS', 'Directory listing failed', {
@@ -449,9 +359,7 @@ class FileSystem {
         path: dir_path,
         error: error
       });
-
     }
-
   }
 
   /**
@@ -460,31 +368,23 @@ class FileSystem {
    * Deletes a file.
    */
   public async deleteFile(file_path: string): Promise<void> {
-
     try {
-
       this.validatePath(file_path);
 
       const is_file = await this.isFile(file_path);
 
       if (!is_file) {
-
         throw new FileSystemError('Path is not a file', {
           path: file_path
         });
-
       }
 
       await unlinkAsync(file_path);
 
       logger.debug('FS', 'File deleted', { path: file_path });
-
     } catch (error) {
-
       if (error instanceof FileSystemError) {
-
         throw error;
-
       }
 
       logger.error('FS', 'File deletion failed', {
@@ -496,9 +396,7 @@ class FileSystem {
         path: file_path,
         error: error
       });
-
     }
-
   }
 
   /**
@@ -507,31 +405,23 @@ class FileSystem {
    * Deletes a directory and all its contents recursively.
    */
   public async deleteDirectory(dir_path: string): Promise<void> {
-
     try {
-
       this.validatePath(dir_path);
 
       const is_dir = await this.isDirectory(dir_path);
 
       if (!is_dir) {
-
         throw new FileSystemError('Path is not a directory', {
           path: dir_path
         });
-
       }
 
       await this.deleteDirectoryRecursive(dir_path);
 
       logger.debug('FS', 'Directory deleted', { path: dir_path });
-
     } catch (error) {
-
       if (error instanceof FileSystemError) {
-
         throw error;
-
       }
 
       logger.error('FS', 'Directory deletion failed', {
@@ -543,9 +433,7 @@ class FileSystem {
         path: dir_path,
         error: error
       });
-
     }
-
   }
 
   /**
@@ -554,28 +442,20 @@ class FileSystem {
    * Recursively deletes directory contents.
    */
   private async deleteDirectoryRecursive(dir_path: string): Promise<void> {
-
     const entries = await readdirAsync(dir_path);
 
     for (const entry of entries) {
-
       const entry_path = path.join(dir_path, entry);
       const stats = await statAsync(entry_path);
 
       if (stats.isDirectory()) {
-
         await this.deleteDirectoryRecursive(entry_path);
-
       } else {
-
         await unlinkAsync(entry_path);
-
       }
-
     }
 
     await rmdirAsync(dir_path);
-
   }
 
   /**
@@ -584,17 +464,13 @@ class FileSystem {
    * Returns file system statistics for path.
    */
   public async getFileStats(file_path: string): Promise<fs.Stats> {
-
     try {
-
       this.validatePath(file_path);
 
       const stats = await statAsync(file_path);
 
       return stats;
-
     } catch (error) {
-
       logger.error('FS', 'Failed to get file stats', {
         path: file_path,
         error: error
@@ -604,9 +480,7 @@ class FileSystem {
         path: file_path,
         error: error
       });
-
     }
-
   }
 
   /**
@@ -616,40 +490,30 @@ class FileSystem {
    * Throws error if path is invalid or potentially unsafe.
    */
   private validatePath(file_path: string): void {
-
     if (!file_path || typeof file_path !== 'string') {
-
       throw new FileSystemError('Invalid file path', {
         path: file_path
       });
-
     }
 
     const normalized = path.normalize(file_path);
 
     if (normalized.includes('..')) {
-
       throw new FileSystemError('Path traversal not allowed', {
         path: file_path
       });
-
     }
 
     if (path.isAbsolute(file_path)) {
-
       const ext = path.extname(file_path).toLowerCase();
 
       if (ext && !this.allowed_extensions.has(ext)) {
-
         logger.warn('FS', 'File extension not in allowed list', {
           path: file_path,
           extension: ext
         });
-
       }
-
     }
-
   }
 
   /**
@@ -658,15 +522,11 @@ class FileSystem {
    * Sets maximum allowed file size for read operations.
    */
   public setMaxFileSize(size: number): void {
-
     if (size <= 0) {
-
       throw new Error('Maximum file size must be positive');
-
     }
 
     this.max_file_size = size;
-
   }
 
   /**
@@ -675,17 +535,12 @@ class FileSystem {
    * Adds file extension to allowed list.
    */
   public addAllowedExtension(extension: string): void {
-
     if (!extension.startsWith('.')) {
-
       extension = '.' + extension;
-
     }
 
     this.allowed_extensions.add(extension.toLowerCase());
-
   }
-
 }
 
 export const fileSystem = new FileSystem();

@@ -9,6 +9,7 @@
  *
  * Monitors project directory for file system changes.
  * Notifies renderer process of file additions, modifications, and deletions.
+ * Prioritizes WorldC (.wc) files for immediate hot-reload.
  */
 
 import * as fs from 'fs';
@@ -31,6 +32,7 @@ class FileWatcher {
   private ignore_patterns: RegExp[];
   private debounce_timers: Map<string, NodeJS.Timeout>;
   private debounce_delay: number;
+  private priority_extensions: Set<string>;
 
   constructor() {
     this.watchers = new Map();
@@ -48,6 +50,7 @@ class FileWatcher {
     ];
     this.debounce_timers = new Map();
     this.debounce_delay = 100;
+    this.priority_extensions = new Set(['.wc', '.worldc', '.ts', '.js']);
   }
 
   /**
@@ -182,6 +185,7 @@ class FileWatcher {
    *
    * Handles file system event from fs.watch.
    * Debounces rapid events and determines event type.
+   * Prioritizes WorldC files for faster hot-reload.
    */
   private handleFileSystemEvent(_event_type: string, file_path: string): void {
     const existing_timer = this.debounce_timers.get(file_path);
@@ -190,19 +194,32 @@ class FileWatcher {
       clearTimeout(existing_timer);
     }
 
+    /* Determine debounce delay based on file priority */
+    const file_ext = path.extname(file_path);
+    const delay = this.priority_extensions.has(file_ext) ? 50 : this.debounce_delay;
+
     const timer = setTimeout(() => {
       this.debounce_timers.delete(file_path);
       this.processFileSystemEvent(file_path);
-    }, this.debounce_delay);
+    }, delay);
 
     this.debounce_timers.set(file_path, timer);
+
+    /* Log priority file changes immediately */
+    if (this.priority_extensions.has(file_ext)) {
+      logger.debug('WATCHER', 'Priority file change detected', {
+        path: file_path,
+        extension: file_ext,
+        debounce_delay: delay
+      });
+    }
   }
 
   /**
    * processFileSystemEvent()
    *
    * Processes debounced file system event.
-   * Determines if file was added, changed, or deleted.
+   * Determines actual event type by checking file existence.
    */
   private processFileSystemEvent(file_path: string): void {
     try {
@@ -248,9 +265,10 @@ class FileWatcher {
   /**
    * emitEvent()
    *
-   * Emits watch event to all listeners.
+   * Emits event to all listeners.
+   * Logs priority events for debugging hot-reload performance.
    */
-  private emitEvent(event: WatchEvent): void {
+  private emitEvent(event: WatchEvent & { priority?: boolean }): void {
     logger.debug('WATCHER', 'File system event', event);
 
     for (const listener of this.listeners) {

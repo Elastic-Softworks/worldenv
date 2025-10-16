@@ -1,0 +1,208 @@
+/*
+ * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
+ * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
+ * See LICENSE.txt for full license texts
+ */
+
+/*
+
+         {{ComponentName}}.wc
+           ---
+           custom component template for WORLDC.
+
+           this template provides a basic component structure
+           using WorldC simplified verbiage and C-like syntax
+           with modern TypeScript integration.
+
+*/
+
+#include <worldenv.h>
+
+edict float DEFAULT_VALUE = 1.0f;
+
+/*
+
+         {{ComponentName}}
+           ---
+           custom game component that extends the base
+           Component class and provides custom behavior
+           for game entities.
+
+*/
+
+class {{ComponentName}} : public Component {
+
+  private:
+
+  float  value;
+  bool   active;
+  vec3   position;
+
+  public:
+
+  /*
+
+           start()
+             ---
+             called when the component is first initialized.
+             use this for setup and initial configuration.
+
+  */
+
+  void start(): void {
+
+    this.value = DEFAULT_VALUE;
+    this.active = true;
+    this.position = this.entity.transform.position;
+
+    invoke this.initialize();
+
+  }
+
+  /*
+
+           update()
+             ---
+             called every frame during gameplay.
+             use this for continuous behavior and state updates.
+
+  */
+
+  void update(float deltaTime): void {
+
+    if  (!this.active) {
+      pass;  /* skip update if inactive */
+      return;
+    }
+
+    /* update component logic here */
+    invoke this.updateBehavior(deltaTime);
+
+  }
+
+  /*
+
+           onDestroy()
+             ---
+             called when the component is being destroyed.
+             use this for cleanup and resource deallocation.
+
+  */
+
+  void onDestroy(): void {
+
+    invoke this.cleanup();
+
+  }
+
+  private:
+
+  /*
+
+           initialize()
+             ---
+             private initialization method for component setup.
+
+  */
+
+  void initialize(): void {
+
+    /* custom initialization logic */
+    pass;
+
+  }
+
+  /*
+
+           updateBehavior()
+             ---
+             private method for frame-by-frame behavior updates.
+
+  */
+
+  void updateBehavior(float deltaTime): void {
+
+    /* update position */
+    this.position = this.entity.transform.position;
+
+    /* custom behavior logic */
+    pass;
+
+  }
+
+  /*
+
+           cleanup()
+             ---
+             private cleanup method for resource management.
+
+  */
+
+  void cleanup(): void {
+
+    /* cleanup resources */
+    pass;
+
+  }
+
+  public:
+
+  /*
+
+           setValue()
+             ---
+           public method to set the component value.
+
+  */
+
+  void setValue(float newValue): void {
+
+    this.value = newValue;
+
+  }
+
+  /*
+
+           getValue()
+             ---
+           public method to get the component value.
+
+  */
+
+  float getValue(): float {
+
+    return this.value;
+
+  }
+
+  /*
+
+           setActive()
+             ---
+           public method to set component active state.
+
+  */
+
+  void setActive(bool isActive): void {
+
+    this.active = isActive;
+
+  }
+
+  /*
+
+           isActive()
+             ---
+           public method to check if component is active.
+
+  */
+
+  bool isActive(): bool {
+
+    return this.active;
+
+  }
+
+}
+
+/* end of {{ComponentName}}.wc */

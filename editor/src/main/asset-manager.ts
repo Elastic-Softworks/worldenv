@@ -67,6 +67,7 @@ export interface AssetMetadata {
   imageInfo?: ImageMetadata;
   audioInfo?: AudioMetadata;
   modelInfo?: ModelMetadata;
+  worldcInfo?: WorldCMetadata;
 }
 
 /**
@@ -98,8 +99,23 @@ interface ModelMetadata {
   vertices: number;
   faces: number;
   materials: number;
-  animations: string[];
-  format: string;
+}
+
+/**
+ * WorldC script metadata
+ */
+interface WorldCMetadata {
+  version: string;
+  target: 'typescript' | 'assemblyscript';
+  dependencies: string[];
+  exports: string[];
+  compiledPath?: string;
+  lastCompiled?: Date;
+  hasErrors: boolean;
+  errorCount: number;
+  warningCount: number;
+  animations?: string[];
+  format?: string;
 }
 
 /**
@@ -134,6 +150,141 @@ class AssetManager {
     this.assetCache = new Map();
     this.metadataCache = new Map();
     this.thumbnailCache = new Map();
+  }
+
+  /**
+   * isWorldCFile()
+   *
+   * Check if file is a WorldC script file.
+   */
+  private isWorldCFile(filePath: string): boolean {
+    const ext = path.extname(filePath).toLowerCase();
+    return ext === '.wc' || ext === '.worldc';
+  }
+
+  /**
+   * analyzeWorldCFile()
+   *
+   * Analyze WorldC file for metadata and compilation info.
+   */
+  private async analyzeWorldCFile(filePath: string): Promise<WorldCMetadata> {
+    try {
+      const content = await _readFileAsync(filePath, 'utf8');
+      const metadata: WorldCMetadata = {
+        version: '0.2.0',
+        target: 'typescript',
+        dependencies: [],
+        exports: [],
+        hasErrors: false,
+        errorCount: 0,
+        warningCount: 0,
+        animations: [],
+        format: 'worldc'
+      };
+
+      /* Extract basic information from file content */
+      const lines = content.split('\n');
+
+      /* Check for include statements */
+      const includePattern = /#include\s*[<"]([^>"]+)[">]/g;
+      let match;
+      while ((match = includePattern.exec(content)) !== null) {
+        metadata.dependencies.push(match[1]);
+      }
+
+      /* Check for class/function exports */
+      const classPattern = /class\s+(\w+)/g;
+      while ((match = classPattern.exec(content)) !== null) {
+        metadata.exports.push(match[1]);
+      }
+
+      /* Check for edict/const declarations */
+      const edictPattern = /edict\s+\w+\s+(\w+)/g;
+      while ((match = edictPattern.exec(content)) !== null) {
+        metadata.exports.push(match[1]);
+      }
+
+      /* Check for compilation target hints */
+      if (content.includes('assemblyscript') || content.includes('wasm')) {
+        metadata.target = 'assemblyscript';
+      }
+
+      /* Check for compiled output */
+      const compiledPath = filePath.replace(/\.wc$/, '.ts').replace(/\.worldc$/, '.ts');
+      if (fs.existsSync(compiledPath)) {
+        const compiledStats = await _statAsync(compiledPath);
+        const sourceStats = await _statAsync(filePath);
+
+        metadata.compiledPath = compiledPath;
+        metadata.lastCompiled = compiledStats.mtime;
+
+        /* Check if recompilation needed */
+        if (sourceStats.mtime > compiledStats.mtime) {
+          logger.info('ASSET', 'WorldC file needs recompilation', {
+            source: filePath,
+            compiled: compiledPath
+          });
+        }
+      }
+
+      return metadata;
+    } catch (error) {
+      logger.error('ASSET', 'Failed to analyze WorldC file', {
+        path: filePath,
+        error
+      });
+
+      return {
+        version: '0.2.0',
+        target: 'typescript',
+        dependencies: [],
+        exports: [],
+        hasErrors: true,
+        errorCount: 1,
+        warningCount: 0,
+        animations: [],
+        format: 'worldc'
+      };
+    }
+  }
+
+  /**
+   * triggerWorldCCompilation()
+   *
+   * Trigger compilation of WorldC file when changed.
+   */
+  public async triggerWorldCCompilation(filePath: string): Promise<boolean> {
+    if (!this.isWorldCFile(filePath)) {
+      return false;
+    }
+
+    if (!this.projectPath) {
+      logger.warn('ASSET', 'No project path set for WorldC compilation');
+      return false;
+    }
+
+    try {
+      logger.info('ASSET', 'Triggering WorldC compilation', { path: filePath });
+
+      /* This would integrate with the build manager */
+      /* For now, just update metadata */
+      const relativePath = path.relative(this.projectPath, filePath);
+      if (this.metadataCache.has(relativePath)) {
+        const metadata = this.metadataCache.get(relativePath);
+        if (metadata && metadata.worldcInfo) {
+          metadata.worldcInfo = await this.analyzeWorldCFile(filePath);
+          this.metadataCache.set(relativePath, metadata);
+        }
+      }
+
+      return true;
+    } catch (error) {
+      logger.error('ASSET', 'WorldC compilation trigger failed', {
+        path: filePath,
+        error
+      });
+      return false;
+    }
   }
 
   /**
@@ -287,6 +438,11 @@ class AssetManager {
         thumbnail: undefined
       };
 
+      /* Add WorldC-specific metadata for .wc files */
+      if (this.isWorldCFile(relativePath)) {
+        metadata.worldcInfo = await this.analyzeWorldCFile(fullPath);
+      }
+
       this.metadataCache.set(relativePath, metadata);
     }
 
@@ -350,8 +506,9 @@ class AssetManager {
       case '.blend':
         return 'model';
 
-      case '.ws':
-      case '.worldsrc':
+      case '.wc':
+      case '.worldc':
+        return 'script';
       case '.ts':
       case '.js':
         return 'script';

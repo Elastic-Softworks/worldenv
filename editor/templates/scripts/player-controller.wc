@@ -1,0 +1,327 @@
+/*
+ * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
+ * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
+ * See LICENSE.txt for full license texts
+ */
+
+/*
+
+         PlayerController.wc
+           ---
+           player movement and input handling component
+           template for WORLDC games.
+
+           this template demonstrates WorldC simplified verbiage
+           and provides a foundation for player character
+           control systems with C-like syntax.
+
+*/
+
+#include <worldenv.h>
+
+edict float MOVE_SPEED = 200.0f;
+edict float JUMP_FORCE = 500.0f;
+edict float GRAVITY = 980.0f;
+edict float GROUND_CHECK_DISTANCE = 0.1f;
+
+/*
+
+         PlayerController
+           ---
+           handles player input, movement, and basic physics.
+           provides keyboard controls for movement and jumping
+           with ground detection and collision handling.
+
+*/
+
+class PlayerController : public Component {
+
+  private:
+
+  vec3   velocity;
+  bool   grounded;
+  bool   canJump;
+  float  health;
+  float  maxHealth;
+
+  /* input state */
+  bool   moveLeft;
+  bool   moveRight;
+  bool   jumpPressed;
+
+  public:
+
+  /*
+
+           start()
+             ---
+             initialize player controller with default values
+             and set up input handling.
+
+  */
+
+  void start(): void {
+
+    this.velocity = vec3(0, 0, 0);
+    this.grounded = false;
+    this.canJump = true;
+    this.health = 100.0f;
+    this.maxHealth = 100.0f;
+
+    /* reset input state */
+    this.moveLeft = false;
+    this.moveRight = false;
+    this.jumpPressed = false;
+
+    invoke this.setupPlayerInput();
+
+  }
+
+  /*
+
+           update()
+             ---
+             called every frame to handle input, physics,
+           and player movement updates.
+
+  */
+
+  void update(float deltaTime): void {
+
+    /* handle input */
+    invoke this.handleInput();
+
+    /* apply physics */
+    invoke this.applyPhysics(deltaTime);
+
+    /* update movement */
+    invoke this.updateMovement(deltaTime);
+
+    /* check ground collision */
+    invoke this.checkGroundCollision();
+
+  }
+
+  private:
+
+  /*
+
+           setupPlayerInput()
+             ---
+             configure input bindings for player controls.
+
+  */
+
+  void setupPlayerInput(): void {
+
+    /* input setup would be handled by the engine */
+    pass;
+
+  }
+
+  /*
+
+           handleInput()
+             ---
+             process keyboard input for player movement.
+
+  */
+
+  void handleInput(): void {
+
+    /* movement input */
+    this.moveLeft = Input.isKeyDown(KeyCode.A) || Input.isKeyDown(KeyCode.LEFT);
+    this.moveRight = Input.isKeyDown(KeyCode.D) || Input.isKeyDown(KeyCode.RIGHT);
+
+    /* jump input */
+    this.jumpPressed = Input.isKeyPressed(KeyCode.SPACE) || Input.isKeyPressed(KeyCode.UP);
+
+  }
+
+  /*
+
+           applyPhysics()
+             ---
+             apply gravity and physics forces to player.
+
+  */
+
+  void applyPhysics(float deltaTime): void {
+
+    /* apply gravity if not grounded */
+    if  (!this.grounded) {
+      this.velocity.y -= GRAVITY * deltaTime;
+    }
+
+    /* handle jumping */
+    if  (this.jumpPressed && this.grounded && this.canJump) {
+      this.velocity.y = JUMP_FORCE;
+      this.grounded = false;
+      this.canJump = false;
+    }
+
+    /* reset jump input */
+    if  (!this.jumpPressed) {
+      this.canJump = true;
+    }
+
+  }
+
+  /*
+
+           updateMovement()
+             ---
+             update horizontal movement based on input.
+
+  */
+
+  void updateMovement(float deltaTime): void {
+
+    /* horizontal movement */
+    if  (this.moveLeft) {
+      this.velocity.x = -MOVE_SPEED;
+    } else if  (this.moveRight) {
+      this.velocity.x = MOVE_SPEED;
+    } else {
+      this.velocity.x = 0;
+    }
+
+    /* apply velocity to position */
+    vec3 currentPosition = this.entity.transform.position;
+    currentPosition.x += this.velocity.x * deltaTime;
+    currentPosition.y += this.velocity.y * deltaTime;
+
+    this.entity.transform.position = currentPosition;
+
+  }
+
+  /*
+
+           checkGroundCollision()
+             ---
+             check if player is standing on ground surface.
+
+  */
+
+  void checkGroundCollision(): void {
+
+    vec3 position = this.entity.transform.position;
+    vec3 groundCheckPos = vec3(position.x, position.y - GROUND_CHECK_DISTANCE, position.z);
+
+    /* simple ground check - would use physics raycast in real implementation */
+    bool wasGrounded = this.grounded;
+    this.grounded = (position.y <= 0.0f);
+
+    /* stop downward velocity when landing */
+    if  (this.grounded && !wasGrounded && this.velocity.y < 0) {
+      this.velocity.y = 0;
+      vec3 pos = this.entity.transform.position;
+      pos.y = 0.0f;
+      this.entity.transform.position = pos;
+    }
+
+  }
+
+  public:
+
+  /*
+
+           takeDamage()
+             ---
+           apply damage to player and handle death.
+
+  */
+
+  void takeDamage(float damage): void {
+
+    this.health -= damage;
+
+    if  (this.health <= 0) {
+      invoke this.onPlayerDeath();
+    }
+
+  }
+
+  /*
+
+           heal()
+             ---
+           restore player health up to maximum.
+
+  */
+
+  void heal(float amount): void {
+
+    this.health += amount;
+
+    if  (this.health > this.maxHealth) {
+      this.health = this.maxHealth;
+    }
+
+  }
+
+  /*
+
+           getHealth()
+             ---
+           get current player health value.
+
+  */
+
+  float getHealth(): float {
+
+    return this.health;
+
+  }
+
+  /*
+
+           getVelocity()
+             ---
+           get current player velocity vector.
+
+  */
+
+  vec3 getVelocity(): vec3 {
+
+    return this.velocity;
+
+  }
+
+  /*
+
+           isGrounded()
+             ---
+           check if player is currently on ground.
+
+  */
+
+  bool isGrounded(): bool {
+
+    return this.grounded;
+
+  }
+
+  private:
+
+  /*
+
+           onPlayerDeath()
+             ---
+           handle player death event.
+
+  */
+
+  void onPlayerDeath(): void {
+
+    /* player death logic would go here */
+    invoke Engine.logMessage("Player died!");
+
+    /* reset player or trigger game over */
+    pass;
+
+  }
+
+}
+
+/* end of PlayerController.wc */

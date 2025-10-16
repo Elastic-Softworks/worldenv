@@ -7,8 +7,9 @@
 /**
  * WORLDEDIT - Build Manager
  *
- * Handles project build operations including TypeScript compilation,
- * AssemblyScript building, asset bundling, and output generation.
+ * Handles project build operations including WorldC compilation,
+ * TypeScript compilation, AssemblyScript building, asset bundling,
+ * and output generation.
  */
 
 import * as fs from 'fs';
@@ -152,6 +153,9 @@ class BuildManager {
       /* PREPARE OUTPUT DIRECTORY */
       await this.prepareOutputDirectory(config, onProgress);
 
+      /* COMPILE WORLDC */
+      await this.compileWorldC(config, onProgress);
+
       /* COMPILE TYPESCRIPT */
       await this.compileTypeScript(config, onProgress);
 
@@ -195,7 +199,6 @@ class BuildManager {
       });
 
       return result;
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown build error';
       result.errors.push(errorMessage);
@@ -260,6 +263,96 @@ class BuildManager {
   }
 
   /**
+   * compileWorldC()
+   *
+   * Compiles WorldC source files to TypeScript/JavaScript.
+   */
+  private async compileWorldC(
+    config: BuildConfiguration,
+    onProgress?: BuildCallback
+  ): Promise<void> {
+    onProgress?.({
+      stage: 'Compiling WorldC',
+      progress: 20,
+      message: 'Compiling WorldC files...'
+    });
+
+    const sourceDir = path.join(this.projectPath, 'src');
+    const outputDir = path.join(config.outputDirectory, 'compiled');
+
+    /* Ensure output directory exists */
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    return new Promise((resolve, reject) => {
+      const worldcPath = path.join(this.projectPath, 'node_modules', '.bin', 'worldc');
+      const args = [
+        '--input',
+        sourceDir,
+        '--output',
+        outputDir,
+        '--target',
+        config.buildTarget === 'wasm' ? 'assemblyscript' : 'typescript',
+        '--optimization',
+        config.optimizationLevel
+      ];
+
+      if (config.generateSourceMaps) {
+        args.push('--sourcemaps');
+      }
+
+      logger.debug('BUILD', 'Starting WorldC compilation', {
+        command: worldcPath,
+        args,
+        cwd: this.projectPath
+      });
+
+      const process = spawn(worldcPath, args, {
+        cwd: this.projectPath,
+        stdio: ['pipe', 'pipe', 'pipe']
+      });
+
+      this.currentBuild = process;
+
+      let output = '';
+      let errorOutput = '';
+
+      process.stdout?.on('data', (data) => {
+        output += data.toString();
+        logger.debug('BUILD', 'WorldC stdout', { data: data.toString() });
+      });
+
+      process.stderr?.on('data', (data) => {
+        errorOutput += data.toString();
+        logger.debug('BUILD', 'WorldC stderr', { data: data.toString() });
+      });
+
+      process.on('close', (code) => {
+        this.currentBuild = null;
+
+        if (code === 0) {
+          logger.debug('BUILD', 'WorldC compilation completed');
+          resolve();
+        } else {
+          logger.error('BUILD', 'WorldC compilation failed', {
+            code,
+            output,
+            errorOutput
+          });
+          reject(new Error(`WorldC compilation failed: ${errorOutput || output}`));
+        }
+      });
+
+      process.on('error', (error) => {
+        this.currentBuild = null;
+        logger.error('BUILD', 'WorldC compilation error', { error });
+        reject(new Error(`WorldC compilation error: ${error.message}`));
+      });
+    });
+  }
+
+  /**
    * compileTypeScript()
    *
    * Compiles TypeScript source files to JavaScript.
@@ -269,8 +362,8 @@ class BuildManager {
     onProgress?: BuildCallback
   ): Promise<void> {
     onProgress?.({
-      stage: 'Compiling',
-      progress: 30,
+      stage: 'Compiling TypeScript',
+      progress: 40,
       message: 'Compiling TypeScript...'
     });
 
@@ -278,10 +371,7 @@ class BuildManager {
       const enginePath = path.dirname(this.projectPath);
       const tsconfigPath = path.join(enginePath, 'tsconfig.json');
 
-      const args = [
-        '--project', tsconfigPath,
-        '--outDir', path.join(config.outputDirectory, 'js')
-      ];
+      const args = ['--project', tsconfigPath, '--outDir', path.join(config.outputDirectory, 'js')];
 
       if (config.generateSourceMaps) {
         args.push('--sourceMap');
@@ -351,8 +441,10 @@ class BuildManager {
       const args = [
         'asc',
         'asm/index.ts',
-        '-b', path.join(wasmOutputDir, 'optimized.wasm'),
-        '-o', path.join(wasmOutputDir, 'optimized.js')
+        '-b',
+        path.join(wasmOutputDir, 'optimized.wasm'),
+        '-o',
+        path.join(wasmOutputDir, 'optimized.js')
       ];
 
       if (config.optimizationLevel !== 'none') {
@@ -427,10 +519,7 @@ class BuildManager {
    *
    * Copies project scripts to output directory.
    */
-  private async copyScripts(
-    config: BuildConfiguration,
-    onProgress?: BuildCallback
-  ): Promise<void> {
+  private async copyScripts(config: BuildConfiguration, onProgress?: BuildCallback): Promise<void> {
     onProgress?.({
       stage: 'Copying Scripts',
       progress: 80,

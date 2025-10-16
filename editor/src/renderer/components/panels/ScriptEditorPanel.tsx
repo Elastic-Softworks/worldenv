@@ -44,6 +44,9 @@ export const ScriptEditorPanel: React.FC<ScriptEditorPanelProps> = ({ theme = 'd
     editorRef.current = editor;
     monacoRef.current = monacoInstance;
 
+    /* Register WorldC language */
+    registerWorldCLanguage(monacoInstance);
+
     /* Configure editor options */
     editor.updateOptions({
       fontSize: 14,
@@ -141,8 +144,9 @@ export const ScriptEditorPanel: React.FC<ScriptEditorPanelProps> = ({ theme = 'd
     }
   };
 
-  const createNewScript = async (scriptType: 'typescript' | 'assemblyscript') => {
-    const extension = scriptType === 'typescript' ? '.ts' : '.as.ts';
+  const createNewScript = async (scriptType: 'typescript' | 'assemblyscript' | 'worldc') => {
+    const extension =
+      scriptType === 'typescript' ? '.ts' : scriptType === 'assemblyscript' ? '.as.ts' : '.wc';
     const template = getScriptTemplate(scriptType);
 
     /* Request new file creation from main process */
@@ -169,14 +173,89 @@ export const ScriptEditorPanel: React.FC<ScriptEditorPanelProps> = ({ theme = 'd
       return 'typescript';
     } else if (filePath.endsWith('.js') || filePath.endsWith('.jsx')) {
       return 'javascript';
+    } else if (filePath.endsWith('.wc') || filePath.endsWith('.worldc')) {
+      return 'worldc';
     } else if (filePath.endsWith('.json')) {
       return 'json';
     }
     return 'plaintext';
   };
 
-  const getScriptTemplate = (scriptType: 'typescript' | 'assemblyscript'): string => {
-    if (scriptType === 'typescript') {
+  const getScriptTemplate = (scriptType: 'typescript' | 'assemblyscript' | 'worldc'): string => {
+    if (scriptType === 'worldc') {
+      return `#include <worldenv.h>
+
+/*
+
+         PlayerController.wc
+           ---
+           example WorldC component demonstrating the
+           simplified verbiage system and C-like syntax
+           with modern TypeScript integration.
+
+*/
+
+edict float PLAYER_SPEED = 200.0f;
+edict float JUMP_FORCE = 500.0f;
+
+class PlayerController : public Component {
+
+  private:
+
+  vec3   velocity;
+  bool   grounded;
+  float  health;
+
+  public:
+
+  /* initialize component */
+  void start(): void {
+
+    this.velocity = vec3(0, 0, 0);
+    this.grounded = false;
+    this.health = 100.0f;
+
+    invoke this.setupInput();
+
+  }
+
+  /* update every frame */
+  void update(float deltaTime): void {
+
+    if  (Input.isKeyPressed(KeyCode.A)) {
+      this.velocity.x = -PLAYER_SPEED;
+    } else if  (Input.isKeyPressed(KeyCode.D)) {
+      this.velocity.x = PLAYER_SPEED;
+    } else {
+      this.velocity.x = 0;
+    }
+
+    if  (Input.isKeyPressed(KeyCode.SPACE) && this.grounded) {
+      this.velocity.y = JUMP_FORCE;
+      this.grounded = false;
+    }
+
+    /* apply movement */
+    invoke this.applyMovement(deltaTime);
+
+  }
+
+  private void setupInput(): void {
+    pass;  /* input setup would go here */
+  }
+
+  private void applyMovement(float deltaTime): void {
+
+    vec3 position = this.entity.transform.position;
+    position.x += this.velocity.x * deltaTime;
+    position.y += this.velocity.y * deltaTime;
+
+    this.entity.transform.position = position;
+
+  }
+
+}`;
+    } else if (scriptType === 'typescript') {
       return `import { Component, Entity } from 'worldenv';
 
 export class CustomComponent extends Component {
@@ -295,6 +374,7 @@ export class CustomComponent {
               <h3>No Script Open</h3>
               <p>Create a new script or open an existing one from the Asset Browser</p>
               <div className="placeholder-actions">
+                <button onClick={() => createNewScript('worldc')}>Create WorldC Script</button>
                 <button onClick={() => createNewScript('typescript')}>
                   Create TypeScript Script
                 </button>
@@ -308,4 +388,292 @@ export class CustomComponent {
       </div>
     </div>
   );
+};
+
+/**
+ * Register WorldC language with Monaco Editor
+ */
+const registerWorldCLanguage = (monaco: Monaco) => {
+  /* Register language */
+  monaco.languages.register({ id: 'worldc' });
+
+  /* Set language configuration */
+  monaco.languages.setLanguageConfiguration('worldc', {
+    comments: {
+      lineComment: '//',
+      blockComment: ['/*', '*/']
+    },
+    brackets: [
+      ['{', '}'],
+      ['[', ']'],
+      ['(', ')']
+    ],
+    autoClosingPairs: [
+      { open: '{', close: '}' },
+      { open: '[', close: ']' },
+      { open: '(', close: ')' },
+      { open: '"', close: '"' },
+      { open: "'", close: "'" }
+    ],
+    surroundingPairs: [
+      { open: '{', close: '}' },
+      { open: '[', close: ']' },
+      { open: '(', close: ')' },
+      { open: '"', close: '"' },
+      { open: "'", close: "'" }
+    ]
+  });
+
+  /* Set syntax highlighting */
+  monaco.languages.setMonarchTokensProvider('worldc', {
+    keywords: [
+      'auto',
+      'break',
+      'case',
+      'char',
+      'const',
+      'continue',
+      'default',
+      'do',
+      'double',
+      'else',
+      'enum',
+      'extern',
+      'float',
+      'for',
+      'goto',
+      'if',
+      'inline',
+      'int',
+      'long',
+      'register',
+      'return',
+      'short',
+      'signed',
+      'sizeof',
+      'static',
+      'struct',
+      'switch',
+      'typedef',
+      'union',
+      'unsigned',
+      'void',
+      'volatile',
+      'while',
+      'class',
+      'private',
+      'protected',
+      'public',
+      'virtual',
+      'friend',
+      'template',
+      'typename',
+      'namespace',
+      'using',
+      'operator',
+      'new',
+      'delete',
+      'this',
+      'throw',
+      'try',
+      'catch',
+      'let',
+      'var',
+      'function',
+      'interface',
+      'type',
+      'import',
+      'export',
+      'async',
+      'await',
+      'yield',
+      'extends',
+      'implements',
+      'declare',
+      'edict',
+      'pass',
+      'invoke'
+    ],
+
+    typeKeywords: [
+      'bool',
+      'string',
+      'number',
+      'boolean',
+      'any',
+      'unknown',
+      'never',
+      'object',
+      'symbol',
+      'bigint',
+      'vec2',
+      'vec3',
+      'vec4',
+      'ivec2',
+      'ivec3',
+      'ivec4',
+      'quat',
+      'mat3',
+      'mat4'
+    ],
+
+    operators: [
+      '=',
+      '>',
+      '<',
+      '!',
+      '~',
+      '?',
+      ':',
+      '==',
+      '<=',
+      '>=',
+      '!=',
+      '&&',
+      '||',
+      '++',
+      '--',
+      '+',
+      '-',
+      '*',
+      '/',
+      '&',
+      '|',
+      '^',
+      '%',
+      '<<',
+      '>>',
+      '>>>',
+      '+=',
+      '-=',
+      '*=',
+      '/=',
+      '&=',
+      '|=',
+      '^=',
+      '%=',
+      '<<= ',
+      '>>='
+    ],
+
+    symbols: /[=><!~?:&|+\-*\/\^%]+/,
+
+    tokenizer: {
+      root: [
+        [
+          /[a-z_$][\w$]*/,
+          {
+            cases: {
+              '@typeKeywords': 'keyword',
+              '@keywords': 'keyword',
+              '@default': 'identifier'
+            }
+          }
+        ],
+        [/[A-Z][\w\$]*/, 'type.identifier'],
+        [/[0-9]+\.[0-9]*([eE][\-+]?[0-9]+)?[fF]?/, 'number.float'],
+        [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+        [/[0-9]+/, 'number'],
+        [/"([^"\\]|\\.)*$/, 'string.invalid'],
+        [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }],
+        [/'[^\\']'/, 'string'],
+        [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
+        [/'/, 'string.invalid'],
+        [/\/\*/, 'comment', '@comment'],
+        [/\/\/.*$/, 'comment'],
+        [
+          /@symbols/,
+          {
+            cases: {
+              '@operators': 'operator',
+              '@default': ''
+            }
+          }
+        ],
+        [/[{}()\[\]]/, '@brackets'],
+        [/[<>](?!@symbols)/, '@brackets'],
+        [/[;,.]/, 'delimiter'],
+        [/\s+/, 'white']
+      ],
+
+      comment: [
+        [/[^\/*]+/, 'comment'],
+        [/\/\*/, 'comment', '@push'],
+        ['\\*/', 'comment', '@pop'],
+        [/[\/*]/, 'comment']
+      ],
+
+      string: [
+        [/[^\\"]+/, 'string'],
+        [/@escapes/, 'string.escape'],
+        [/\\./, 'string.escape.invalid'],
+        [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
+      ]
+    }
+  });
+
+  /* Register completion provider */
+  monaco.languages.registerCompletionItemProvider('worldc', {
+    provideCompletionItems: (model, position) => {
+      const word = model.getWordUntilPosition(position);
+      const range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn
+      };
+
+      const suggestions = [
+        {
+          label: 'edict',
+          kind: monaco.languages.CompletionItemKind.Keyword,
+          insertText: 'edict ${1:type} ${2:name} = ${3:value};',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Declare a constant value (WorldC simplified syntax)',
+          range: range
+        },
+        {
+          label: 'pass',
+          kind: monaco.languages.CompletionItemKind.Keyword,
+          insertText: 'pass;',
+          documentation: 'No-operation statement (WorldC simplified syntax)',
+          range: range
+        },
+        {
+          label: 'invoke',
+          kind: monaco.languages.CompletionItemKind.Keyword,
+          insertText: 'invoke ${1:functionName}(${2:args});',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Explicit function call (WorldC simplified syntax)',
+          range: range
+        },
+        {
+          label: 'component',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: [
+            'class ${1:ComponentName} : public Component {',
+            '',
+            '  private:',
+            '    ${2:// private members}',
+            '',
+            '  public:',
+            '',
+            '    void start(): void {',
+            '      ${3:// initialization}',
+            '    }',
+            '',
+            '    void update(float deltaTime): void {',
+            '      ${4:// update logic}',
+            '    }',
+            '',
+            '};'
+          ].join('\n'),
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Create a new WorldC component class',
+          range: range
+        }
+      ];
+      return { suggestions };
+    }
+  });
 };

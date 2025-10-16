@@ -189,7 +189,7 @@ export function StatusBar(): JSX.Element {
           e.currentTarget.style.backgroundColor = 'transparent';
         }}
       >
-        <span>🎥 {state.ui.activeViewportMode.toUpperCase()}</span>
+        <span>{state.ui.activeViewportMode.toUpperCase()}</span>
       </div>
 
       {/* View Options */}
@@ -243,7 +243,7 @@ export function StatusBar(): JSX.Element {
 
       {/* Time */}
       <div style={statusItemStyle}>
-        <span>🕐 {formatTime(currentTime)}</span>
+        <span>{formatTime(currentTime)}</span>
       </div>
     </div>
   );

@@ -38,10 +38,10 @@ git --version     # Any recent version
    - Download for your platform (Windows/macOS/Linux)
    - Extract and run the installer
 
-2. **Install WORLDSRC Compiler**
+2. **Install WORLDC Compiler**
    ```bash
-   npm install -g @worldenv/worldsrc
-   worldsrc --version  # Verify installation
+   npm install -g @worldenv/worldc
+   worldc --version  # Verify installation
    ```
 
 ### Option 2: Build from Source
@@ -80,7 +80,7 @@ git --version     # Any recent version
    - Select theme (Dark/Light)
 
 3. **Verify Installation**
-   - Check WORLDSRC compiler detection
+   - Check WORLDC compiler detection
    - Confirm asset directories
    - Test viewport rendering
 
@@ -105,8 +105,8 @@ MyFirstGame/
 ├── scenes/
 │   └── MainLevel.worldscene
 ├── scripts/
-│   ├── PlayerController.wsrc
-│   └── GameManager.wsrc
+│   ├── PlayerController.wc
+│   └── GameManager.wc
 └── project.json
 ```
 
@@ -164,7 +164,7 @@ The template creates a basic level with:
 - Import new assets
 
 **Script Editor (Bottom Center)**
-- Edit WORLDSRC code
+- Edit WORLDC code
 - Syntax highlighting
 - IntelliSense support
 
@@ -173,12 +173,12 @@ The template creates a basic level with:
 ### Step 1: Open Player Script
 
 1. In Asset Browser, navigate to `scripts/`
-2. Double-click `PlayerController.wsrc`
+2. Double-click `PlayerController.wc`
 3. Script opens in editor
 
 ### Step 2: Examine the Code
 
-```worldsrc
+```worldc
 #include <worldenv.h>
 
 class PlayerController {
@@ -225,7 +225,7 @@ Let's add a simple jump sound effect:
 
 1. Find the `handleJumping()` function
 2. Add this line inside the if statement:
-```worldsrc
+```worldc
 AudioManager.playSound("jump.wav");
 ```
 
@@ -236,8 +236,8 @@ AudioManager.playSound("jump.wav");
 1. Select Player entity in Hierarchy
 2. In Inspector, click **"Add Component"**
 3. Choose **"Script Component"**
-4. Set Script File to `PlayerController.wsrc`
-5. Language should auto-detect as WORLDSRC
+4. Set Script File to `PlayerController.wc`
+5. Language should auto-detect as WORLDC
 
 ## Building and Testing
 
@@ -257,7 +257,7 @@ AudioManager.playSound("jump.wav");
 
 Watch the Console panel for build progress:
 ```
-Compiling WORLDSRC scripts...
+Compiling WORLDC scripts...
 Generating TypeScript...
 Bundling assets...
 Creating web build...
@@ -294,9 +294,9 @@ Build completed successfully!
    - [USER-GUIDE.md](USER-GUIDE.md) - Comprehensive editor reference
    - [DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md) - Advanced development topics
 
-2. **WORLDSRC Language**
-   - [WORLDSRC Manual](../worldsrc/docs/worldsrc-manual.md) - Complete language reference
-   - [WORLDSRC Lexicon](../worldsrc/docs/worldsrc-lexicon.md) - API documentation
+2. **WORLDC Language**
+   - [WORLDC Manual](../worldc/docs/worldc-manual.md) - Complete language reference
+   - [WORLDC Lexicon](../worldc/docs/worldc-lexicon.md) - API documentation
 
 3. **Community Resources**
    - GitHub Issues for bug reports
@@ -306,7 +306,7 @@ Build completed successfully!
 ### Common Next Features
 
 **Audio System:**
-```worldsrc
+```worldc
 // Play background music
 AudioManager.playMusic("background.mp3", true);
 
@@ -316,21 +316,21 @@ AudioManager.setVolume(0.8f);
 ```
 
 **Animation System:**
-```worldsrc
+```worldc
 // Simple sprite animation
 SpriteRenderer* renderer = getComponent<SpriteRenderer>();
 renderer->playAnimation("walk", true);
 ```
 
 **UI Elements:**
-```worldsrc
+```worldc
 // Display score
 UIText* scoreText = UI.createText("Score: 0");
 scoreText->setPosition(Vector2(10, 10));
 ```
 
 **Save System:**
-```worldsrc
+```worldc
 // Save game data
 SaveSystem.setInt("level", currentLevel);
 SaveSystem.setFloat("bestTime", playerTime);
@@ -359,7 +359,7 @@ npm run dev
 
 ### Script Compilation Errors
 - Check syntax carefully (semicolons, braces)
-- Verify WORLDSRC compiler installation
+- Verify WORLDC compiler installation
 - Review error messages in Console panel
 
 ### Build Failures
@@ -386,9 +386,9 @@ npm run dev
 | `E` | Rotate Tool |
 | `R` | Scale Tool |
 
-### WORLDSRC Quick Syntax
+### WORLDC Quick Syntax
 
-```worldsrc
+```worldc
 // Variables
 int health = 100;
 float speed = 5.5f;
@@ -420,7 +420,7 @@ By the end of this quickstart, you should have:
 - [ ] WORLDEDIT installed and running
 - [ ] Created your first project
 - [ ] Explored the main interface panels
-- [ ] Modified a WORLDSRC script
+- [ ] Modified a WORLDC script
 - [ ] Tested in play mode
 - [ ] Built a web version of your game
 - [ ] Identified next learning steps

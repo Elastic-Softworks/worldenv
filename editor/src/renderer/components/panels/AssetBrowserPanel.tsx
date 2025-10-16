@@ -620,7 +620,7 @@ export function AssetBrowserPanel(): JSX.Element {
             title="List view"
             onClick={() => setViewMode('list')}
           >
-            ☰
+            ≡
           </button>
           <div
             style={{ width: '1px', height: '16px', backgroundColor: theme.colors.border.primary }}
@@ -655,7 +655,7 @@ export function AssetBrowserPanel(): JSX.Element {
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            📥
+            ↓
           </button>
           <button
             style={iconButtonStyle}
@@ -702,7 +702,7 @@ export function AssetBrowserPanel(): JSX.Element {
               Loading assets...
             </div>
           ) : assets.length === 0 ? (
-            <DropZoneIndicator text="No assets found" icon="📂" />
+            <DropZoneIndicator text="No assets found" icon="□" />
           ) : viewMode === 'grid' ? (
             renderGridView()
           ) : (

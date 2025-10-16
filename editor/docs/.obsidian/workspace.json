@@ -6,7 +6,6 @@
       {
         "id": "9809051baa786194",
         "type": "tabs",
-        "dimension": 60.40554962646745,
         "children": [
           {
             "id": "2d2d263745f117cd",
@@ -20,23 +19,6 @@
               },
               "icon": "lucide-file",
               "title": "TESTING-GUIDE"
-            }
-          }
-        ]
-      },
-      {
-        "id": "a8196403ec363f9b",
-        "type": "tabs",
-        "dimension": 39.59445037353255,
-        "children": [
-          {
-            "id": "739708f0dbd47efe",
-            "type": "leaf",
-            "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
             }
           }
         ]
@@ -113,7 +95,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "quickstart.md",
+                "file": "TESTING-GUIDE.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -123,7 +105,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for quickstart"
+              "title": "Backlinks for TESTING-GUIDE"
             }
           },
           {
@@ -188,7 +170,7 @@
       "bases:Create new base": false
     }
   },
-  "active": "739708f0dbd47efe",
+  "active": "2d2d263745f117cd",
   "lastOpenFiles": [
     "TESTING-GUIDE.md",
     "QUICKSTART.md",
@@ -198,8 +180,8 @@
     "implementation-log.md",
     "doc-update-summary.md",
     "doc-summary.md",
-    "worldsrc/worldsrc-lexicon.md",
-    "worldsrc/worldsrc-manual.md",
+    "worldc/WC-LEXICON.md",
+    "worldc/WC-MANUAL.md",
     "copy",
     "PHASE2-README.md",
     "phase2-completion.md",

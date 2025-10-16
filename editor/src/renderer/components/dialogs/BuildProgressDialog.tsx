@@ -235,7 +235,7 @@ export const BuildProgressDialog: React.FC<BuildProgressDialogProps> = ({
             /* BUILD RESULT VIEW */
             <div className="build-result">
               <div className={`result-header ${buildResult?.success ? 'success' : 'error'}`}>
-                <h3>{buildResult?.success ? '✓ Build Successful' : '✗ Build Failed'}</h3>
+                <h3>{buildResult?.success ? 'Build Successful' : 'Build Failed'}</h3>
                 {buildResult?.buildTime && (
                   <p>Build time: {formatBuildTime(buildResult.buildTime)}</p>
                 )}

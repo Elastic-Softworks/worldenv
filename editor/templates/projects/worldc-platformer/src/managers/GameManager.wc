@@ -1,0 +1,701 @@
+/*
+ * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
+ * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
+ * See LICENSE.txt for full license texts
+ */
+
+/*
+
+         GameManager.wc
+           ---
+           central game management and state control
+           template for WORLDC games.
+
+           this template demonstrates WorldC simplified verbiage
+           and provides a foundation for game state management,
+           scene transitions, and global game logic.
+
+*/
+
+#include <worldenv.h>
+
+edict int MAX_LIVES = 3;
+edict float RESPAWN_DELAY = 2.0f;
+edict int TARGET_FPS = 60;
+
+/*
+
+         GameState
+           ---
+           enumeration for different game states
+           that the manager can handle.
+
+*/
+
+enum GameState {
+    MENU = 0,
+    PLAYING = 1,
+    PAUSED = 2,
+    GAME_OVER = 3,
+    LOADING = 4
+};
+
+/*
+
+         GameManager
+           ---
+           singleton component that manages overall game state,
+           scene transitions, scoring, and global game events.
+           handles high-level game flow and coordination.
+
+*/
+
+class GameManager : public Component {
+
+  private:
+
+  GameState  currentState;
+  GameState  previousState;
+  int        score;
+  int        lives;
+  float      gameTime;
+  bool       isPaused;
+
+  /* scene management */
+  string     currentScene;
+  string     nextScene;
+  bool       sceneTransitioning;
+
+  /* player tracking */
+  Entity     player;
+  bool       playerAlive;
+
+  public:
+
+  /*
+
+           start()
+             ---
+             initialize game manager with default state
+             and set up initial game configuration.
+
+  */
+
+  void start(): void {
+
+    this.currentState = GameState.MENU;
+    this.previousState = GameState.MENU;
+    this.score = 0;
+    this.lives = MAX_LIVES;
+    this.gameTime = 0.0f;
+    this.isPaused = false;
+
+    this.currentScene = "MainMenu";
+    this.nextScene = "";
+    this.sceneTransitioning = false;
+
+    this.player = nullptr;
+    this.playerAlive = false;
+
+    invoke this.initializeGame();
+
+  }
+
+  /*
+
+           update()
+             ---
+           called every frame to manage game state,
+           handle transitions, and update game systems.
+
+  */
+
+  void update(float deltaTime): void {
+
+    /* update game time */
+    if  (this.currentState == GameState.PLAYING && !this.isPaused) {
+      this.gameTime += deltaTime;
+    }
+
+    /* handle state-specific logic */
+    switch (this.currentState) {
+      case GameState.MENU:
+        invoke this.updateMenuState(deltaTime);
+        break;
+      case GameState.PLAYING:
+        invoke this.updatePlayingState(deltaTime);
+        break;
+      case GameState.PAUSED:
+        invoke this.updatePausedState(deltaTime);
+        break;
+      case GameState.GAME_OVER:
+        invoke this.updateGameOverState(deltaTime);
+        break;
+      case GameState.LOADING:
+        invoke this.updateLoadingState(deltaTime);
+        break;
+      default:
+        pass;
+    }
+
+    /* handle scene transitions */
+    if  (this.sceneTransitioning) {
+      invoke this.handleSceneTransition();
+    }
+
+    /* check for global input */
+    invoke this.handleGlobalInput();
+
+  }
+
+  private:
+
+  /*
+
+           initializeGame()
+             ---
+           set up initial game configuration and systems.
+
+  */
+
+  void initializeGame(): void {
+
+    /* register for game events */
+    invoke this.setupEventHandlers();
+
+    /* initialize subsystems */
+    invoke this.initializeAudio();
+    invoke this.initializeInput();
+
+  }
+
+  /*
+
+           updateMenuState()
+             ---
+           handle menu state logic and input.
+
+  */
+
+  void updateMenuState(float deltaTime): void {
+
+    /* menu input handling */
+    if  (Input.isKeyPressed(KeyCode.ENTER) || Input.isKeyPressed(KeyCode.SPACE)) {
+      invoke this.startNewGame();
+    }
+
+    if  (Input.isKeyPressed(KeyCode.ESCAPE)) {
+      invoke this.quitGame();
+    }
+
+  }
+
+  /*
+
+           updatePlayingState()
+             ---
+           handle active gameplay state and player monitoring.
+
+  */
+
+  void updatePlayingState(float deltaTime): void {
+
+    /* check player status */
+    if  (this.player != nullptr) {
+      invoke this.checkPlayerStatus();
+    }
+
+    /* check for pause input */
+    if  (Input.isKeyPressed(KeyCode.ESCAPE)) {
+      invoke this.pauseGame();
+    }
+
+  }
+
+  /*
+
+           updatePausedState()
+             ---
+           handle paused state and resume input.
+
+  */
+
+  void updatePausedState(float deltaTime): void {
+
+    /* resume game */
+    if  (Input.isKeyPressed(KeyCode.ESCAPE) || Input.isKeyPressed(KeyCode.P)) {
+      invoke this.resumeGame();
+    }
+
+    /* return to menu */
+    if  (Input.isKeyPressed(KeyCode.M)) {
+      invoke this.returnToMenu();
+    }
+
+  }
+
+  /*
+
+           updateGameOverState()
+             ---
+           handle game over state and restart options.
+
+  */
+
+  void updateGameOverState(float deltaTime): void {
+
+    /* restart game */
+    if  (Input.isKeyPressed(KeyCode.R) || Input.isKeyPressed(KeyCode.SPACE)) {
+      invoke this.restartGame();
+    }
+
+    /* return to menu */
+    if  (Input.isKeyPressed(KeyCode.M) || Input.isKeyPressed(KeyCode.ESCAPE)) {
+      invoke this.returnToMenu();
+    }
+
+  }
+
+  /*
+
+           updateLoadingState()
+             ---
+           handle loading state and scene preparation.
+
+  */
+
+  void updateLoadingState(float deltaTime): void {
+
+    /* loading state typically handled by engine */
+    pass;
+
+  }
+
+  /*
+
+           handleGlobalInput()
+             ---
+           process input that works in any game state.
+
+  */
+
+  void handleGlobalInput(): void {
+
+    /* global quit command */
+    if  (Input.isKeyDown(KeyCode.ALT) && Input.isKeyPressed(KeyCode.F4)) {
+      invoke this.quitGame();
+    }
+
+    /* debug commands */
+    if  (Input.isKeyPressed(KeyCode.F1)) {
+      invoke this.toggleDebugMode();
+    }
+
+  }
+
+  /*
+
+           checkPlayerStatus()
+             ---
+           monitor player health and handle death.
+
+  */
+
+  void checkPlayerStatus(): void {
+
+    if  (this.player == nullptr) {
+      return;
+    }
+
+    PlayerController controller = this.player.getComponent<PlayerController>();
+    if  (controller != nullptr) {
+      float health = controller.getHealth();
+
+      if  (health <= 0 && this.playerAlive) {
+        invoke this.onPlayerDeath();
+      }
+    }
+
+  }
+
+  /*
+
+           handleSceneTransition()
+             ---
+           manage scene loading and transitions.
+
+  */
+
+  void handleSceneTransition(): void {
+
+    if  (this.nextScene != "") {
+      invoke Engine.loadScene(this.nextScene);
+      this.currentScene = this.nextScene;
+      this.nextScene = "";
+      this.sceneTransitioning = false;
+    }
+
+  }
+
+  /*
+
+           setupEventHandlers()
+             ---
+           register for game events and callbacks.
+
+  */
+
+  void setupEventHandlers(): void {
+
+    /* event system setup would go here */
+    pass;
+
+  }
+
+  /*
+
+           initializeAudio()
+             ---
+           set up audio systems and background music.
+
+  */
+
+  void initializeAudio(): void {
+
+    /* audio initialization */
+    pass;
+
+  }
+
+  /*
+
+           initializeInput()
+             ---
+           configure input systems and bindings.
+
+  */
+
+  void initializeInput(): void {
+
+    /* input system setup */
+    pass;
+
+  }
+
+  public:
+
+  /*
+
+           startNewGame()
+             ---
+           begin a new game session.
+
+  */
+
+  void startNewGame(): void {
+
+    this.score = 0;
+    this.lives = MAX_LIVES;
+    this.gameTime = 0.0f;
+    this.playerAlive = true;
+
+    invoke this.changeState(GameState.LOADING);
+    invoke this.loadScene("GameLevel");
+
+  }
+
+  /*
+
+           pauseGame()
+             ---
+           pause the current game session.
+
+  */
+
+  void pauseGame(): void {
+
+    if  (this.currentState == GameState.PLAYING) {
+      this.isPaused = true;
+      invoke this.changeState(GameState.PAUSED);
+    }
+
+  }
+
+  /*
+
+           resumeGame()
+             ---
+           resume paused game session.
+
+  */
+
+  void resumeGame(): void {
+
+    if  (this.currentState == GameState.PAUSED) {
+      this.isPaused = false;
+      invoke this.changeState(GameState.PLAYING);
+    }
+
+  }
+
+  /*
+
+           restartGame()
+             ---
+           restart current game session.
+
+  */
+
+  void restartGame(): void {
+
+    invoke this.startNewGame();
+
+  }
+
+  /*
+
+           returnToMenu()
+             ---
+           return to main menu from any state.
+
+  */
+
+  void returnToMenu(): void {
+
+    this.isPaused = false;
+    invoke this.changeState(GameState.MENU);
+    invoke this.loadScene("MainMenu");
+
+  }
+
+  /*
+
+           quitGame()
+             ---
+           exit the game application.
+
+  */
+
+  void quitGame(): void {
+
+    invoke Engine.quit();
+
+  }
+
+  /*
+
+           addScore()
+             ---
+           add points to current score.
+
+  */
+
+  void addScore(int points): void {
+
+    this.score += points;
+
+  }
+
+  /*
+
+           getScore()
+             ---
+           get current game score.
+
+  */
+
+  int getScore(): int {
+
+    return this.score;
+
+  }
+
+  /*
+
+           getLives()
+             ---
+           get remaining player lives.
+
+  */
+
+  int getLives(): int {
+
+    return this.lives;
+
+  }
+
+  /*
+
+           getGameTime()
+             ---
+           get elapsed game time in seconds.
+
+  */
+
+  float getGameTime(): float {
+
+    return this.gameTime;
+
+  }
+
+  /*
+
+           getCurrentState()
+             ---
+           get current game state.
+
+  */
+
+  GameState getCurrentState(): GameState {
+
+    return this.currentState;
+
+  }
+
+  /*
+
+           setPlayer()
+             ---
+           set reference to player entity.
+
+  */
+
+  void setPlayer(Entity playerEntity): void {
+
+    this.player = playerEntity;
+    this.playerAlive = (playerEntity != nullptr);
+
+  }
+
+  private:
+
+  /*
+
+           changeState()
+             ---
+           transition to new game state.
+
+  */
+
+  void changeState(GameState newState): void {
+
+    this.previousState = this.currentState;
+    this.currentState = newState;
+
+    invoke this.onStateChanged(this.previousState, newState);
+
+  }
+
+  /*
+
+           onStateChanged()
+             ---
+           handle game state transition events.
+
+  */
+
+  void onStateChanged(GameState oldState, GameState newState): void {
+
+    invoke Engine.logMessage("Game state changed from " +
+                           this.stateToString(oldState) + " to " +
+                           this.stateToString(newState));
+
+  }
+
+  /*
+
+           onPlayerDeath()
+             ---
+           handle player death event.
+
+  */
+
+  void onPlayerDeath(): void {
+
+    this.playerAlive = false;
+    this.lives--;
+
+    if  (this.lives <= 0) {
+      invoke this.changeState(GameState.GAME_OVER);
+    } else {
+      /* respawn player after delay */
+      invoke this.schedulePlayerRespawn();
+    }
+
+  }
+
+  /*
+
+           schedulePlayerRespawn()
+             ---
+           schedule player respawn after delay.
+
+  */
+
+  void schedulePlayerRespawn(): void {
+
+    /* respawn logic would use timer system */
+    pass;
+
+  }
+
+  /*
+
+           loadScene()
+             ---
+           initiate scene loading process.
+
+  */
+
+  void loadScene(string sceneName): void {
+
+    this.nextScene = sceneName;
+    this.sceneTransitioning = true;
+
+  }
+
+  /*
+
+           stateToString()
+             ---
+           convert game state enum to string.
+
+  */
+
+  string stateToString(GameState state): string {
+
+    switch (state) {
+      case GameState.MENU:
+        return "MENU";
+      case GameState.PLAYING:
+        return "PLAYING";
+      case GameState.PAUSED:
+        return "PAUSED";
+      case GameState.GAME_OVER:
+        return "GAME_OVER";
+      case GameState.LOADING:
+        return "LOADING";
+      default:
+        return "UNKNOWN";
+    }
+
+  }
+
+  /*
+
+           toggleDebugMode()
+             ---
+           toggle debug information display.
+
+  */
+
+  void toggleDebugMode(): void {
+
+    /* debug mode toggle logic */
+    pass;
+
+  }
+
+}
+
+/* end of GameManager.wc */

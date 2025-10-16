@@ -12,7 +12,7 @@
 - [Inspector Panel](#inspector-panel)
 - [Scene Management](#scene-management)
 - [Asset Management](#asset-management)
-- [Scripting with WORLDSRC](#scripting-with-worldsrc)
+- [Scripting with WORLDC](#scripting-with-worldc)
 - [Build System](#build-system)
 - [Project Templates](#project-templates)
 - [Keyboard Shortcuts](#keyboard-shortcuts)
@@ -20,14 +20,14 @@
 
 ## Introduction
 
-WORLDEDIT is a professional game development editor for the WORLDENV engine. It provides a complete integrated development environment for creating 2D and 3D games with visual tools, scene management, component systems, and WORLDSRC language integration.
+WORLDEDIT is a professional game development editor for the WORLDENV engine. It provides a complete integrated development environment for creating 2D and 3D games with visual tools, scene management, component systems, and WORLDC language integration.
 
 ### Key Features
 
 - **Visual Scene Editor**: Real-time 2D/3D viewport with object manipulation
 - **Component System**: Modular entity-component architecture
 - **Asset Management**: Comprehensive file browser with drag-and-drop support
-- **WORLDSRC Integration**: Advanced scripting with hybrid C/C++/TypeScript syntax
+- **WORLDC Integration**: Advanced scripting with hybrid C/C++/TypeScript syntax
 - **Multi-Platform Deployment**: Export to web, desktop, and PWA formats
 - **Professional UI**: VS Code-inspired interface with dockable panels
 
@@ -66,8 +66,8 @@ WORLDEDIT is a professional game development editor for the WORLDENV engine. It 
    node --version
    npm --version
    
-   # Install WORLDSRC language support
-   npm install -g @worldenv/worldsrc
+   # Install WORLDC language support
+   npm install -g @worldenv/worldc
    ```
 
 3. **Launch WORLDEDIT**
@@ -82,7 +82,7 @@ WORLDEDIT is a professional game development editor for the WORLDENV engine. It 
 ### First Launch Configuration
 
 1. **Project Directory**: Choose default location for projects
-2. **WORLDSRC Compiler**: Verify language compiler path
+2. **WORLDC Compiler**: Verify language compiler path
 3. **Editor Preferences**: Configure theme, layout, and shortcuts
 4. **Asset Directories**: Set up asset search paths
 
@@ -101,7 +101,7 @@ WORLDEDIT is a professional game development editor for the WORLDENV engine. It 
    MyGame/
    ├── assets/          # Sprites, models, sounds
    ├── scenes/          # Scene files (.worldscene)
-   ├── scripts/         # WORLDSRC scripts (.wsrc)
+   ├── scripts/         # WORLDC scripts (.wc)
    ├── project.json     # Project configuration
    └── build/           # Built game output
    ```
@@ -116,7 +116,7 @@ WORLDEDIT is a professional game development editor for the WORLDENV engine. It 
 1. **Scene Creation**: Build levels using visual editor
 2. **Entity Management**: Add and configure game objects
 3. **Component Assignment**: Attach behaviors and properties
-4. **Script Writing**: Implement game logic with WORLDSRC
+4. **Script Writing**: Implement game logic with WORLDC
 5. **Asset Integration**: Import and organize game assets
 6. **Testing**: Play mode for immediate feedback
 7. **Building**: Export to target platforms
@@ -238,14 +238,14 @@ Scale:    [X: 1.0] [Y: 1.0] [Z: 1.0]
 ```
 Mesh:     [sphere.obj]
 Material: [default_material]
-Visible:  [✓] Enabled
+Visible:  [X] Enabled
 ```
 
 **Script Component:**
 ```
-Script File: [player_controller.wsrc]
-Language:    [WORLDSRC]
-Auto Load:   [✓] Enabled
+Script File: [player_controller.wc]
+Language:    [WORLDC]
+Auto Load:   [X] Enabled
 ```
 
 ### Property Validation
@@ -320,7 +320,7 @@ Auto Load:   [✓] Enabled
 - **Images**: PNG, JPG, GIF, WebP
 - **3D Models**: OBJ, FBX, GLTF, GLB
 - **Audio**: MP3, WAV, OGG
-- **Scripts**: .wsrc, .ts, .js
+- **Scripts**: .wc, .ts, .js
 - **Scenes**: .worldscene
 - **Projects**: .worldenv
 
@@ -352,14 +352,14 @@ Auto Load:   [✓] Enabled
 - Maintain consistent naming
 - Regular asset cleanup
 
-## Scripting with WORLDSRC
+## Scripting with WORLDC
 
 ### Language Overview
 
-WORLDSRC combines C/C++ syntax with TypeScript types, providing familiar programming paradigms with modern type safety.
+WORLDC combines C/C++ syntax with TypeScript types, providing familiar programming paradigms with modern type safety.
 
 **Basic Script Structure:**
-```worldsrc
+```worldc
 #include <worldenv.h>
 
 class PlayerController {
@@ -393,7 +393,7 @@ class PlayerController {
 ### Script Editor Features
 
 **Code Intelligence:**
-- Syntax highlighting for WORLDSRC
+- Syntax highlighting for WORLDC
 - IntelliSense autocompletion
 - Real-time error checking
 - Go-to-definition navigation
@@ -408,7 +408,7 @@ class PlayerController {
 ### Engine API Access
 
 **Common APIs:**
-```worldsrc
+```worldc
 // Entity management
 Entity enemy = Engine.createEntity("Enemy");
 enemy.addComponent<SpriteRenderer>("enemy.png");
@@ -453,7 +453,7 @@ rb->addForce(Vector3(0, 10, 0));
 ### Build Process
 
 1. **Asset Processing**: Optimize textures, models, audio
-2. **Script Compilation**: WORLDSRC → TypeScript → JavaScript
+2. **Script Compilation**: WORLDC → TypeScript → JavaScript
 3. **Bundle Generation**: Package all assets and code
 4. **Platform Packaging**: Create platform-specific builds
 5. **Distribution**: Generate installer and deployment files
@@ -492,10 +492,10 @@ build/desktop/
 - UI for health and score
 
 **Key Scripts:**
-- `PlayerController.wsrc`: Character movement and jumping
-- `EnemyAI.wsrc`: Basic AI behaviors
-- `Collectible.wsrc`: Item collection logic
-- `GameManager.wsrc`: Level management
+- `PlayerController.wc`: Character movement and jumping
+- `EnemyAI.wc`: Basic AI behaviors
+- `Collectible.wc`: Item collection logic
+- `GameManager.wc`: Level management
 
 **Getting Started:**
 1. Create new project with 2D Platformer template
@@ -516,10 +516,10 @@ build/desktop/
 - Simple inventory system
 
 **Key Scripts:**
-- `FirstPersonController.wsrc`: Camera and movement
-- `InteractionSystem.wsrc`: Object interaction
-- `InventoryManager.wsrc`: Item management
-- `AudioController.wsrc`: 3D sound positioning
+- `FirstPersonController.wc`: Camera and movement
+- `InteractionSystem.wc`: Object interaction
+- `InventoryManager.wc`: Item management
+- `AudioController.wc`: 3D sound positioning
 
 **Getting Started:**
 1. Create new project with 3D template
@@ -540,7 +540,7 @@ build/desktop/
 **Use Cases:**
 - Custom game genres
 - Experimental projects
-- Learning WORLDSRC programming
+- Learning WORLDC programming
 - Prototype development
 
 ## Keyboard Shortcuts

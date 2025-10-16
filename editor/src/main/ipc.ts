@@ -8,7 +8,7 @@
  * WORLDEDIT - IPC Handlers
  *
  * Inter-process communication handlers between main and renderer processes.
- * Provides safe API for file system, dialogs, and project operations.
+ * Provides safe API for file system, dialogs, project operations, and WorldC compilation.
  */
 
 import { ipcMain, BrowserWindow, app } from 'electron';
@@ -18,22 +18,25 @@ import { logger } from './logger';
 import { fileSystem } from './file-system';
 import { dialogManager } from './dialogs';
 import { projectManager } from './project';
+import { assetManager, AssetType } from './asset-manager';
 import { fileWatcher } from './watcher';
 import { autoSave } from './auto-save';
 import { recentProjectsManager } from './recent-projects';
 import { buildManager } from './build-manager';
 // Asset manager placeholder - types defined inline
 interface AssetImportOptions {
-  preserveStructure?: boolean;
-  generateThumbnails?: boolean;
-  overwriteExisting?: boolean;
+  preserveStructure: boolean;
+  generateThumbnails: boolean;
+  overwriteExisting: boolean;
+  targetFolder?: string;
 }
 
 interface AssetSearchOptions {
-  query?: string;
-  types?: string[];
-  tags?: string[];
-  recursive?: boolean;
+  query: string;
+  types: AssetType[];
+  tags: string[];
+  folder?: string;
+  recursive: boolean;
 }
 
 interface AssetMetadata {
@@ -43,63 +46,24 @@ interface AssetMetadata {
   [key: string]: unknown;
 }
 
-const assetManager = {
-  async importAssets(
-    filePaths: string[],
-    options?: AssetImportOptions
-  ): Promise<{ success: boolean; imported: string[] }> {
-    console.log('Asset import placeholder:', filePaths, options);
-    await Promise.resolve();
-    return { success: true, imported: filePaths };
-  },
-  async searchAssets(options: AssetSearchOptions): Promise<unknown[]> {
-    console.log('Asset search placeholder:', options);
-    await Promise.resolve();
-    return [];
-  },
-  updateAssetMetadata(path: string, metadata: Partial<AssetMetadata>): void {
-    console.log('Asset metadata update placeholder:', path, metadata);
-  },
-  async listAssets(path: string): Promise<unknown[]> {
-    console.log('Asset list placeholder:', path);
-    await Promise.resolve();
-    return [];
-  },
-  async deleteAsset(path: string): Promise<void> {
-    console.log('Asset delete placeholder:', path);
-    await Promise.resolve();
-  },
-  getAssetMetadata(path: string): Record<string, unknown> {
-    console.log('Asset get metadata placeholder:', path);
-    return {};
-  },
-  setProjectPath(path: string | null): void {
-    console.log('Asset set project path placeholder:', path);
-  },
-  async initializeAssetDirectory(path: string): Promise<void> {
-    console.log('Asset initialize directory placeholder:', path);
-    await Promise.resolve();
-  },
-  createFolder(name: string, parentPath: string): string {
-    console.log('Asset create folder placeholder:', name, parentPath);
-    return `${parentPath}/${name}`;
-  },
-  renameAsset(oldPath: string, newName: string): string {
-    console.log('Asset rename placeholder:', oldPath, newName);
-    return `${oldPath.split('/').slice(0, -1).join('/')}/${newName}`;
-  },
-  getThumbnailPath(assetPath: string): string {
-    console.log('Asset get thumbnail placeholder:', assetPath);
-    return `${assetPath}.thumb.png`;
-  }
-};
 import { DialogOptions, MessageDialogOptions } from '../shared/types';
+
+interface WorldCCompilationEvent {
+  type: 'start' | 'progress' | 'complete' | 'error';
+  file: string;
+  message?: string;
+  progress?: number;
+  errors?: string[];
+  warnings?: string[];
+}
 
 class IPCManager {
   private initialized: boolean;
+  private worldcWatcher: Map<string, NodeJS.Timeout>;
 
   constructor() {
     this.initialized = false;
+    this.worldcWatcher = new Map();
   }
 
   /**
@@ -122,6 +86,7 @@ class IPCManager {
     this.registerEngineHandlers();
     this.registerScriptHandlers();
     this.registerBuildHandlers();
+    this.registerWorldCHandlers();
 
     this.initialized = true;
 
@@ -451,7 +416,7 @@ class IPCManager {
         const project = await projectManager.createProject(args.path, args.name);
 
         assetManager.setProjectPath(args.path);
-        await assetManager.initializeAssetDirectory(args.path);
+        await assetManager.initializeAssetDirectory();
         fileWatcher.watch(args.path);
         autoSave.start();
 
@@ -794,7 +759,7 @@ class IPCManager {
 
     ipcMain.handle(
       'script:create-new',
-      async (_event, scriptType: 'typescript' | 'assemblyscript') => {
+      async (_event, scriptType: 'typescript' | 'assemblyscript' | 'worldc') => {
         try {
           const project = projectManager.getCurrentProject();
           if (!project) {
@@ -804,7 +769,12 @@ class IPCManager {
           const scriptsDir = path.join(project.path, 'scripts');
           await fileSystem.ensureDirectory(scriptsDir);
 
-          const extension = scriptType === 'typescript' ? '.ts' : '.as.ts';
+          const extension =
+            scriptType === 'typescript'
+              ? '.ts'
+              : scriptType === 'assemblyscript'
+                ? '.as.ts'
+                : '.wc';
           let counter = 1;
           let scriptPath: string;
 
@@ -814,8 +784,37 @@ class IPCManager {
             counter++;
           } while (await fileSystem.exists(scriptPath));
 
-          const template = this.getScriptTemplate(scriptType);
-          await fileSystem.writeFile(scriptPath, template, { create_dirs: true });
+          let templateContent: string;
+          if (scriptType === 'worldc') {
+            templateContent = `#include <worldenv.h>
+
+/*
+ * WorldC Script - ${path.basename(scriptPath, extension)}
+ *
+ * This is a WorldC script file with C-like syntax.
+ */
+
+class NewComponent : public Component {
+
+  private:
+    // Private member variables
+
+  public:
+
+    void start(): void {
+      // Component initialization
+    }
+
+    void update(float deltaTime): void {
+      // Update logic called every frame
+    }
+
+};
+`;
+          } else {
+            templateContent = this.getScriptTemplate(scriptType as 'typescript' | 'assemblyscript');
+          }
+          await fileSystem.writeFile(scriptPath, templateContent, { create_dirs: true });
 
           logger.info('IPC', 'New script created', { path: scriptPath, type: scriptType });
           return scriptPath;
@@ -1059,6 +1058,196 @@ export class CustomComponent {
 
     for (const window of windows) {
       this.sendToWindow(window, channel, ...args);
+    }
+  }
+
+  /**
+   * registerWorldCHandlers()
+   *
+   * Registers WorldC compilation and hot-reload handlers.
+   */
+  private registerWorldCHandlers(): void {
+    /* Compile single WorldC file */
+    ipcMain.handle('worldc:compile-file', async (_event, filePath: string) => {
+      try {
+        logger.info('IPC', 'WorldC compilation requested', { filePath });
+
+        /* Emit compilation start event */
+        this.emitWorldCEvent({
+          type: 'start',
+          file: filePath,
+          message: 'Starting WorldC compilation...'
+        });
+
+        /* Use asset manager to trigger compilation */
+        const success = await assetManager.triggerWorldCCompilation(filePath);
+
+        if (success) {
+          this.emitWorldCEvent({
+            type: 'complete',
+            file: filePath,
+            message: 'Compilation completed successfully'
+          });
+          return { success: true, errors: [], warnings: [] };
+        } else {
+          this.emitWorldCEvent({
+            type: 'error',
+            file: filePath,
+            message: 'Compilation failed',
+            errors: ['Failed to compile WorldC file']
+          });
+          return { success: false, errors: ['Compilation failed'], warnings: [] };
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown compilation error';
+        logger.error('IPC', 'WorldC compilation failed', { filePath, error });
+
+        this.emitWorldCEvent({
+          type: 'error',
+          file: filePath,
+          message: errorMessage,
+          errors: [errorMessage]
+        });
+
+        return { success: false, errors: [errorMessage], warnings: [] };
+      }
+    });
+
+    /* Get WorldC file metadata */
+    ipcMain.handle('worldc:get-metadata', async (_event, filePath: string) => {
+      try {
+        const metadata = assetManager.getAssetMetadata(filePath);
+        return metadata?.worldcInfo || null;
+      } catch (error) {
+        logger.error('IPC', 'Failed to get WorldC metadata', { filePath, error });
+        return null;
+      }
+    });
+
+    /* Enable WorldC hot-reload for file */
+    ipcMain.handle('worldc:enable-hot-reload', async (_event, filePath: string) => {
+      try {
+        logger.info('IPC', 'Enabling WorldC hot-reload', { filePath });
+
+        /* Clear existing watcher */
+        const existingTimer = this.worldcWatcher.get(filePath);
+        if (existingTimer) {
+          clearTimeout(existingTimer);
+        }
+
+        /* Set up file watcher with short delay for hot-reload */
+        const timer = setTimeout(async () => {
+          await this.compileWorldCFile(filePath);
+          this.worldcWatcher.delete(filePath);
+        }, 300);
+
+        this.worldcWatcher.set(filePath, timer);
+        return { success: true };
+      } catch (error) {
+        logger.error('IPC', 'Failed to enable WorldC hot-reload', { filePath, error });
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+      }
+    });
+
+    /* Disable WorldC hot-reload for file */
+    ipcMain.handle('worldc:disable-hot-reload', async (_event, filePath: string) => {
+      try {
+        const timer = this.worldcWatcher.get(filePath);
+        if (timer) {
+          clearTimeout(timer);
+          this.worldcWatcher.delete(filePath);
+        }
+        return { success: true };
+      } catch (error) {
+        logger.error('IPC', 'Failed to disable WorldC hot-reload', { filePath, error });
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+      }
+    });
+
+    /* Get all WorldC files in project */
+    ipcMain.handle('worldc:list-files', async (_event, projectPath: string) => {
+      try {
+        const worldcFiles: string[] = [];
+
+        const searchDir = (dir: string) => {
+          const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+          for (const entry of entries) {
+            const fullPath = path.join(dir, entry.name);
+
+            if (entry.isDirectory() && !entry.name.startsWith('.')) {
+              searchDir(fullPath);
+            } else if (
+              entry.isFile() &&
+              (entry.name.endsWith('.wc') || entry.name.endsWith('.worldc'))
+            ) {
+              worldcFiles.push(fullPath);
+            }
+          }
+        };
+
+        const srcPath = path.join(projectPath, 'src');
+        if (fs.existsSync(srcPath)) {
+          searchDir(srcPath);
+        }
+
+        return worldcFiles;
+      } catch (error) {
+        logger.error('IPC', 'Failed to list WorldC files', { projectPath, error });
+        return [];
+      }
+    });
+  }
+
+  /**
+   * emitWorldCEvent()
+   *
+   * Emit WorldC compilation event to renderer process.
+   */
+  private emitWorldCEvent(event: WorldCCompilationEvent): void {
+    const windows = BrowserWindow.getAllWindows();
+    for (const window of windows) {
+      window.webContents.send('worldc:compilation-event', event);
+    }
+  }
+
+  /**
+   * compileWorldCFile()
+   *
+   * Internal method to compile WorldC file and emit events.
+   */
+  private async compileWorldCFile(filePath: string): Promise<void> {
+    try {
+      this.emitWorldCEvent({
+        type: 'start',
+        file: filePath,
+        message: 'Hot-reload compilation started...'
+      });
+
+      const success = await assetManager.triggerWorldCCompilation(filePath);
+
+      if (success) {
+        this.emitWorldCEvent({
+          type: 'complete',
+          file: filePath,
+          message: 'Hot-reload compilation completed'
+        });
+      } else {
+        this.emitWorldCEvent({
+          type: 'error',
+          file: filePath,
+          message: 'Hot-reload compilation failed',
+          errors: ['Compilation failed']
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.emitWorldCEvent({
+        type: 'error',
+        file: filePath,
+        message: errorMessage,
+        errors: [errorMessage]
+      });
     }
   }
 }

@@ -19,16 +19,16 @@ import { Component, AssetReference, PropertyMetadata } from '../Component';
 export enum ScriptExecutionMode {
   AUTOMATIC = 'automatic',
   MANUAL = 'manual',
-  EVENT_DRIVEN = 'event_driven',
+  EVENT_DRIVEN = 'event_driven'
 }
 
 /**
  * Script languages
  */
 export enum ScriptLanguage {
-  WORLDSRC = 'worldsrc',
+  WORLDC = 'worldc',
   TYPESCRIPT = 'typescript',
-  JAVASCRIPT = 'javascript',
+  JAVASCRIPT = 'javascript'
 }
 
 /**
@@ -56,71 +56,47 @@ export class ScriptComponent extends Component {
    * Sets up script properties.
    */
   protected initializeProperties(): void {
-    this.defineProperty<AssetReference | null>(
-      'scriptFile',
-      null,
-      {
-        type: 'asset',
-        displayName: 'Script File',
-        description: 'The script file to attach to this entity',
-        fileFilter: 'text/javascript,text/typescript,text/worldsrc',
-      }
-    );
+    this.defineProperty<AssetReference | null>('scriptFile', null, {
+      type: 'asset',
+      displayName: 'Script File',
+      description: 'The script file to attach to this entity',
+      fileFilter: 'text/javascript,text/typescript,text/worldc'
+    });
 
-    this.defineProperty<ScriptLanguage>(
-      'language',
-      ScriptLanguage.WORLDSRC,
-      {
-        type: 'enum',
-        displayName: 'Language',
-        description: 'Programming language of the script',
-        options: Object.values(ScriptLanguage),
-      }
-    );
+    this.defineProperty<ScriptLanguage>('language', ScriptLanguage.WORLDC, {
+      type: 'enum',
+      displayName: 'Language',
+      description: 'Programming language of the script',
+      options: Object.values(ScriptLanguage)
+    });
 
-    this.defineProperty<ScriptExecutionMode>(
-      'executionMode',
-      ScriptExecutionMode.AUTOMATIC,
-      {
-        type: 'enum',
-        displayName: 'Execution Mode',
-        description: 'How and when the script should be executed',
-        options: Object.values(ScriptExecutionMode),
-      }
-    );
+    this.defineProperty<ScriptExecutionMode>('executionMode', ScriptExecutionMode.AUTOMATIC, {
+      type: 'enum',
+      displayName: 'Execution Mode',
+      description: 'How and when the script should be executed',
+      options: Object.values(ScriptExecutionMode)
+    });
 
-    this.defineProperty<boolean>(
-      'autoStart',
-      true,
-      {
-        type: 'boolean',
-        displayName: 'Auto Start',
-        description: 'Start script execution automatically when entity is created',
-      }
-    );
+    this.defineProperty<boolean>('autoStart', true, {
+      type: 'boolean',
+      displayName: 'Auto Start',
+      description: 'Start script execution automatically when entity is created'
+    });
 
-    this.defineProperty<boolean>(
-      'runInEditor',
-      false,
-      {
-        type: 'boolean',
-        displayName: 'Run In Editor',
-        description: 'Execute script in editor mode (for tools and utilities)',
-      }
-    );
+    this.defineProperty<boolean>('runInEditor', false, {
+      type: 'boolean',
+      displayName: 'Run In Editor',
+      description: 'Execute script in editor mode (for tools and utilities)'
+    });
 
-    this.defineProperty<number>(
-      'executionOrder',
-      0,
-      {
-        type: 'number',
-        displayName: 'Execution Order',
-        description: 'Script execution order relative to other scripts',
-        min: -1000,
-        max: 1000,
-        step: 1,
-      }
-    );
+    this.defineProperty<number>('executionOrder', 0, {
+      type: 'number',
+      displayName: 'Execution Order',
+      description: 'Script execution order relative to other scripts',
+      min: -1000,
+      max: 1000,
+      step: 1
+    });
 
     this.defineProperty<Record<string, any>>(
       'publicVariables',
@@ -128,72 +104,48 @@ export class ScriptComponent extends Component {
       {
         type: 'object',
         displayName: 'Public Variables',
-        description: 'Variables exposed from the script for editor configuration',
+        description: 'Variables exposed from the script for editor configuration'
       }
     );
 
-    this.defineProperty<string[]>(
-      'dependencies',
-      [],
-      {
-        type: 'object',
-        displayName: 'Dependencies',
-        description: 'List of script dependencies that must be loaded first',
-      }
-    );
+    this.defineProperty<string[]>('dependencies', [], {
+      type: 'object',
+      displayName: 'Dependencies',
+      description: 'List of script dependencies that must be loaded first'
+    });
 
-    this.defineProperty<boolean>(
-      'enableDebugging',
-      true,
-      {
-        type: 'boolean',
-        displayName: 'Enable Debugging',
-        description: 'Enable debugging features for this script',
-      }
-    );
+    this.defineProperty<boolean>('enableDebugging', true, {
+      type: 'boolean',
+      displayName: 'Enable Debugging',
+      description: 'Enable debugging features for this script'
+    });
 
-    this.defineProperty<boolean>(
-      'enableHotReload',
-      true,
-      {
-        type: 'boolean',
-        displayName: 'Enable Hot Reload',
-        description: 'Automatically reload script when file changes',
-      }
-    );
+    this.defineProperty<boolean>('enableHotReload', true, {
+      type: 'boolean',
+      displayName: 'Enable Hot Reload',
+      description: 'Automatically reload script when file changes'
+    });
 
-    this.defineProperty<string>(
-      'version',
-      '1.0.0',
-      {
-        type: 'string',
-        displayName: 'Version',
-        description: 'Script version for compatibility checking',
-        readonly: true,
-      }
-    );
+    this.defineProperty<string>('version', '1.0.0', {
+      type: 'string',
+      displayName: 'Version',
+      description: 'Script version for compatibility checking',
+      readonly: true
+    });
 
-    this.defineProperty<string>(
-      'author',
-      '',
-      {
-        type: 'string',
-        displayName: 'Author',
-        description: 'Script author information',
-        readonly: true,
-      }
-    );
+    this.defineProperty<string>('author', '', {
+      type: 'string',
+      displayName: 'Author',
+      description: 'Script author information',
+      readonly: true
+    });
 
-    this.defineProperty<string>(
-      'description',
-      '',
-      {
-        type: 'string',
-        displayName: 'Description',
-        description: 'Script description and purpose',
-        readonly: true,
-      }
-    );
+    this.defineProperty<string>('description', '', {
+      type: 'string',
+      displayName: 'Description',
+      description: 'Script description and purpose',
+      readonly: true
+    });
   }
 
   /**
@@ -220,7 +172,7 @@ export class ScriptComponent extends Component {
    * Gets script language.
    */
   getLanguage(): ScriptLanguage {
-    return this.getProperty<ScriptLanguage>('language') || ScriptLanguage.WORLDSRC;
+    return this.getProperty<ScriptLanguage>('language') || ScriptLanguage.WORLDC;
   }
 
   /**
@@ -547,9 +499,9 @@ export class ScriptComponent extends Component {
       if (scriptFile && scriptFile.path) {
         const ext = scriptFile.path.toLowerCase().split('.').pop();
         switch (ext) {
-          case 'ws':
-          case 'worldsrc':
-            this.setLanguage(ScriptLanguage.WORLDSRC);
+          case 'wc':
+          case 'worldc':
+            this.setLanguage(ScriptLanguage.WORLDC);
             break;
           case 'ts':
             this.setLanguage(ScriptLanguage.TYPESCRIPT);
@@ -564,7 +516,7 @@ export class ScriptComponent extends Component {
     // Clean up dependencies array
     if (key === 'dependencies') {
       const deps = value as string[];
-      const cleaned = deps.filter(dep => typeof dep === 'string' && dep.trim().length > 0);
+      const cleaned = deps.filter((dep) => typeof dep === 'string' && dep.trim().length > 0);
       if (cleaned.length !== deps.length) {
         this.setProperty('dependencies', cleaned);
       }

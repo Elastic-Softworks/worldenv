@@ -8,7 +8,7 @@
 - [Component System](#component-system)
 - [Engine Interface](#engine-interface)
 - [Asset Management](#asset-management)
-- [WORLDSRC Integration](#worldsrc-integration)
+- [WORLDC Integration](#worldc-integration)
 - [UI Components](#ui-components)
 - [Event System](#event-system)
 - [File System](#file-system)
@@ -61,7 +61,7 @@ interface FileSystemAPI {
 }
 
 // Usage
-const content = await window.worldedit.fs.readFile("script.wsrc");
+const content = await window.worldedit.fs.readFile("script.wc");
 await window.worldedit.fs.writeFile("output.txt", "Hello World");
 
 const data = await window.worldedit.fs.readJSON<ProjectData>("project.json");
@@ -83,7 +83,7 @@ interface DialogAPI {
 // Usage
 const filePath = await window.worldedit.dialog.openFile({
   title: "Open Script",
-  filters: [{ name: "WORLDSRC", extensions: ["wsrc"] }]
+  filters: [{ name: "WORLDC", extensions: ["wc"] }]
 });
 
 const confirmed = await window.worldedit.dialog.showConfirm(
@@ -270,7 +270,7 @@ class ScriptComponent extends Component {
 }
 
 enum ScriptLanguage {
-  WORLDSRC = 'worldsrc',
+  WORLDC = 'worldc',
   TYPESCRIPT = 'typescript',
   JAVASCRIPT = 'javascript'
 }
@@ -572,12 +572,12 @@ class ModelAsset extends Asset {
 }
 ```
 
-## WORLDSRC Integration
+## WORLDC Integration
 
 ### Compiler Interface
 
 ```typescript
-interface WorldSrcCompiler {
+interface WorldCCompiler {
   compile(sourceCode: string, options?: CompileOptions): Promise<CompileResult>;
   compileFile(filePath: string, options?: CompileOptions): Promise<CompileResult>;
   
@@ -1105,8 +1105,8 @@ interface ProjectSettings {
   defaultScene?: string;
   startupScene?: string;
   
-  // WORLDSRC settings
-  worldsrcVersion: string;
+  // WORLDC settings
+  worldcVersion: string;
   compilerOptions: CompileOptions;
   
   // Asset settings

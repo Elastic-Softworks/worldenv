@@ -38,7 +38,7 @@ const SUPPORTED_EXTENSIONS = [
   '.dae',
   '.3ds',
   '.ws',
-  '.worldsrc',
+  '.wc',
   '.ts',
   '.js',
   '.scene',

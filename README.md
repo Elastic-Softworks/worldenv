@@ -1,6 +1,6 @@
 # WORLDENV
 
-WORLDENV is a game development ecosystem consisting of **WORLDEDIT** (a visual editor) and **WORLDSRC** (a programming language). This monorepo contains both components organized for standalone use and integrated development.
+WORLDENV is a game development ecosystem consisting of **WORLDEDIT** (a visual editor) and **WORLDC** (a programming language). This monorepo contains both components organized for standalone use and integrated development.
 
 ## Project Structure
 
@@ -19,7 +19,7 @@ worldenv/
 │       ├── DEVELOPER-GUIDE.md
 │       ├── TROUBLESHOOTING.md
 │       └── API-REFERENCE.md
-└── worldsrc/               # WORLDSRC - Programming language
+└── worldc/                 # WORLDC - Programming language
     ├── README.md           # Language-specific documentation
     ├── package.json        # Language tooling dependencies
     ├── src/                # Language implementation
@@ -39,13 +39,13 @@ worldenv/
 - Scene editor with viewport and transform manipulators
 - Entity-Component System for game object architecture
 - Asset browser with file management and preview
-- Script editor with WORLDSRC integration and syntax highlighting
+- Script editor with WORLDC integration and syntax highlighting
 - Play mode for real-time testing
 - Multi-platform build system
 
 **Quick Start**: See [`editor/README.md`](editor/README.md) for detailed information.
 
-### WORLDSRC - Hybrid Programming Language
+### WORLDC - Hybrid Programming Language
 
 **C/C++/TypeScript hybrid language for game development**
 
@@ -56,7 +56,7 @@ worldenv/
 - Hot compilation with optimization passes
 - Type system with generics and pointers
 
-**Quick Start**: See [`worldsrc/README.md`](worldsrc/README.md) for detailed information.
+**Quick Start**: See [`worldc/README.md`](worldc/README.md) for detailed information.
 
 ## System Requirements
 
@@ -78,9 +78,9 @@ worldenv/
 
 ## Installation
 
-### Option 1: Use WORLDEDIT with Integrated WORLDSRC
+### Option 1: Use WORLDEDIT with Integrated WORLDC
 
-Install the complete editor which includes WORLDSRC:
+Install the complete editor which includes WORLDC:
 
 ```bash
 # Clone repository
@@ -97,14 +97,14 @@ npm run dev
 npm run build
 ```
 
-### Option 2: Use WORLDSRC Standalone
+### Option 2: Use WORLDC Standalone
 
 Install only the programming language:
 
 ```bash
 # Clone repository
 git clone https://github.com/elastic-softworks/worldenv.git
-cd worldenv/worldsrc
+cd worldenv/worldc
 
 # Install dependencies
 npm install
@@ -123,7 +123,7 @@ npm install -g .
 npm install -g @worldenv/editor
 
 # Language only (when published)
-npm install -g @worldenv/worldsrc
+npm install -g @worldenv/worldc
 ```
 
 ## Quick Start
@@ -140,18 +140,18 @@ npm install -g @worldenv/worldsrc
 
 3. **Design Scenes**: Place entities and components using the visual editor
 
-4. **Write Scripts**: Create WORLDSRC files for game logic
+4. **Write Scripts**: Create WORLDC files for game logic
 
 5. **Test in Play Mode**: Press F5 to test your game
 
 6. **Build and Deploy**: Select File → Build → Select target platform
 
-### WORLDSRC Programming Example
+### WORLDC Programming Example
 
-```worldsrc
+```worldc
 /* 
    ===============================================
-   WORLDSRC Game Logic Example
+   WORLDC Game Logic Example
    ===============================================
 */
 
@@ -208,7 +208,7 @@ void update(float deltaTime) {
 - **[Developer Guide](editor/docs/DEVELOPER-GUIDE.md)**: Contribution and development
 - **[Troubleshooting](editor/docs/TROUBLESHOOTING.md)**: Issue resolution
 - **[API Reference](editor/docs/API-REFERENCE.md)**: API documentation
-- **[WORLDSRC Manual](worldsrc/README.md)**: Programming language reference
+- **[WORLDC Manual](worldc/README.md)**: Programming language reference
 
 ## License
 

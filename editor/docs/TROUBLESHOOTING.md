@@ -10,7 +10,7 @@
 - [Performance Problems](#performance-problems)
 - [Editor Interface Issues](#editor-interface-issues)
 - [Asset and File Management](#asset-and-file-management)
-- [WORLDSRC Language Issues](#worldsrc-language-issues)
+- [WORLDC Language Issues](#worldc-language-issues)
 - [Platform-Specific Issues](#platform-specific-issues)
 - [Development Environment](#development-environment)
 - [Debugging Tips](#debugging-tips)
@@ -530,7 +530,7 @@ git checkout HEAD -- project.json
 **Symptoms:**
 ```
 Warning: Missing texture: sprites/player.png
-Script not found: scripts/player_controller.wsrc
+Script not found: scripts/player_controller.wc
 Broken asset reference in scene
 ```
 
@@ -553,11 +553,11 @@ tree project_directory
 dir /s project_directory
 ```
 
-## WORLDSRC Language Issues
+## WORLDC Language Issues
 
 ### Compilation Errors
 
-**Problem:** WORLDSRC scripts fail to compile.
+**Problem:** WORLDC scripts fail to compile.
 
 **Symptoms:**
 ```
@@ -568,11 +568,11 @@ Linker error: undefined reference to function
 
 **Solutions:**
 ```bash
-# Check WORLDSRC compiler installation
-worldsrc --version
+# Check WORLDC compiler installation
+worldc --version
 
 # Validate syntax
-worldsrc compile --check-only script.wsrc
+worldc compile --check-only script.wc
 
 # Review error messages carefully
 # Line numbers and character positions are provided
@@ -580,8 +580,8 @@ worldsrc compile --check-only script.wsrc
 # Check for common syntax issues
 # Missing semicolons, unmatched braces, typos
 
-# Update WORLDSRC compiler
-npm update @worldenv/worldsrc
+# Update WORLDC compiler
+npm update @worldenv/worldc
 ```
 
 ### Language Server Issues
@@ -598,17 +598,17 @@ npm update @worldenv/worldsrc
 # Restart language server
 # VS Code: Cmd/Ctrl+Shift+P → "Restart Language Server"
 
-# Check WORLDSRC extension installation
-# VS Code: Extensions → @worldenv/worldsrc
+# Check WORLDC extension installation
+# VS Code: Extensions → @worldenv/worldc
 
 # Verify workspace configuration
-# Check .vscode/settings.json for WORLDSRC paths
+# Check .vscode/settings.json for WORLDC paths
 
 # Update IDE extensions
-# Keep WORLDSRC extension up to date
+# Keep WORLDC extension up to date
 
 # Check language server logs
-# Output panel → WORLDSRC Language Server
+# Output panel → WORLDC Language Server
 ```
 
 ### Runtime Script Errors
@@ -628,7 +628,7 @@ Stack overflow in recursive function
 # Add console.log() statements for debugging
 
 # Use debugger breakpoints
-# Add debugger; statements in WORLDSRC code
+# Add debugger; statements in WORLDC code
 
 # Check variable initialization
 # Ensure all variables are properly initialized

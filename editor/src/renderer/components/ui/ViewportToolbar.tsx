@@ -122,10 +122,10 @@ export function ViewportToolbar({
   };
 
   const cameraPresets: { preset: CameraPreset; label: string; icon: string }[] = [
-    { preset: 'top', label: 'Top', icon: '⬇' },
-    { preset: 'front', label: 'Front', icon: '⬅' },
+    { preset: 'top', label: 'Top', icon: '↓' },
+    { preset: 'front', label: 'Front', icon: '←' },
     { preset: 'right', label: 'Right', icon: '↗' },
-    { preset: 'perspective', label: 'Persp', icon: '🔶' }
+    { preset: 'perspective', label: 'Persp', icon: '◆' }
   ];
 
   const manipulatorModes: {
@@ -136,7 +136,7 @@ export function ViewportToolbar({
   }[] = [
     { mode: ManipulatorMode.Translate, label: 'Move', icon: '↔', shortcut: 'W' },
     { mode: ManipulatorMode.Rotate, label: 'Rotate', icon: '↻', shortcut: 'E' },
-    { mode: ManipulatorMode.Scale, label: 'Scale', icon: '⛶', shortcut: 'R' }
+    { mode: ManipulatorMode.Scale, label: 'Scale', icon: '▣', shortcut: 'R' }
   ];
 
   return (
@@ -251,7 +251,7 @@ export function ViewportToolbar({
             onClick={onToggleAxes}
             title="Toggle axes visibility"
           >
-            <span style={{ fontSize: '10px' }}>⚏</span>
+            <span style={{ fontSize: '10px' }}>⊕</span>
             Axes
           </button>
         )}
@@ -276,7 +276,7 @@ export function ViewportToolbar({
           onClick={onToggleSnap}
           title="Toggle snap to grid (G)"
         >
-          <span style={{ fontSize: '10px' }}>🧲</span>
+          <span style={{ fontSize: '10px' }}>⊞</span>
           Grid
         </button>
       </div>

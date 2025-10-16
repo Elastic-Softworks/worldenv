@@ -1,0 +1,126 @@
+{
+  "id": "worldc-platformer",
+  "name": "WorldC Platformer",
+  "description": "2D platformer game template showcasing WorldC simplified verbiage and C-like syntax",
+  "version": "1.0.0",
+  "author": "WORLDEDIT Team",
+  "category": "Game Templates",
+  "tags": ["2d", "platformer", "worldc", "beginner"],
+  "thumbnail": "thumbnail.png",
+  "features": [
+    "WorldC simplified verbiage (edict, pass, invoke)",
+    "Player movement and physics",
+    "Enemy AI and collision detection",
+    "Collectible items and scoring",
+    "Level management system",
+    "Audio integration",
+    "C-like syntax with modern features"
+  ],
+  "requirements": {
+    "worldcVersion": "0.2.0",
+    "editorVersion": "0.3.0",
+    "nodeVersion": "16.0.0"
+  },
+  "structure": {
+    "src/": {
+      "description": "WorldC source files",
+      "files": [
+        "components/PlayerController.wc",
+        "components/EnemyController.wc",
+        "components/Collectible.wc",
+        "managers/GameManager.wc",
+        "managers/LevelManager.wc",
+        "systems/PhysicsSystem.wc"
+      ]
+    },
+    "assets/": {
+      "description": "Game assets and resources",
+      "subdirectories": [
+        "sprites/",
+        "audio/",
+        "levels/",
+        "fonts/"
+      ]
+    },
+    "scenes/": {
+      "description": "Game scenes and levels",
+      "files": [
+        "MainMenu.scene",
+        "Level01.scene",
+        "GameOver.scene"
+      ]
+    }
+  },
+  "defaultSettings": {
+    "renderer": "2D",
+    "physics": "enabled",
+    "audio": "enabled",
+    "buildTarget": "web",
+    "optimizationLevel": "basic",
+    "worldcTarget": "typescript"
+  },
+  "setupSteps": [
+    {
+      "step": 1,
+      "title": "Project Structure",
+      "description": "Creating project directories and basic structure"
+    },
+    {
+      "step": 2,
+      "title": "WorldC Components",
+      "description": "Setting up WorldC component templates with simplified verbiage"
+    },
+    {
+      "step": 3,
+      "title": "Asset Integration",
+      "description": "Importing placeholder sprites and audio files"
+    },
+    {
+      "step": 4,
+      "title": "Scene Setup",
+      "description": "Creating initial game scenes and level layout"
+    },
+    {
+      "step": 5,
+      "title": "Build Configuration",
+      "description": "Configuring WorldC compilation and build settings"
+    }
+  ],
+  "documentation": {
+    "readme": "README.md",
+    "tutorial": "docs/Tutorial.md",
+    "examples": "docs/Examples.md",
+    "api": "docs/API.md"
+  },
+  "buildConfiguration": {
+    "entry": "src/main.wc",
+    "output": "dist/",
+    "targets": ["web", "desktop"],
+    "worldcOptions": {
+      "target": "typescript",
+      "sourceMaps": true,
+      "optimization": "basic",
+      "strictMode": true
+    }
+  },
+  "dependencies": {
+    "@worldenv/core": "^0.2.0",
+    "@worldenv/physics": "^0.1.0",
+    "@worldenv/audio": "^0.1.0"
+  },
+  "scripts": {
+    "dev": "worldc --watch --target typescript",
+    "build": "worldc --target typescript --optimize",
+    "test": "worldc --test",
+    "clean": "rm -rf dist/"
+  },
+  "metadata": {
+    "created": "2025-01-03T00:00:00.000Z",
+    "lastModified": "2025-01-03T00:00:00.000Z",
+    "templateVersion": "1.0.0",
+    "compatibility": {
+      "worldc": ">=0.2.0",
+      "worldedit": ">=0.3.0"
+    }
+  }
+}

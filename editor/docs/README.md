@@ -13,21 +13,21 @@
 - **[DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md)** - Development and contribution guide
 - **[API-REFERENCE.md](API-REFERENCE.md)** - Technical API documentation
 
-### WORLDSRC Language
-- **[WORLDSRC Manual](../worldsrc/docs/worldsrc-manual.md)** - Complete language reference
-- **[WORLDSRC Lexicon](../worldsrc/docs/worldsrc-lexicon.md)** - API and function reference
-- **[WORLDSRC Troubleshooting](../worldsrc/docs/troubleshooting.md)** - Language-specific issues
+### WORLDC Language
+- **[WORLDC Manual](../worldc/docs/WC-MANUAL.md)** - Complete language reference
+- **[WORLDC Lexicon](../worldc/docs/WC-LEXICON.md)** - API and function reference
+- **[WORLDC Troubleshooting](../worldc/docs/troubleshooting.md)** - Language-specific issues
 
 ## What is WORLDEDIT?
 
-WORLDEDIT is a professional game development editor built for the WORLDENV engine. It provides a complete integrated development environment for creating 2D and 3D games with visual tools, scene management, component systems, and the powerful WORLDSRC programming language.
+WORLDEDIT is a professional game development editor built for the WORLDENV engine. It provides a complete integrated development environment for creating 2D and 3D games with visual tools, scene management, component systems, and the powerful WORLDC programming language.
 
 ### Key Features
 
 - **Visual Scene Editor** - Real-time 2D/3D viewport with object manipulation
 - **Component System** - Modular entity-component architecture
 - **Asset Management** - Comprehensive file browser with drag-and-drop support
-- **WORLDSRC Integration** - Advanced scripting with hybrid C/C++/TypeScript syntax
+- **WORLDC Integration** - Advanced scripting with hybrid C/C++/TypeScript syntax
 - **Multi-Platform Deployment** - Export to web, desktop, and PWA formats
 - **Professional UI** - VS Code-inspired interface with dockable panels
 
@@ -36,7 +36,7 @@ WORLDEDIT is a professional game development editor built for the WORLDENV engin
 - **Frontend**: Electron, React, TypeScript
 - **Backend**: Node.js, IPC communication
 - **Rendering**: Three.js (3D), Pixi.js (2D)
-- **Language**: WORLDSRC compiler and tooling
+- **Language**: WORLDC compiler and tooling
 - **Build System**: Webpack, TypeScript compiler
 
 ## Documentation Structure
@@ -49,7 +49,7 @@ WORLDEDIT is a professional game development editor built for the WORLDENV engin
 ### For Developers
 1. **Development**: [DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md) - Build and contribute
 2. **API Reference**: [API-REFERENCE.md](API-REFERENCE.md) - Technical documentation
-3. **Language Docs**: [WORLDSRC Documentation](../worldsrc/docs/) - Programming language
+3. **Language Docs**: [WORLDC Documentation](../worldc/docs/) - Programming language
 
 ### For Testing
 - **[Pre-Alpha Testing](todo/pre-alpha-testing-checklist.md)** - Complete testing framework
@@ -62,8 +62,8 @@ WORLDEDIT is a professional game development editor built for the WORLDENV engin
 # Download from releases
 wget https://github.com/elastic-softworks/worldenv/releases/latest
 
-# Install WORLDSRC compiler
-npm install -g @worldenv/worldsrc
+# Install WORLDC compiler
+npm install -g @worldenv/worldc
 ```
 
 ### Build from Source
@@ -97,7 +97,7 @@ npm run start
 - Complete editor infrastructure
 - Visual scene editing system
 - Component-based architecture
-- WORLDSRC language integration
+- WORLDC language integration
 - Multi-platform build system
 - Professional UI framework
 
@@ -116,8 +116,8 @@ npm run start
 3. Name your project and click "Create"
 4. Press F5 to test in play mode
 
-### Basic WORLDSRC Script
-```worldsrc
+### Basic WORLDC Script
+```worldc
 class PlayerController {
     private float speed = 200.0f;
     
@@ -176,6 +176,6 @@ Built with love by Elastic Softworks using:
 
 **Ready to Start Building Games?**
 
-👉 **[Get Started with QUICKSTART.md](QUICKSTART.md)**
+**[Get Started with QUICKSTART.md](QUICKSTART.md)**
 
 Need help? Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) or reach out to our community!
