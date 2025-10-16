@@ -111,8 +111,35 @@ function createMainWindow(): void {
     mainWindow.loadURL('http://localhost:9000');
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    const htmlPath = path.join(__dirname, '../renderer/index.html');
+    logger.info('MAIN', 'Loading HTML file', htmlPath);
+
+    // Check if HTML file exists
+    const fs = require('fs');
+    if (fs.existsSync(htmlPath)) {
+      logger.info('MAIN', 'HTML file exists, loading...');
+      mainWindow.loadFile(htmlPath);
+    } else {
+      logger.error('MAIN', 'HTML file not found!', htmlPath);
+    }
   }
+
+  // Add debugging for renderer process
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    logger.error(
+      'MAIN',
+      'Renderer failed to load',
+      `Code: ${errorCode}, Description: ${errorDescription}, URL: ${validatedURL}`
+    );
+  });
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    logger.info('MAIN', 'Renderer finished loading');
+  });
+
+  mainWindow.webContents.on('dom-ready', () => {
+    logger.info('MAIN', 'Renderer DOM ready');
+  });
 
   mainWindow.once('ready-to-show', () => {
     if (mainWindow) {

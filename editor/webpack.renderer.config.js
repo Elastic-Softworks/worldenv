@@ -15,7 +15,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  target: 'electron-renderer',
+  target: 'web',
   entry: './src/renderer/renderer.tsx',
   output: {
     path: path.resolve(__dirname, 'dist/renderer'),
@@ -47,28 +47,31 @@ module.exports = {
       '@engine': path.resolve(__dirname, 'src/engine')
     },
     fallback: {
-      path: false,
+      path: require.resolve('path-browserify'),
       fs: false,
       child_process: false,
-      crypto: false,
-      url: false,
-      buffer: false,
-      util: false,
-      assert: false,
-      stream: false,
-      os: false,
+      crypto: require.resolve('crypto-browserify'),
+      url: require.resolve('url'),
+      buffer: require.resolve('buffer'),
+      util: require.resolve('util'),
+      assert: require.resolve('assert'),
+      stream: require.resolve('stream-browserify'),
+      os: require.resolve('os-browserify/browser'),
       net: false,
       tls: false,
-      zlib: false,
-      http: false,
-      https: false,
-      querystring: false,
-      timers: false
+      zlib: require.resolve('browserify-zlib'),
+      http: require.resolve('stream-http'),
+      https: require.resolve('https-browserify'),
+      querystring: require.resolve('querystring-es3'),
+      timers: require.resolve('timers-browserify'),
+      process: require.resolve('process/browser'),
+      vm: require.resolve('vm-browserify')
     }
   },
   externals: {
     electron: 'commonjs2 electron'
   },
+
   node: {
     __dirname: false,
     __filename: false
@@ -77,6 +80,10 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/renderer/index.html',
       filename: 'index.html'
+    }),
+    new (require('webpack').ProvidePlugin)({
+      process: 'process/browser',
+      Buffer: ['buffer', 'Buffer']
     })
   ],
   devServer: {
