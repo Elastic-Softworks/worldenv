@@ -72,7 +72,7 @@ async function initializeApplication(): Promise<void> {
     splashScreen.updateMessage('Loading interface...');
     splashScreen.updateProgress(80);
 
-    splashScreen.hideAfter(1000);
+    splashScreen.hideAfter(3000);
 
     logger.info('MAIN', 'Application initialized successfully');
   } catch (error) {
@@ -183,6 +183,7 @@ function createMainWindow(): void {
 function setupMenuHandlers(): void {
   menuManager.setHandlers({
     onNewProject: async () => {
+      console.log('[MENU] File > New Project');
       if (!mainWindow) {
         return;
       }
@@ -194,6 +195,7 @@ function setupMenuHandlers(): void {
         });
 
         if (!dir_path) {
+          console.log('[MENU] File > New Project - cancelled by user');
           return;
         }
 
@@ -202,10 +204,12 @@ function setupMenuHandlers(): void {
         await projectManager.createProject(dir_path, project_name);
 
         logger.info('MAIN', 'New project created', { path: dir_path });
+        console.log('[MENU] File > New Project - created:', dir_path);
 
         ipcManager.sendToWindow(mainWindow, 'project:opened');
       } catch (error) {
         logger.error('MAIN', 'Failed to create project', { error });
+        console.error('[MENU] File > New Project - error:', error);
 
         await dialogManager.showError(
           mainWindow,
@@ -216,6 +220,7 @@ function setupMenuHandlers(): void {
     },
 
     onOpenProject: async () => {
+      console.log('[MENU] File > Open Project');
       if (!mainWindow) {
         return;
       }
@@ -226,28 +231,33 @@ function setupMenuHandlers(): void {
         });
 
         if (!dir_path) {
+          console.log('[MENU] File > Open Project - cancelled by user');
           return;
         }
 
         await projectManager.openProject(dir_path);
 
         logger.info('MAIN', 'Project opened', { path: dir_path });
+        console.log('[MENU] File > Open Project - opened:', dir_path);
 
         ipcManager.sendToWindow(mainWindow, 'project:opened');
       } catch (error) {
         logger.error('MAIN', 'Failed to open project', { error });
+        console.error('[MENU] File > Open Project - error:', error);
 
         await dialogManager.showError(mainWindow, 'Project Open Error', 'Failed to open project.');
       }
     },
 
     onSaveProject: async () => {
+      console.log('[MENU] File > Save Project');
       if (!mainWindow) {
         return;
       }
 
       try {
         if (!projectManager.isProjectOpen()) {
+          console.log('[MENU] File > Save Project - no project open');
           await dialogManager.showWarning(
             mainWindow,
             'No Project',
@@ -260,26 +270,31 @@ function setupMenuHandlers(): void {
         await projectManager.saveProject();
 
         logger.info('MAIN', 'Project saved');
+        console.log('[MENU] File > Save Project - saved successfully');
 
         ipcManager.sendToWindow(mainWindow, 'project:saved');
       } catch (error) {
         logger.error('MAIN', 'Failed to save project', { error });
+        console.error('[MENU] File > Save Project - error:', error);
 
         await dialogManager.showError(mainWindow, 'Save Error', 'Failed to save project.');
       }
     },
 
     onSaveProjectAs: async () => {
+      console.log('[MENU] File > Save Project As (not implemented yet)');
       logger.info('MAIN', 'Save project as not yet implemented');
     },
 
     onCloseProject: async () => {
+      console.log('[MENU] File > Close Project');
       if (!mainWindow) {
         return;
       }
 
       try {
         if (!projectManager.isProjectOpen()) {
+          console.log('[MENU] File > Close Project - no project open');
           return;
         }
 
@@ -293,6 +308,7 @@ function setupMenuHandlers(): void {
           if (result === 'save') {
             await projectManager.saveProject();
           } else if (result === 'cancel') {
+            console.log('[MENU] File > Close Project - cancelled by user');
             return;
           }
         }
@@ -300,79 +316,108 @@ function setupMenuHandlers(): void {
         projectManager.closeProject();
 
         logger.info('MAIN', 'Project closed');
+        console.log('[MENU] File > Close Project - closed successfully');
 
         ipcManager.sendToWindow(mainWindow, 'project:closed');
       } catch (error) {
         logger.error('MAIN', 'Failed to close project', { error });
+        console.error('[MENU] File > Close Project - error:', error);
       }
     },
 
     onExit: async () => {
+      console.log('[MENU] File > Exit');
       isQuitting = true;
       app.quit();
     },
 
     onUndo: () => {
+      logger.info('MAIN', 'Edit menu: Undo requested');
+      console.log('[MENU] Edit > Undo');
       if (mainWindow) {
         ipcManager.sendToWindow(mainWindow, 'edit:undo');
       }
     },
 
     onRedo: () => {
+      logger.info('MAIN', 'Edit menu: Redo requested');
+      console.log('[MENU] Edit > Redo');
       if (mainWindow) {
         ipcManager.sendToWindow(mainWindow, 'edit:redo');
       }
     },
 
     onCut: () => {
+      logger.info('MAIN', 'Edit menu: Cut requested');
+      console.log('[MENU] Edit > Cut');
       if (mainWindow) {
         mainWindow.webContents.cut();
       }
     },
 
     onCopy: () => {
+      logger.info('MAIN', 'Edit menu: Copy requested');
+      console.log('[MENU] Edit > Copy');
       if (mainWindow) {
         mainWindow.webContents.copy();
       }
     },
 
     onPaste: () => {
+      logger.info('MAIN', 'Edit menu: Paste requested');
+      console.log('[MENU] Edit > Paste');
       if (mainWindow) {
         mainWindow.webContents.paste();
       }
     },
 
     onDelete: () => {
+      logger.info('MAIN', 'Edit menu: Delete requested');
+      console.log('[MENU] Edit > Delete');
       if (mainWindow) {
         mainWindow.webContents.delete();
       }
     },
 
     onSelectAll: () => {
+      logger.info('MAIN', 'Edit menu: Select All requested');
+      console.log('[MENU] Edit > Select All');
       if (mainWindow) {
         mainWindow.webContents.selectAll();
       }
     },
 
     onToggleDevTools: () => {
+      logger.info('MAIN', 'View menu: Toggle Developer Tools requested');
+      console.log('[MENU] View > Toggle Developer Tools');
       if (mainWindow) {
         mainWindow.webContents.toggleDevTools();
       }
     },
 
     onReload: () => {
+      logger.info('MAIN', 'View menu: Reload requested');
+      console.log('[MENU] View > Reload');
       if (mainWindow) {
         mainWindow.webContents.reload();
       }
     },
 
     onToggleFullScreen: () => {
+      const isFullScreen = mainWindow?.isFullScreen() || false;
+      logger.info(
+        'MAIN',
+        `View menu: Toggle fullscreen (currently ${isFullScreen ? 'on' : 'off'})`
+      );
+      console.log(`[MENU] View > Toggle Fullscreen (${isFullScreen ? 'exit' : 'enter'})`);
       if (mainWindow) {
         mainWindow.setFullScreen(!mainWindow.isFullScreen());
       }
     },
 
     onResetZoom: () => {
+      logger.info('MAIN', 'View menu: Reset Zoom requested');
+      console.log('[MENU] View > Reset Zoom');
       if (mainWindow) {
         mainWindow.webContents.setZoomLevel(0);
       }
@@ -381,19 +426,26 @@ function setupMenuHandlers(): void {
     onZoomIn: () => {
       if (mainWindow) {
         const current = mainWindow.webContents.getZoomLevel();
-        mainWindow.webContents.setZoomLevel(current + 0.5);
+        const newLevel = current + 0.5;
+        logger.info('MAIN', `View menu: Zoom In (${current} -> ${newLevel})`);
+        console.log(`[MENU] View > Zoom In (${current.toFixed(1)} -> ${newLevel.toFixed(1)})`);
+        mainWindow.webContents.setZoomLevel(newLevel);
       }
     },
 
     onZoomOut: () => {
       if (mainWindow) {
         const current = mainWindow.webContents.getZoomLevel();
-        mainWindow.webContents.setZoomLevel(current - 0.5);
+        const newLevel = current - 0.5;
+        logger.info('MAIN', `View menu: Zoom Out (${current} -> ${newLevel})`);
+        console.log(`[MENU] View > Zoom Out (${current.toFixed(1)} -> ${newLevel.toFixed(1)})`);
+        mainWindow.webContents.setZoomLevel(newLevel);
       }
     },
 
     onShowDocumentation: () => {
-      logger.info('MAIN', 'Documentation not yet implemented');
+      logger.info('MAIN', 'Help menu: Show Documentation requested (not yet implemented)');
+      console.log('[MENU] Help > Documentation (not implemented yet)');
     },
 
     onShowAbout: async () => {
@@ -410,18 +462,24 @@ function setupMenuHandlers(): void {
     },
 
     onBuildProject: () => {
+      logger.info('MAIN', 'Build menu: Build Project requested');
+      console.log('[MENU] Build > Build Project');
       if (mainWindow) {
         ipcManager.sendToWindow(mainWindow, 'menu:build-project');
       }
     },
 
     onBuildConfiguration: () => {
+      logger.info('MAIN', 'Build menu: Build Configuration requested');
+      console.log('[MENU] Build > Build Configuration');
       if (mainWindow) {
         ipcManager.sendToWindow(mainWindow, 'menu:build-configuration');
       }
     },
 
     onOpenBuildLocation: () => {
+      logger.info('MAIN', 'Build menu: Open Build Location requested');
+      console.log('[MENU] Build > Open Build Location');
       if (mainWindow) {
         ipcManager.sendToWindow(mainWindow, 'menu:open-build-location');
       }

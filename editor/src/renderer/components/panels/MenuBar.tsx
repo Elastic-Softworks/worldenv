@@ -186,9 +186,10 @@ export function MenuBar(): JSX.Element {
   /**
    * handleBuildProject()
    *
-   * Starts build with current configuration.
+   * Triggers a build of the current project.
    */
   const handleBuildProject = async (): Promise<void> => {
+    console.log('[MENU_BAR] Build > Build Project clicked');
     try {
       await buildActions.startBuild();
     } catch (error) {
@@ -206,6 +207,7 @@ export function MenuBar(): JSX.Element {
    * Shows build configuration dialog.
    */
   const handleBuildConfiguration = (): void => {
+    console.log('[MENU_BAR] Build > Build Configuration clicked');
     setShowBuildConfig(true);
   };
 
@@ -215,6 +217,7 @@ export function MenuBar(): JSX.Element {
    * Opens the last build output location.
    */
   const handleOpenBuildLocation = async (): Promise<void> => {
+    console.log('[MENU_BAR] Build > Open Build Location clicked');
     if (buildState.lastResult?.outputPath) {
       try {
         await buildActions.openBuildLocation(buildState.lastResult.outputPath);
@@ -233,14 +236,17 @@ export function MenuBar(): JSX.Element {
    */
   useEffect(() => {
     const handleMenuBuildProject = () => {
+      console.log('[MENU_BAR] IPC: menu:build-project received');
       handleBuildProject();
     };
 
     const handleMenuBuildConfiguration = () => {
+      console.log('[MENU_BAR] IPC: menu:build-configuration received');
       setShowBuildConfig(true);
     };
 
     const handleMenuOpenBuildLocation = () => {
+      console.log('[MENU_BAR] IPC: menu:open-build-location received');
       handleOpenBuildLocation();
     };
 

@@ -30,9 +30,9 @@ export interface RenderStats {
  * Provides scene rendering with editor-specific overlays and tools.
  */
 export class ViewportRenderer3D {
-  private renderer: THREE.WebGLRenderer;
-  private scene: THREE.Scene;
-  private camera: EditorCamera;
+  private renderer!: THREE.WebGLRenderer;
+  private scene!: THREE.Scene;
+  private camera!: EditorCamera;
   private canvas: HTMLCanvasElement;
   private animationId: number | null;
   private isInitialized: boolean;
@@ -45,7 +45,7 @@ export class ViewportRenderer3D {
 
   /* SELECTION SYSTEM */
   private selectedObjects: THREE.Object3D[];
-  private selectionBox: THREE.BoxHelper;
+  private selectionBox!: THREE.BoxHelper;
   private outlinePass: any | null;
 
   /* GIZMOS AND HELPERS */
@@ -57,7 +57,7 @@ export class ViewportRenderer3D {
   private directionalLight: THREE.DirectionalLight | null;
 
   /* PERFORMANCE MONITORING */
-  private stats: RenderStats;
+  private stats!: RenderStats;
   private lastFrameTime: number;
   private frameCount: number;
 
@@ -86,25 +86,59 @@ export class ViewportRenderer3D {
     this.ambientLight = null;
     this.directionalLight = null;
 
-    /* INITIALIZE RENDERER */
-    this.renderer = new THREE.WebGLRenderer({
-      canvas: this.canvas,
-      antialias: true,
-      alpha: true,
-      preserveDrawingBuffer: false
-    });
+    /* INITIALIZE RENDERER WITH FALLBACK HANDLING */
+    this.initializeRenderer();
+  }
 
-    this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setClearColor(0x1e1e1e, 1);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  /**
+   * initializeRenderer()
+   *
+   * Initialize WebGL renderer with fallback handling.
+   */
+  private initializeRenderer(): void {
+    try {
+      console.log('[3D_RENDERER] Initializing WebGL renderer...');
+
+      // Check WebGL support
+      if (!this.isWebGLSupported()) {
+        throw new Error('WebGL not supported by browser');
+      }
+
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: this.canvas,
+        antialias: true,
+        alpha: true,
+        preserveDrawingBuffer: false,
+        failIfMajorPerformanceCaveat: false // Allow software rendering
+      });
+
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      this.renderer.setClearColor(0x1e1e1e, 1);
+
+      // Enable shadows with fallback
+      try {
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      } catch (error) {
+        console.warn('[3D_RENDERER] Shadow mapping not supported, disabling shadows');
+        this.renderer.shadowMap.enabled = false;
+      }
+
+      // Set up WebGL context loss handling
+      this.setupContextLossHandling();
+
+      console.log('[3D_RENDERER] WebGL renderer initialized successfully');
+    } catch (error) {
+      console.error('[3D_RENDERER] Failed to initialize WebGL renderer:', error);
+      this.initializeFallbackRenderer();
+    }
 
     /* INITIALIZE SCENE */
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x1e1e1e);
 
     /* INITIALIZE CAMERA */
-    this.camera = new EditorCamera(canvas);
+    this.camera = new EditorCamera(this.canvas);
 
     /* INITIALIZE HELPERS */
     this.initializeHelpers();
@@ -480,5 +514,86 @@ export class ViewportRenderer3D {
 
     /* DISPOSE CAMERA */
     this.camera.dispose();
+  }
+
+  /**
+   * isWebGLSupported()
+   *
+   * Check if WebGL is supported by the browser.
+   */
+  private isWebGLSupported(): boolean {
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      return !!gl;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * initializeFallbackRenderer()
+   *
+   * Initialize fallback renderer when WebGL fails.
+   */
+  private initializeFallbackRenderer(): void {
+    console.log('[3D_RENDERER] Initializing fallback 2D canvas renderer...');
+
+    // Clear canvas and show fallback message
+    const ctx = this.canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = '#1e1e1e';
+      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('3D Viewport Unavailable', this.canvas.width / 2, this.canvas.height / 2 - 20);
+
+      ctx.fillStyle = '#888888';
+      ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText(
+        'WebGL not supported or graphics drivers incompatible',
+        this.canvas.width / 2,
+        this.canvas.height / 2 + 10
+      );
+    }
+  }
+
+  /**
+   * setupContextLossHandling()
+   *
+   * Set up WebGL context loss and restore handling.
+   */
+  private setupContextLossHandling(): void {
+    this.canvas.addEventListener('webglcontextlost', (event) => {
+      console.warn('[3D_RENDERER] WebGL context lost');
+      event.preventDefault();
+
+      if (this.animationId) {
+        cancelAnimationFrame(this.animationId);
+        this.animationId = null;
+      }
+    });
+
+    this.canvas.addEventListener('webglcontextrestored', () => {
+      console.log('[3D_RENDERER] WebGL context restored, reinitializing...');
+      this.reinitialize();
+    });
+  }
+
+  /**
+   * reinitialize()
+   *
+   * Reinitialize renderer after context loss.
+   */
+  private reinitialize(): void {
+    try {
+      this.initializeRenderer();
+      console.log('[3D_RENDERER] Successfully reinitialized after context loss');
+    } catch (error) {
+      console.error('[3D_RENDERER] Failed to reinitialize after context loss:', error);
+      this.initializeFallbackRenderer();
+    }
   }
 }

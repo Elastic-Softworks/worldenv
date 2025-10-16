@@ -8,24 +8,27 @@
  * WORLDEDIT - Main Editor Application Component
  *
  * Root component that provides the main editor shell.
- * Manages layout and renders core panels when project is open.
+ * Always renders the full editor layout with panels.
+ * Panels handle their own empty states when no project is open.
  */
 
 import React from 'react';
 import { useEditorState } from '../context/EditorStateContext';
 import { useTheme } from '../context/ThemeContext';
 import { EditorShell } from './EditorShell';
-import { WelcomeScreen } from './WelcomeScreen';
 
 /**
  * EditorApp component
  *
- * Main application component that handles routing between
- * welcome screen and editor shell based on project state.
+ * Main application component that always renders the editor shell.
+ * Individual panels handle no-project states with appropriate overlays.
+ * This ensures UI is always visible and accessible.
  */
 export function EditorApp(): JSX.Element {
   const { state } = useEditorState();
   const { theme } = useTheme();
+
+  /* show loading state during initial application setup */
 
   if (!state.initialized) {
     return (
@@ -37,24 +40,37 @@ export function EditorApp(): JSX.Element {
           height: '100vh',
           backgroundColor: theme.colors.background.primary,
           color: theme.colors.foreground.primary,
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
         }}
       >
         <div style={{ textAlign: 'center' }}>
-          <h1 style={{ margin: 0, marginBottom: theme.spacing.md, fontSize: '24px' }}>
+          <h1
+            style={{
+              margin: 0,
+              marginBottom: theme.spacing.md,
+              fontSize: '24px',
+              fontWeight: 600,
+              letterSpacing: '0.5px'
+            }}
+          >
             WORLDEDIT
           </h1>
-          <p style={{ margin: 0, color: theme.colors.foreground.secondary }}>
-            Initializing...
+          <p
+            style={{
+              margin: 0,
+              color: theme.colors.foreground.secondary,
+              fontSize: '14px'
+            }}
+          >
+            Initializing editor...
           </p>
         </div>
       </div>
     );
   }
 
-  if (!state.project.isOpen) {
-    return <WelcomeScreen />;
-  }
+  /* always render the full editor shell */
+  /* panels will display appropriate empty states when no project is open */
 
   return <EditorShell />;
 }

@@ -1,0 +1,132 @@
+[
+  {
+    "id": 1,
+    "title": "Application launches successfully on Windows, macOS, Linux",
+    "status": "completed",
+    "notes": "Opens on Omarchy Linux. Launched extremely fast and everything showed up, splash screen included. Could be cool to have some subtle animation to the logo here, maybe a rainbow gradient moving through all the words with some smooth interpolated animation as they appear on the screen. The blank space upon opening could also use a faint worldenv logo, though we should eventually make that a png of whatever logo I come up with.",
+    "priority": "medium",
+    "isSoftlocked": false,
+    "softlockFeedback": "",
+    "screenshot": null
+  },
+  {
+    "id": 2,
+    "title": "Splash screen displays correctly",
+    "status": "completed",
+    "notes": "It displayed correctly but it definitely was too fast, we should give it a few more seconds. Very smooth otherwise. Lets also remove the 'game development editor' and put ELASTIC SOFTWORKS 2025 and have some text below the WORLDENV animating logo that says NEW WORLD APPLICATIONS",
+    "priority": "high",
+    "isSoftlocked": false,
+    "softlockFeedback": "",
+    "screenshot": null
+  },
+  {
+    "id": 3,
+    "title": "Main window opens with proper layout",
+    "status": "completed",
+    "notes": "No inspector panel. No asset browser. Able to open new project. Able to load saved project. Terminal output: > worldedit@0.1.0 start\n> electron .\n\n[2025-10-16T04:38:03.913Z] [INFO] [LOGGER] Logger initialized {\n  path: '/home/instar/.config/worldedit/logs/worldedit-2025-10-16T04-38-03-913Z.log'\n}\n[2025-10-16T04:38:03.915Z] [INFO] [MAIN] Initializing application {\n  version: '0.1.0',\n  environment: 'production',\n  platform: 'linux',\n  arch: 'x64'\n}\n[2025-10-16T04:38:04.140Z] [INFO] [SPLASH] Splash screen shown\n[2025-10-16T04:38:04.140Z] [INFO] [RECENT] Recent projects loaded { count: 0 }\n[2025-10-16T04:38:04.142Z] [INFO] [IPC] IPC handlers initialized\n[2025-10-16T04:38:04.168Z] [INFO] [WINDOW] Window created: main { bounds: { x: 0, y: 0, width: 950, height: 1044 } }\n[2025-10-16T04:38:04.179Z] [INFO] [MAIN] Application initialized successfully\n[2025-10-16T04:38:04.349Z] [INFO] [MAIN] Main window shown\n[2025-10-16T04:38:05.180Z] [INFO] [SPLASH] Splash screen hidden\n[379726:1015/233954.119265:ERROR:browser_main_loop.cc(276)] GLib-GObject: invalid cast from 'GtkFileChooserNative' to 'GtkWidget'\nThe NVIDIA driver was unable to open 'libnvidia-glvkspirv.so.580.95.05'.  This library is required at run time.\n\nWarning: terminator_CreateInstance: Failed to CreateInstance in ICD 0.  Skipping ICD.\nWarning: terminator_CreateInstance: Found no drivers!\nWarning: vkCreateInstance failed with VK_ERROR_INCOMPATIBLE_DRIVER\n    at CheckVkSuccessImpl (../../third_party/dawn/src/dawn/native/vulkan/VulkanError.cpp:101)\n    at CreateVkInstance (../../third_party/dawn/src/dawn/native/vulkan/BackendVk.cpp:493)\n    at Initialize (../../third_party/dawn/src/dawn/native/vulkan/BackendVk.cpp:379)\n    at Create (../../third_party/dawn/src/dawn/native/vulkan/BackendVk.cpp:301)\n    at operator() (../../third_party/dawn/src/dawn/native/vulkan/BackendVk.cpp:556)\n\n[379726:1015/234008.842035:ERROR:browser_main_loop.cc(276)] GLib-GObject: ../glib/gobject/gsignal.c:2700: instance '0x2b100099be00' has no handler with id '4995'\n[2025-10-16T04:40:08.846Z] [INFO] [DIALOG] Directory selected { path: '/home/instar/worldenv-testing/test-projects/testing' }\n[2025-10-16T04:40:08.847Z] [INFO] [PROJECT] Creating project {\n  path: '/home/instar/worldenv-testing/test-projects/testing',\n  name: 'testing'\n}\n[2025-10-16T04:40:08.862Z] [INFO] [PROJECT] Project created successfully { path: '/home/instar/worldenv-testing/test-projects/testing' }\n[2025-10-16T04:40:08.863Z] [INFO] [MAIN] New project created { path: '/home/instar/worldenv-testing/test-projects/testing' }\n[379726:1015/234028.358901:ERROR:browser_main_loop.cc(276)] GLib-GObject: invalid cast from 'GtkFileChooserNative' to 'GtkWidget'\n[379726:1015/234041.351889:ERROR:browser_main_loop.cc(276)] GLib-GObject: ../glib/gobject/gsignal.c:2700: instance '0x2b10018707b0' has no handler with id '14836'\n[2025-10-16T04:40:41.356Z] [INFO] [DIALOG] Directory selected { path: '/home/instar/worldenv-testing/test-projects/testing' }\n[2025-10-16T04:40:41.357Z] [INFO] [PROJECT] Opening project { path: '/home/instar/worldenv-testing/test-projects/testing' }\n[2025-10-16T04:40:41.360Z] [INFO] [PROJECT] Project opened successfully {\n  path: '/home/instar/worldenv-testing/test-projects/testing',\n  name: 'testing'\n}\n[2025-10-16T04:40:41.360Z] [INFO] [MAIN] Project opened { path: '/home/instar/worldenv-testing/test-projects/testing' }",
+    "priority": "critical",
+    "isSoftlocked": false,
+    "softlockFeedback": "",
+    "screenshot": null
+  },
+  {
+    "id": 4,
+    "title": "Application closes gracefully without errors",
+    "status": "completed",
+    "notes": "No errors, but plenty of electron instances, presumably from other programs I'm running that are also built with Electron, so it's probably nothing.",
+    "priority": "low",
+    "isSoftlocked": false,
+    "softlockFeedback": "",
+    "screenshot": null
+  },
+  {
+    "id": 5,
+    "title": "No memory leaks during startup/shutdown cycle",
+    "status": "completed",
+    "notes": "No memory leaks to be seen.",
+    "priority": "low",
+    "isSoftlocked": false,
+    "softlockFeedback": "",
+    "screenshot": null
+  },
+  {
+    "id": 6,
+    "title": "Window resizing works correctly",
+    "status": "completed",
+    "notes": "Correctly goes into fullscreen and goes back. On Hyprland/Omarchy right now so I cant test if the window resizes with the mouse, will test later.",
+    "priority": "low",
+    "isSoftlocked": false,
+    "softlockFeedback": "",
+    "screenshot": null
+  },
+  {
+    "id": 7,
+    "title": "Minimize/maximize functionality",
+    "status": "completed",
+    "notes": "Clicking minimize in the menu does nothing.",
+    "priority": "high",
+    "isSoftlocked": false,
+    "softlockFeedback": "",
+    "screenshot": null
+  },
+  {
+    "id": 8,
+    "title": "Multi-monitor support",
+    "status": "completed",
+    "notes": "Works fine.",
+    "priority": "low",
+    "isSoftlocked": false,
+    "softlockFeedback": "",
+    "screenshot": null
+  },
+  {
+    "id": 9,
+    "title": "Window state persistence between sessions",
+    "status": "completed",
+    "notes": "Works fine",
+    "priority": "low",
+    "isSoftlocked": false,
+    "softlockFeedback": "",
+    "screenshot": null
+  },
+  {
+    "id": 10,
+    "title": "Proper high-DPI scaling",
+    "status": "pending",
+    "notes": "",
+    "priority": "low",
+    "isSoftlocked": false,
+    "softlockFeedback": "",
+    "screenshot": null
+  },
+  {
+    "id": 11,
+    "title": "All menu items functional",
+    "status": "completed",
+    "notes": "Most File menus work, able to start and load and save projects. All menu objects in Edit are unfunctional and don't show anything in the terminal output. None of the menu objects work in Build with no terminal output. None of the menu objects in View work except for Enable Full Screen.",
+    "priority": "critical",
+    "isSoftlocked": false,
+    "softlockFeedback": "",
+    "screenshot": null
+  },
+  {
+    "id": 12,
+    "title": "Keyboard shortcuts work",
+    "status": "pending",
+    "notes": "",
+    "priority": "low",
+    "isSoftlocked": false,
+    "softlockFeedback": "",
+    "screenshot": null
+  },
+  {
+    "id": 13,
+    "title": "Context menus appear correctly",
+    "status": "softlocked",
+    "notes": "No visible UI of hierarchy panel, viewport, asset browser, or various UI elements. See attached screenshot. All that is functional about the app is the menu dropdowns, and less than half of the menu options are functional or hooked up to anything giving no terminal output. Background just a static unchanging gray with nothing else visible. Window is functional for the most part, but no visible game making functionality or UI. Unsure if it's just not hooked up, bugged, or if not developed or under-developed. Need to get things fixed up to here on this next round of bugfixes.",
+    "priority": "critical",
+    "isSoftlocked": true,
+    "softlockFeedback": "Unable to progress because none of the hierarchy panel, viewport, asset browser, or UI elements are visible or functional so I am unable to test this far.",
+    "screenshot": null
+  },
+ 

@@ -185,6 +185,7 @@ class SplashScreen {
     }
 
     .container {
+      position: relative;
       width: 600px;
       height: 400px;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -196,22 +197,49 @@ class SplashScreen {
       justify-content: center;
       padding: 40px;
       border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
     }
 
     .logo {
       font-size: 48px;
       font-weight: 700;
-      color: #00d4ff;
+      background: linear-gradient(45deg, #00d4ff, #0091ff, #00d4ff, #0091ff);
+      background-size: 400% 400%;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       margin-bottom: 20px;
-      text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+      text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
       letter-spacing: 2px;
+      animation: logoGlow 3s ease-in-out infinite, gradientShift 4s ease-in-out infinite;
     }
 
     .subtitle {
       font-size: 16px;
       color: #8892b0;
-      margin-bottom: 60px;
+      margin-bottom: 20px;
       letter-spacing: 1px;
+    }
+
+    .company {
+      font-size: 14px;
+      background: linear-gradient(90deg, #00d4ff, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #00d4ff);
+      background-size: 400% 400%;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+      font-weight: 600;
+      animation: rainbow 6s ease-in-out infinite, fadeInUp 1s ease-out;
+    }
+
+    .tagline {
+      font-size: 12px;
+      color: #8892b0;
+      margin-bottom: 40px;
+      letter-spacing: 0.5px;
+      animation: fadeInUp 1.5s ease-out 0.5s both;
     }
 
     .progress-container {
@@ -258,12 +286,79 @@ class SplashScreen {
     .loading {
       animation: pulse 2s ease-in-out infinite;
     }
+
+    @keyframes logoGlow {
+      0%, 100% {
+        text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+      }
+      50% {
+        text-shadow: 0 0 30px rgba(0, 212, 255, 0.6), 0 0 40px rgba(0, 212, 255, 0.3);
+      }
+    }
+
+    @keyframes gradientShift {
+      0%, 100% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+    }
+
+    @keyframes rainbow {
+      0%, 100% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .container::before {
+      content: 'WORLDENV';
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 120px;
+      font-weight: 100;
+      color: rgba(0, 212, 255, 0.03);
+      pointer-events: none;
+      z-index: 0;
+      letter-spacing: 8px;
+      transform: rotate(-15deg);
+    }
+
+    .container::after {
+      content: 'WORLDENV';
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      font-size: 80px;
+      font-weight: 100;
+      color: rgba(0, 212, 255, 0.05);
+      pointer-events: none;
+      z-index: 0;
+      letter-spacing: 4px;
+      transform: rotate(15deg);
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="logo">WORLDEDIT</div>
-    <div class="subtitle">Game Development Editor</div>
+    <div class="company">ELASTIC SOFTWORKS 2025</div>
+    <div class="tagline">NEW WORLD APPLICATIONS</div>
     <div class="progress-container">
       <div class="progress-bar" id="progress"></div>
     </div>

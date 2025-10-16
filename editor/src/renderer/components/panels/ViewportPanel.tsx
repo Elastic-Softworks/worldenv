@@ -21,6 +21,10 @@ import { ViewportToolbar } from '../ui/ViewportToolbar';
 import { createDemoScene, animateObjects } from '../../viewport/DemoContent';
 import { EngineInterface } from '../../engine/EngineInterface';
 import { ManipulatorManager, ManipulatorMode, TransformSpace } from '../../viewport/manipulators';
+import { Button } from '../ui/Button';
+import { NewProjectDialog } from '../dialogs/NewProjectDialog';
+import { RecentProjectsDialog } from '../dialogs/RecentProjectsDialog';
+import { ProjectData } from '../../../shared/types';
 import * as THREE from 'three';
 import * as PIXI from 'pixi.js';
 
@@ -44,6 +48,12 @@ export function ViewportPanel(): JSX.Element {
   const [fps, setFps] = useState(0);
   const [isEngineMode, setIsEngineMode] = useState(false);
   const [engineReady, setEngineReady] = useState(false);
+
+  /* WELCOME SCREEN STATE */
+  const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
+  const [showRecentProjectsDialog, setShowRecentProjectsDialog] = useState(false);
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [isOpeningProject, setIsOpeningProject] = useState(false);
 
   /* MANIPULATOR STATE */
   const manipulatorManagerRef = useRef<ManipulatorManager | null>(null);
@@ -510,6 +520,103 @@ export function ViewportPanel(): JSX.Element {
     console.log('[VIEWPORT] Context menu at', e.clientX, e.clientY);
   }, []);
 
+  /**
+   * handleNewProject()
+   *
+   * Shows new project dialog.
+   */
+  const handleNewProject = useCallback((): void => {
+    setShowNewProjectDialog(true);
+  }, []);
+
+  /**
+   * handleCreateProject()
+   *
+   * Handles project creation from wizard.
+   */
+  const handleCreateProject = useCallback(
+    async (config: { name: string; location: string; template: any }): Promise<void> => {
+      try {
+        setIsCreatingProject(true);
+
+        const projectPath = `${config.location}/${config.name}`;
+
+        const project = (await window.worldedit.project.create(
+          projectPath,
+          config.name
+        )) as ProjectData;
+
+        actions.openProject({
+          path: projectPath,
+          name: project.name,
+          version: project.version,
+          engineVersion: project.engine_version,
+          isModified: false,
+          lastSaved: new Date(project.modified)
+        });
+      } catch (error) {
+        console.error('[VIEWPORT] Failed to create project:', error);
+        throw error;
+      } finally {
+        setIsCreatingProject(false);
+      }
+    },
+    [actions]
+  );
+
+  /**
+   * handleOpenProject()
+   *
+   * Handles project opening from path.
+   */
+  const handleOpenProject = useCallback(
+    async (projectPath: string): Promise<void> => {
+      try {
+        setIsOpeningProject(true);
+
+        const project = (await window.worldedit.project.open(projectPath)) as ProjectData;
+
+        actions.openProject({
+          path: projectPath,
+          name: project.name,
+          version: project.version,
+          engineVersion: project.engine_version,
+          isModified: false,
+          lastSaved: new Date(project.modified)
+        });
+      } catch (error) {
+        console.error('[VIEWPORT] Failed to open project:', error);
+
+        await window.worldedit.dialog.showError(
+          'Project Open Error',
+          `Failed to open project: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      } finally {
+        setIsOpeningProject(false);
+      }
+    },
+    [actions]
+  );
+
+  /**
+   * handleBrowseProject()
+   *
+   * Shows file browser for project selection.
+   */
+  const handleBrowseProject = useCallback(async (): Promise<void> => {
+    try {
+      const dirPath = await window.worldedit.dialog.openDirectory({
+        title: 'Open Project'
+      });
+
+      if (dirPath) {
+        await handleOpenProject(dirPath);
+      }
+    } catch (error) {
+      console.error('[VIEWPORT] Failed to browse for project:', error);
+    }
+  }, [handleOpenProject]);
+
   const panelStyle: React.CSSProperties = {
     display: 'flex',
     flexDirection: 'column',
@@ -621,16 +728,93 @@ export function ViewportPanel(): JSX.Element {
             onClick={handleCanvasClick}
           />
 
-          {/* NO PROJECT OVERLAY */}
+          {/* NO PROJECT OVERLAY - WELCOME SCREEN */}
           {!state.project.isOpen && (
-            <div style={overlayStyle}>
-              <div style={{ textAlign: 'center', color: theme.colors.foreground.tertiary }}>
-                <p style={{ margin: 0, fontSize: '18px', marginBottom: theme.spacing.sm }}>
-                  No Project Open
+            <div
+              style={{
+                ...overlayStyle,
+                pointerEvents: 'auto',
+                backgroundColor: 'rgba(30, 30, 30, 0.95)'
+              }}
+            >
+              <div style={{ textAlign: 'center', maxWidth: '500px', padding: theme.spacing.xl }}>
+                <h1
+                  style={{
+                    margin: 0,
+                    marginBottom: theme.spacing.lg,
+                    fontSize: '32px',
+                    fontWeight: 700,
+                    background: `linear-gradient(135deg, ${theme.colors.accent.primary}, ${theme.colors.accent.secondary})`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}
+                >
+                  WORLDEDIT
+                </h1>
+
+                <div style={{ marginBottom: theme.spacing.sm, color: theme.colors.accent.primary }}>
+                  ELASTIC SOFTWORKS 2025
+                </div>
+
+                <div
+                  style={{
+                    marginBottom: theme.spacing.xl,
+                    color: theme.colors.foreground.secondary,
+                    fontSize: '14px'
+                  }}
+                >
+                  NEW WORLD APPLICATIONS
+                </div>
+
+                <p
+                  style={{
+                    margin: 0,
+                    marginBottom: theme.spacing.xl,
+                    fontSize: '16px',
+                    color: theme.colors.foreground.secondary,
+                    lineHeight: 1.5
+                  }}
+                >
+                  Get started by creating a new project or opening an existing one
                 </p>
-                <p style={{ margin: 0, fontSize: '14px' }}>
-                  Create or open a project to start editing
-                </p>
+
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: theme.spacing.md,
+                    justifyContent: 'center',
+                    marginBottom: theme.spacing.xl
+                  }}
+                >
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={handleNewProject}
+                    disabled={isCreatingProject || isOpeningProject}
+                  >
+                    {isCreatingProject ? 'Creating...' : 'New Project'}
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    onClick={() => setShowRecentProjectsDialog(true)}
+                    disabled={isCreatingProject || isOpeningProject}
+                  >
+                    {isOpeningProject ? 'Opening...' : 'Open Project'}
+                  </Button>
+                </div>
+
+                <div
+                  style={{
+                    fontSize: '12px',
+                    color: theme.colors.foreground.tertiary,
+                    opacity: 0.7
+                  }}
+                >
+                  All editor panels are visible and ready for use
+                </div>
               </div>
             </div>
           )}
@@ -687,6 +871,21 @@ export function ViewportPanel(): JSX.Element {
           )}
         </div>
       </div>
+
+      {/* Project Creation Dialog */}
+      <NewProjectDialog
+        isOpen={showNewProjectDialog}
+        onClose={() => setShowNewProjectDialog(false)}
+        onCreateProject={handleCreateProject}
+      />
+
+      {/* Recent Projects Dialog */}
+      <RecentProjectsDialog
+        isOpen={showRecentProjectsDialog}
+        onClose={() => setShowRecentProjectsDialog(false)}
+        onOpenProject={handleOpenProject}
+        onBrowseProject={handleBrowseProject}
+      />
     </div>
   );
 }

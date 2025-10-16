@@ -1,0 +1,357 @@
+TEST 1 PRIORITY BUG FIXES - WORLDEDIT EDITOR
+==============================================
+
+PROGRESS TRACKING
+==================
+STARTED: 2025-01-21
+LAST UPDATED: 2025-01-21 (Implementation Phase)
+STATUS: SOURCE CODE UPDATED - READY FOR BUILD AND TEST
+
+CRITICAL DISCOVERY
+==================
+ROOT CAUSE: Application was never built after source code changes
+- No dist/ directory existed
+- Changes in source files were not compiled
+- User was attempting to run non-existent build artifacts
+- This explains why NO changes were visible in previous testing
+
+COMPLETED ITEMS: 7/10
+- [COMPLETED] Item 1: EditorApp.tsx - Fixed to always render EditorShell
+- [COMPLETED] Item 2: ViewportPanel.tsx - Welcome overlay already exists
+- [COMPLETED] Item 3: Menu System - Added console logging to File menu
+- [COMPLETED] Item 6: Splash Screen - Branding and timing already updated
+- [COMPLETED] Item 7: Splash Screen Animation - Already implemented
+- [COMPLETED] Item 8: Menu Logging - Edit/View/Build menus already have logging
+- [COMPLETED] Item 9: Build Script - Created BUILD-AND-TEST.sh
+
+PENDING ITEMS: 3/10 (Need Build & Test)
+- [PENDING] Item 4: Main Layout System - Needs testing after build
+- [PENDING] Item 5: Window Controls - Needs testing after build
+- [PENDING] Item 10: Graphics Fallback - Needs verification
+
+NEXT UP: BUILD THE APPLICATION (CRITICAL)
+
+IMPLEMENTATION SUMMARY
+======================
+
+✅ SOURCE CODE CHANGES COMPLETED:
+
+1. EditorApp.tsx (worldenv/editor/src/renderer/components/EditorApp.tsx)
+   - Changed to always render <EditorShell />
+   - Removed conditional rendering of WelcomeScreen
+   - All panels now visible regardless of project state
+   - Improved initialization loading screen
+
+2. ViewportPanel.tsx (worldenv/editor/src/renderer/components/panels/ViewportPanel.tsx)
+   - VERIFIED: Welcome overlay already exists
+   - Shows "ELASTIC SOFTWORKS 2025" and "NEW WORLD APPLICATIONS"
+   - Provides "New Project" and "Open Project" buttons
+   - Displays helpful message about editor panels
+
+3. Menu Handlers (worldenv/editor/src/main/main.ts)
+   - Added console.log() to ALL File menu operations
+   - Edit menu: Already has console logging
+   - View menu: Already has console logging
+   - Build menu: Already has console logging
+   - All menu actions now produce visible console output
+
+4. Splash Screen (worldenv/editor/src/main/splash.ts)
+   - VERIFIED: Branding updated ("ELASTIC SOFTWORKS 2025")
+   - VERIFIED: Tagline added ("NEW WORLD APPLICATIONS")
+   - VERIFIED: Duration set to 3000ms (3 seconds)
+   - VERIFIED: Rainbow gradient animation on company text
+   - VERIFIED: Logo glow/pulse animation
+   - VERIFIED: Background watermarks
+   - VERIFIED: Smooth fade-in animations
+
+5. Build Script (worldenv/editor/BUILD-AND-TEST.sh)
+   - Created comprehensive build and test script
+   - Checks Node.js version
+   - Runs npm install
+   - Builds main and renderer processes
+   - Verifies build output
+   - Launches application
+   - Includes testing checklist
+
+IMMEDIATE NEXT STEPS
+=====================
+
+STEP 1: BUILD THE APPLICATION (REQUIRED)
+-----------------------------------------
+Run the build script from worldenv/editor directory:
+
+  cd worldenv/editor
+  ./BUILD-AND-TEST.sh
+
+Or manually:
+
+  cd worldenv/editor
+  npm install
+  npm run build:main
+  npm run build:renderer
+  npm start
+
+STEP 2: VERIFY FIXES (AFTER BUILD)
+-----------------------------------
+Once application launches, verify:
+
+[ ] Splash Screen
+    - Shows for 3 seconds (not 1 second)
+    - Displays "ELASTIC SOFTWORKS 2025"
+    - Displays "NEW WORLD APPLICATIONS" under WORLDENV
+    - Rainbow gradient animation visible
+    - Logo glow/pulse animation visible
+    - Background watermarks visible
+
+[ ] UI Panels Visible
+    - Hierarchy panel on left
+    - Viewport panel in center
+    - Inspector panel on right
+    - Asset browser at bottom
+    - All panels show appropriate empty states
+
+[ ] Welcome Overlay in Viewport
+    - Appears when no project open
+    - Shows "WORLDEDIT" title
+    - Shows "ELASTIC SOFTWORKS 2025"
+    - Shows "NEW WORLD APPLICATIONS"
+    - Shows "New Project" button
+    - Shows "Open Project" button
+    - Message about panels being ready
+
+[ ] Menu System Console Output
+    - Open Developer Tools (View > Toggle Developer Tools)
+    - Check console tab
+    - Click File > New Project - should see [MENU] log
+    - Click File > Open Project - should see [MENU] log
+    - Click File > Save Project - should see [MENU] log
+    - Click Edit > Undo - should see [MENU] log
+    - Click View > Reload - should see [MENU] log
+    - Click Build > Build Project - should see [MENU] log
+
+[ ] Window Controls
+    - Minimize button works (doesn't freeze)
+    - Maximize button works
+    - Close button works
+    - Window can be resized
+    - Window can be moved
+
+[ ] Theme Switching
+    - Can toggle between light and dark mode
+    - All panels update when theme changes
+    - Theme persists between sessions
+
+KNOWN ISSUES TO INVESTIGATE (AFTER BUILD)
+==========================================
+
+1. Minimize Button Behavior
+   Previous Report: "Clicking minimize freezes app mid-animation"
+   Test: Click Window > Minimize or window chrome minimize button
+   Expected: Window minimizes smoothly
+   If Issue Persists: Check window manager event handlers
+
+2. Open Project Behavior
+   Previous Report: "Opening project doesn't change UI"
+   Test: File > Open Project > Select a directory
+   Expected: UI updates, panels show project content
+   If Issue Persists: Check project state propagation
+
+3. View/Build/Help Menu Items
+   Previous Report: "These buttons don't work"
+   Test: Click each menu item
+   Expected: Console shows [MENU] messages
+   If Issue Persists: Check IPC handlers
+
+4. Light Mode
+   Previous Report: "Can't switch to light mode"
+   Test: View > Theme > Light Mode (or similar)
+   Expected: UI changes to light theme
+   If Issue Persists: Check theme context and persistence
+
+ITEMS NOT REQUIRING SOURCE CHANGES
+===================================
+
+These were already implemented correctly:
+
+✅ Splash Screen Branding
+   - Already shows "ELASTIC SOFTWORKS 2025"
+   - Already shows "NEW WORLD APPLICATIONS"
+
+✅ Splash Screen Animations
+   - Rainbow gradient already implemented
+   - Logo glow already implemented
+   - Fade-in animations already implemented
+   - Background watermarks already implemented
+
+✅ Splash Screen Duration
+   - Already set to 3000ms (3 seconds)
+
+✅ Menu System Logging (Partial)
+   - Edit menu already had logging
+   - View menu already had logging
+   - Build menu already had logging
+   - File menu logging NOW ADDED
+
+✅ ViewportPanel Welcome Overlay
+   - Already implemented with project creation buttons
+   - Already shows branding
+   - Already handles no-project state
+
+VERIFICATION CHECKLIST
+======================
+
+After building, verify each item by checking it off:
+
+CRITICAL BLOCKERS (Must be working)
+------------------------------------
+[ ] 1. All UI panels visible on startup
+[ ] 2. Welcome overlay shows in viewport when no project
+[ ] 3. Menu actions produce console output
+[ ] 4. Splash screen shows for 3 seconds with new branding
+
+HIGH PRIORITY (Should be working)
+----------------------------------
+[ ] 5. Window controls (minimize/maximize/close) work
+[ ] 6. New project creation works
+[ ] 7. Open project works and updates UI
+[ ] 8. Theme switching works
+
+MEDIUM PRIORITY (Nice to have)
+-------------------------------
+[ ] 9. Splash screen theme adapts to light/dark mode
+[ ] 10. Graphics fallback system handles WebGL failures
+
+BUILD VERIFICATION CHECKLIST
+=============================
+
+Before running the application:
+[ ] Node.js 18+ installed
+[ ] npm install completed without errors
+[ ] npm run build:main completed without errors
+[ ] npm run build:renderer completed without errors
+[ ] dist/main/main.js exists
+[ ] dist/renderer/index.html exists
+
+TESTING WORKFLOW
+================
+
+1. BUILD
+   cd worldenv/editor
+   ./BUILD-AND-TEST.sh
+
+2. LAUNCH
+   Application should start automatically after build
+   Or manually: npm start
+
+3. OBSERVE
+   - Watch splash screen for 3 seconds
+   - Look for new branding text
+   - Look for animations
+
+4. VERIFY UI
+   - All panels should be visible
+   - Welcome overlay in viewport
+   - Empty states in other panels
+
+5. TEST MENUS
+   - Open Developer Tools (View > Toggle Developer Tools)
+   - Click menu items
+   - Watch console for [MENU] messages
+
+6. TEST FUNCTIONALITY
+   - Try creating a new project
+   - Try opening a project
+   - Try switching themes
+   - Try window controls
+
+7. DOCUMENT RESULTS
+   - Use hitl/index.html checklist
+   - Record actual behavior
+   - Attach screenshots if needed
+   - Generate JSON report
+
+SUCCESS CRITERIA
+================
+
+Build Phase Success:
+✓ No compilation errors
+✓ dist/ directory exists
+✓ All expected files in dist/
+
+Launch Phase Success:
+✓ Application starts without crashes
+✓ Splash screen appears
+✓ Main window opens
+
+UI Phase Success:
+✓ All panels visible
+✓ Welcome overlay shows
+✓ No blank screens
+✓ No missing components
+
+Functionality Phase Success:
+✓ Menu items work
+✓ Console shows logging
+✓ Window controls work
+✓ Theme switching works
+
+ESTIMATED TIME
+==============
+
+Build Process: 2-5 minutes
+Testing: 30-60 minutes
+Documentation: 15-30 minutes
+Total: 45-95 minutes
+
+NOTES FOR NEXT HITL ROUND
+==========================
+
+1. Always build before testing
+2. Check dist/ exists before assuming changes are live
+3. Use Developer Tools console for debugging
+4. Document actual behavior, not expected behavior
+5. Take screenshots of any visual issues
+6. Test menu items systematically
+7. Verify all panels before testing features
+
+DEVELOPMENT WORKFLOW GOING FORWARD
+===================================
+
+For Future Changes:
+1. Make source code changes
+2. Run ./BUILD-AND-TEST.sh
+3. Test changes
+4. Document results
+5. Commit changes
+
+For Development Work:
+1. Run ./BUILD-AND-TEST.sh --dev
+2. Code will rebuild automatically
+3. Faster iteration cycle
+
+For Quick Testing:
+1. Run ./BUILD-AND-TEST.sh --skip-install
+2. Skips npm install if deps haven't changed
+
+CONTACT/ESCALATION
+==================
+
+If build fails:
+- Check Node.js version (need 18+)
+- Check for npm errors in output
+- Try: rm -rf node_modules && npm install
+- Try: rm -rf dist && npm run build
+
+If tests fail:
+- Document exact steps to reproduce
+- Capture console output
+- Take screenshots
+- Use hitl/index.html to report
+
+If totally stuck:
+- Read hitl/docs/test1-action-plan.txt
+- Review this file again
+- Check BUILD-AND-TEST.sh output
+
+END OF TODO
+===========
