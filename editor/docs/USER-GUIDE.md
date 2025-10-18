@@ -1,5 +1,7 @@
 # WORLDEDIT USER GUIDE
 
+**Advanced Asset Management & Viewport Integration**
+
 **Comprehensive guide for using WORLDEDIT game development editor**
 
 ## Table of Contents
@@ -24,12 +26,17 @@ WORLDEDIT is a professional game development editor for the WORLDENV engine. It 
 
 ### Key Features
 
-- **Visual Scene Editor**: Real-time 2D/3D viewport with object manipulation
-- **Component System**: Modular entity-component architecture
-- **Asset Management**: Comprehensive file browser with drag-and-drop support
-- **WORLDC Integration**: Advanced scripting with hybrid C/C++/TypeScript syntax
-- **Multi-Platform Deployment**: Export to web, desktop, and PWA formats
-- **Professional UI**: VS Code-inspired interface with dockable panels
+- **Visual Scene Editor** - Real-time 3D/2D viewport with advanced object manipulation
+- **Advanced Selection System** - Multi-selection, highlighting, and visual feedback
+- **Transform Gizmos** - Professional translate, rotate, and scale tools
+- **Camera Controls** - Smooth orbit, pan, zoom with focus operations
+- **Component System** - Modular entity-component architecture with visual rendering
+- **Professional Asset Management** - Import, organize, preview with drag-and-drop to viewport
+- **Asset Import Pipeline** - Support for images, 3D models, audio, fonts with thumbnails
+- **Asset Properties & Metadata** - Tag management, descriptions, technical information
+- **WORLDC Integration** - Advanced scripting with hybrid C/C++/TypeScript syntax
+- **Multi-Platform Deployment** - Export to web, desktop, and PWA formats
+- **Professional UI** - VS Code-inspired interface with dockable panels
 
 ## Installation & Setup
 
@@ -162,26 +169,45 @@ WORLDEDIT is a professional game development editor for the WORLDENV engine. It 
 
 ### Viewport System
 
-**3D Viewport:**
-- Perspective and orthographic cameras
-- Real-time lighting and shadows
-- Material preview and editing
-- Transform manipulators (move, rotate, scale)
-- Grid and snap settings
+**3D Viewport Features:**
+- Advanced object selection with multi-selection (Ctrl/Shift)
+- Real-time visual highlighting and selection feedback
+- Professional transform gizmos (translate, rotate, scale)
+- Smooth camera controls with orbit, pan, zoom
+- Focus-on-object functionality with automatic framing
+- Grid, axes, and helper visualization
+- Component-based entity rendering
+- Performance optimization with caching
 
-**2D Viewport:**
-- Pixel-perfect rendering
-- Sprite layering and sorting
-- Tile-based editing tools
-- Animation preview
-- UI layout guides
+**2D Viewport Features:**
+- Sprite-based rendering with PIXI.js
+- 2D camera controls and viewport navigation
+- Layer management and depth sorting
+- 2D transform gizmos and manipulation
+- Smooth viewport mode switching (2D ↔ 3D)
+
+**Selection System:**
+- **Click Selection**: Left mouse click on objects
+- **Multi-Selection**: Ctrl + Click to add/remove from selection
+- **Range Selection**: Shift + Click for range selection
+- **Clear Selection**: Click empty space or Esc key
+- **Visual Feedback**: Automatic highlighting and outline
 
 **Camera Controls:**
-- **Orbit**: Alt + Left Mouse
-- **Pan**: Alt + Middle Mouse
-- **Zoom**: Mouse Wheel
-- **Fly Mode**: Right Mouse + WASD
-- **Focus**: F key (focus selected object)
+- **Orbit**: Left Mouse + Drag (3D mode)
+- **Pan**: Middle Mouse + Drag or Shift + Left Mouse + Drag
+- **Zoom**: Mouse Wheel or Right Mouse + Drag
+- **Focus**: F key (focus on selected objects)
+- **Reset**: Home key (reset camera to default position)
+- **Touch Support**: Pinch to zoom, two-finger pan on touch devices
+
+**Transform Gizmos:**
+- **Select Mode**: Q key (selection tool)
+- **Translate**: W key (move objects)
+- **Rotate**: E key (rotate objects)
+- **Scale**: R key (scale objects)
+- **World/Local Space**: Toggle between coordinate systems
+- **Snap Settings**: Grid snap and increment controls
 
 ### Entity-Component System
 
@@ -267,90 +293,188 @@ Auto Load:   [X] Enabled
 ### Scene Operations
 
 **Creating Scenes:**
-1. File → New Scene
-2. Choose scene template
-3. Configure initial settings
-4. Save with descriptive name
+1. File → New Scene (or Ctrl+N)
+2. Enter scene name in dialog
+3. Choose scene template:
+   - **Empty**: Blank scene with basic lighting
+   - **2D**: Configured for 2D games with orthographic camera
+   - **3D**: Configured for 3D games with perspective camera
+4. Scene is automatically created and opened
+5. Scene files saved as `.scene.json` in `scenes/` directory
 
 **Scene Loading:**
-- Recent scenes in File menu
-- Project browser navigation
-- Auto-save and backup system
-- Scene dependency tracking
+- File → Open Scene to browse existing scenes
+- Recent scenes available in File menu
+- Double-click scene files in Asset Browser
+- Scenes auto-save every 5 minutes
+- Scene validation on load with error reporting
+
+**Scene File Format:**
+```json
+{
+  "format": "worldenv-scene",
+  "version": "1.0.0",
+  "metadata": {
+    "name": "MainLevel",
+    "created": "2024-01-15T10:30:00Z",
+    "modified": "2024-01-15T14:22:15Z"
+  },
+  "settings": {
+    "gravity": { "x": 0, "y": -9.81, "z": 0 },
+    "ambientLight": { "r": 0.2, "g": 0.2, "b": 0.2, "a": 1.0 }
+  },
+  "entities": []
+}
+```
 
 ### Hierarchy Management
 
+**Entity Creation:**
+1. Right-click in Hierarchy panel
+2. Select "Add Entity" from context menu
+3. Entity created with default Transform component
+4. Rename entity by double-clicking name
+
 **Tree Operations:**
-- Drag-and-drop reparenting
-- Multi-select with Ctrl/Shift
-- Right-click context menus
-- Keyboard navigation
+- **Drag-and-drop**: Reparent entities by dragging
+- **Multi-select**: Ctrl+Click or Shift+Click for multiple entities
+- **Right-click menu**: Access entity operations
+- **Keyboard navigation**: Arrow keys to navigate hierarchy
+- **Expand/Collapse**: Click triangle icons or use +/- keys
+
+**Entity Operations:**
+- **Visibility Toggle**: Eye icon to show/hide entities
+- **Lock Toggle**: Lock icon to prevent selection/editing
+- **Delete**: Delete key or context menu (with confirmation)
+- **Duplicate**: Ctrl+D to duplicate selected entities
+- **Rename**: Double-click name or F2 key
 
 **Entity Organization:**
-- Group related entities
-- Use descriptive naming
-- Tag entities by function
-- Create prefabs for reuse
+- Use parent-child relationships for logical grouping
+- Descriptive naming conventions (Player, Environment, UI, etc.)
+- Lock parent containers to prevent accidental modification
+- Use visibility to manage complex scenes during editing
 
 ### Play Mode
 
-**Testing Features:**
-- Instant play mode toggle
-- Runtime property editing
-- Debug visualization
-- Performance monitoring
+**Note**: Play Mode is implemented and available through the toolbar controls.
 
-**Play Mode Controls:**
-- **Play**: Start scene simulation
-- **Pause**: Freeze game state
-- **Step**: Advance one frame
-- **Stop**: Return to edit mode
+**Current Scene Testing:**
+- Scene validation ensures structural integrity
+- Component properties can be edited in Inspector
+- Scene hierarchy updates in real-time
+- Save scene before testing with external tools
+
+**Planned Play Mode Features:**
+- **Play**: Start scene simulation with physics/scripts
+- **Pause**: Freeze game state for debugging
+- **Step**: Advance one frame at a time
+- **Stop**: Return to edit mode with state reset
+- Runtime property editing with change tracking
+- Debug visualization overlays
+- Performance monitoring and profiling
 
 ## Asset Management
 
+**Professional Asset System with Import, Preview, and Viewport Integration**
+
 ### Asset Browser
 
-**File Operations:**
-- Import assets via drag-and-drop
-- Create folders for organization
-- Rename and delete files
-- Asset preview thumbnails
+The enhanced asset browser provides professional file management with drag-and-drop integration.
+
+**Core Features:**
+- **Import Pipeline**: Drag files directly into the browser or use Ctrl+I
+- **Thumbnail Preview**: Automatic generation for images, models, and audio
+- **Metadata Management**: Tags, descriptions, and technical information
+- **Drag-to-Viewport**: Drop assets directly into 3D/2D viewport to create entities
+- **Search & Filter**: Real-time search with type and tag filtering
+- **Keyboard Navigation**: Full keyboard shortcuts (Delete, F2, F5, Enter, Ctrl+A)
 
 **Supported Formats:**
-- **Images**: PNG, JPG, GIF, WebP
-- **3D Models**: OBJ, FBX, GLTF, GLB
-- **Audio**: MP3, WAV, OGG
-- **Scripts**: .wc, .ts, .js
-- **Scenes**: .worldscene
-- **Projects**: .worldenv
+- **Images**: PNG, JPG, JPEG, GIF, WebP, BMP, TIFF with thumbnail generation
+- **3D Models**: GLTF, GLB, OBJ, FBX, DAE, 3DS with preview support
+- **Audio**: MP3, WAV, OGG, FLAC, AAC, M4A with waveform preview
+- **Fonts**: TTF, OTF, WOFF, WOFF2 with text preview
+- **Scripts**: .wc (WorldC), .ts, .js with syntax detection
+- **Data**: JSON, XML, YAML for configuration files
 
-### Import Pipeline
+### Import Workflow
 
-**Automatic Processing:**
-- Texture compression and optimization
-- Model import with materials
-- Audio format conversion
-- Script compilation validation
+**Step 1: Import Assets**
+1. **Drag-and-Drop**: Drag files from your file system into the asset browser
+2. **File Import**: Use Ctrl+I or right-click → "Import Files..."
+3. **Progress Tracking**: Real-time import progress with file names
+4. **Automatic Organization**: Files organized in current folder location
 
-**Import Settings:**
-- Texture filtering and wrapping
-- Model scale and orientation
-- Audio compression quality
-- Asset naming conventions
+**Step 2: Asset Organization**
+1. **Create Folders**: Right-click → "New Folder" or organize by type
+2. **Rename Assets**: Press F2 or right-click → "Rename"
+3. **Add Metadata**: Right-click → "Show Properties" to add tags and descriptions
+4. **Search Assets**: Use the search bar to find assets by name, type, or tags
 
-### Asset References
+**Step 3: Use in Scene**
+1. **Drag to Viewport**: Drag assets from browser to 3D/2D viewport
+2. **Automatic Entity Creation**: 
+   - Images become Sprite entities with SpriteComponent
+   - 3D models become Model entities with MeshRendererComponent
+   - Audio files become Audio entities with AudioSourceComponent
+3. **Component Integration**: Assets automatically populate component properties
 
-**Reference Management:**
-- Automatic dependency tracking
-- Missing asset warnings
-- Asset usage reports
-- Batch reference updates
+### Asset Properties Dialog
 
-**Best Practices:**
-- Use relative paths for portability
-- Organize assets in logical folders
-- Maintain consistent naming
-- Regular asset cleanup
+Access detailed asset information and metadata editing:
+
+**Basic Information:**
+- File size, creation date, modification date
+- File path and extension
+- Asset type and format
+
+**Technical Metadata:**
+- **Images**: Dimensions, format, channels, compression status
+- **Audio**: Duration, sample rate, channels, bit rate
+- **3D Models**: Vertex count, face count, animations, materials
+
+**Editable Metadata:**
+- **Tags**: Comma-separated labels for organization
+- **Description**: Detailed asset description
+- **Custom Properties**: Project-specific metadata
+
+### Keyboard Shortcuts
+
+**Navigation:**
+- **Enter**: Open folder or show properties
+- **Escape**: Clear selection
+- **F5**: Refresh asset list
+
+**File Operations:**
+- **Delete**: Delete selected assets
+- **F2**: Rename selected asset
+- **Ctrl+I**: Import new assets
+- **Ctrl+A**: Select all assets
+
+**Organization:**
+- **Right-click**: Context menu for all operations
+- **Drag-and-drop**: Move files between folders
+- **Search**: Real-time filtering as you type
+
+### Asset Integration
+
+**Viewport Integration:**
+- Drop images to create sprite entities
+- Drop 3D models to create mesh entities
+- Drop audio files to create audio source entities
+- Automatic component property population
+
+**Component Mapping:**
+- **SpriteComponent**: Texture property from image assets
+- **MeshRendererComponent**: Mesh and material from model assets
+- **AudioSourceComponent**: Audio clip from audio assets
+- **Material Properties**: Texture maps from image assets
+
+**Performance Features:**
+- **Lazy Loading**: Thumbnails load as needed
+- **Caching**: Asset metadata and thumbnails cached
+- **Background Processing**: Import operations don't block UI
 
 ## Scripting with WORLDC
 

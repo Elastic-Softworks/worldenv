@@ -9,18 +9,37 @@
  *
  * Renderer-side interface for engine integration.
  * Communicates with main process engine service via IPC.
+ * Provides command/response patterns and event subscriptions.
  */
 
 import { SceneData } from '../../shared/types/SceneTypes';
+import {
+  EngineStatus,
+  EngineState,
+  EngineHealthCheck,
+  EngineStatusUpdate
+} from '../../shared/types/EngineTypes';
+import {
+  IPCCommand,
+  IPCResponse,
+  IPCEvent,
+  IPCChannels,
+  IPCChannelName,
+  EventSubscription,
+  IPCStatistics,
+  EngineInitializeCommand,
+  EngineInitializeResponse,
+  EngineLoadSceneCommand,
+  EngineLoadSceneResponse,
+  EngineSetPlayModeCommand,
+  EngineCreateEntityCommand,
+  EngineCreateEntityResponse,
+  EngineUpdateComponentCommand
+} from '../../shared/types/IPCTypes';
+import { EngineCommandQueue, CommandQueueConfig } from './EngineCommandQueue';
 
-export interface EngineState {
-  isInitialized: boolean;
-  isRunning: boolean;
-  isPlayMode: boolean;
-  isPaused: boolean;
-  hasErrors: boolean;
-  errorMessage?: string;
-}
+// Re-export from shared types
+export type { EngineState, EngineStatus, EngineHealthCheck } from '../../shared/types/EngineTypes';
 
 export interface EngineStats {
   fps: number;
@@ -41,6 +60,16 @@ export interface EngineInfo {
 export type EngineEventListener = (event: string, ...args: unknown[]) => void;
 
 /**
+ * CommandOptions interface
+ *
+ * Options for sending commands to engine.
+ */
+export interface CommandOptions {
+  timeout?: number;
+  retryOnFailure?: boolean;
+}
+
+/**
  * EngineInterface class
  *
  * Renderer-side engine interface for play mode and scene operations.
@@ -49,7 +78,11 @@ export type EngineEventListener = (event: string, ...args: unknown[]) => void;
 export class EngineInterface {
   private static instance: EngineInterface | null = null;
   private listeners: Map<string, Set<EngineEventListener>> = new Map();
+  private eventSubscriptions: Map<IPCChannelName, EventSubscription> = new Map();
+  private commandQueue: EngineCommandQueue;
+  private statistics: IPCStatistics;
   private state: EngineState = {
+    status: EngineStatus.UNINITIALIZED,
     isInitialized: false,
     isRunning: false,
     isPlayMode: false,
@@ -58,7 +91,33 @@ export class EngineInterface {
   };
 
   constructor() {
+    this.statistics = {
+      commandsSent: 0,
+      commandsReceived: 0,
+      responsesReceived: 0,
+      eventsReceived: 0,
+      averageResponseTime: 0,
+      failedCommands: 0,
+      queueSize: 0,
+      subscriptions: 0
+    };
+
+    // Initialize command queue
+    const queueConfig: CommandQueueConfig = {
+      maxQueueSize: 1000,
+      processingInterval: 16, // ~60fps
+      maxRetryAttempts: 3,
+      retryDelay: 1000,
+      batchSize: 5,
+      enablePriorityQueue: true,
+      enableStatistics: true
+    };
+
+    this.commandQueue = new EngineCommandQueue(queueConfig);
+    this.commandQueue.initialize(this.processCommand.bind(this));
+
     this.setupIPCListeners();
+    this.syncEngineState();
   }
 
   /**
@@ -79,7 +138,7 @@ export class EngineInterface {
    * Check if engine is ready for operations.
    */
   isEngineReady(): boolean {
-    return this.state.isInitialized && !this.state.hasErrors;
+    return this.state.status === EngineStatus.READY && !this.state.hasErrors;
   }
 
   /**
@@ -122,6 +181,236 @@ export class EngineInterface {
       console.error('[ENGINE_INTERFACE] Failed to get engine info:', error);
       throw error;
     }
+  }
+
+  /**
+   * getEngineStatus()
+   *
+   * Get current engine status from main process.
+   */
+  async getEngineStatus(): Promise<EngineState> {
+    try {
+      const status = await window.worldedit.engine.getStatus();
+      return status as EngineState;
+    } catch (error) {
+      console.error('[ENGINE_INTERFACE] Failed to get engine status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * getHealthCheck()
+   *
+   * Get latest engine health check results.
+   */
+  async getHealthCheck(): Promise<EngineHealthCheck | null> {
+    try {
+      const healthCheck = await window.worldedit.engine.getHealthCheck();
+      return healthCheck as EngineHealthCheck | null;
+    } catch (error) {
+      console.error('[ENGINE_INTERFACE] Failed to get health check:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * sendCommand()
+   *
+   * Send command to engine via command queue.
+   */
+  async sendCommand<TPayload, TResponse>(
+    channel: IPCChannelName,
+    payload: TPayload,
+    options?: CommandOptions
+  ): Promise<TResponse> {
+    const commandId = this.generateCommandId();
+    const timeout = options?.timeout || 30000;
+
+    const command: IPCCommand<TPayload> = {
+      id: commandId,
+      channel,
+      type: 'command',
+      payload,
+      timestamp: Date.now(),
+      timeout
+    };
+
+    this.statistics.commandsSent++;
+
+    // Enqueue command for reliable processing
+    const response = await this.commandQueue.enqueue(command);
+
+    if (!response.success) {
+      this.statistics.failedCommands++;
+      throw new Error(response.error?.message || 'Command failed');
+    }
+
+    this.statistics.responsesReceived++;
+    return response.payload as TResponse;
+  }
+
+  /**
+   * initializeEngine()
+   *
+   * Initialize engine with configuration options.
+   */
+  async initializeEngine(
+    options: EngineInitializeCommand['options']
+  ): Promise<EngineInitializeResponse> {
+    return this.sendCommand<EngineInitializeCommand, EngineInitializeResponse>(
+      IPCChannels.ENGINE_INITIALIZE,
+      { options }
+    );
+  }
+
+  /**
+   * loadScene()
+   *
+   * Load scene file into engine.
+   */
+  async loadEngineScene(
+    scenePath: string,
+    options?: EngineLoadSceneCommand['options']
+  ): Promise<EngineLoadSceneResponse> {
+    return this.sendCommand<EngineLoadSceneCommand, EngineLoadSceneResponse>(
+      IPCChannels.ENGINE_LOAD_SCENE,
+      { scenePath, options }
+    );
+  }
+
+  /**
+   * setEnginePlayMode()
+   *
+   * Set engine play mode state.
+   */
+  async setEnginePlayMode(
+    playMode: boolean,
+    options?: EngineSetPlayModeCommand['options']
+  ): Promise<boolean> {
+    return this.sendCommand<EngineSetPlayModeCommand, boolean>(IPCChannels.ENGINE_SET_PLAY_MODE, {
+      playMode,
+      options
+    });
+  }
+
+  /**
+   * createEngineEntity()
+   *
+   * Create new entity in engine.
+   */
+  async createEngineEntity(
+    parentId?: string,
+    template?: string,
+    properties?: Record<string, unknown>
+  ): Promise<EngineCreateEntityResponse> {
+    return this.sendCommand<EngineCreateEntityCommand, EngineCreateEntityResponse>(
+      IPCChannels.ENGINE_CREATE_ENTITY,
+      { parentId, template, properties }
+    );
+  }
+
+  /**
+   * updateEngineComponent()
+   *
+   * Update component properties in engine.
+   */
+  async updateEngineComponent(
+    entityId: string,
+    componentType: string,
+    properties: Record<string, unknown>
+  ): Promise<boolean> {
+    return this.sendCommand<EngineUpdateComponentCommand, boolean>(
+      IPCChannels.ENGINE_UPDATE_COMPONENT,
+      { entityId, componentType, properties }
+    );
+  }
+
+  /**
+   * subscribeToEvent()
+   *
+   * Subscribe to engine events.
+   */
+  subscribeToEvent(
+    channel: IPCChannelName,
+    callback: (event: IPCEvent) => void,
+    options?: { once?: boolean; filter?: (event: IPCEvent) => boolean }
+  ): () => void {
+    const subscription: EventSubscription = {
+      channel,
+      callback,
+      once: options?.once,
+      filter: options?.filter
+    };
+
+    this.eventSubscriptions.set(channel, subscription);
+    this.statistics.subscriptions++;
+
+    // Set up IPC listener
+    const ipcCallback = (...args: unknown[]) => {
+      const event = args[0] as IPCEvent;
+      this.statistics.eventsReceived++;
+
+      if (subscription.filter && !subscription.filter(event)) {
+        return;
+      }
+
+      callback(event);
+
+      if (subscription.once) {
+        this.unsubscribeFromEvent(channel);
+      }
+    };
+
+    window.worldedit.on(channel, ipcCallback);
+
+    // Return unsubscribe function
+    return () => this.unsubscribeFromEvent(channel);
+  }
+
+  /**
+   * unsubscribeFromEvent()
+   *
+   * Unsubscribe from engine events.
+   */
+  unsubscribeFromEvent(channel: IPCChannelName): void {
+    if (this.eventSubscriptions.has(channel)) {
+      this.eventSubscriptions.delete(channel);
+      this.statistics.subscriptions--;
+
+      // Remove IPC listener
+      window.worldedit.off(channel, () => {});
+    }
+  }
+
+  /**
+   * getStatistics()
+   *
+   * Get communication statistics including queue stats.
+   */
+  getStatistics(): IPCStatistics {
+    const queueStats = this.commandQueue.getStatistics();
+    return {
+      ...this.statistics,
+      queueSize: queueStats.currentQueueSize
+    };
+  }
+
+  /**
+   * clearStatistics()
+   *
+   * Reset communication statistics.
+   */
+  clearStatistics(): void {
+    this.statistics = {
+      commandsSent: 0,
+      commandsReceived: 0,
+      responsesReceived: 0,
+      eventsReceived: 0,
+      averageResponseTime: 0,
+      failedCommands: 0,
+      queueSize: 0,
+      subscriptions: this.eventSubscriptions.size
+    };
   }
 
   /**
@@ -325,6 +614,25 @@ export class EngineInterface {
   }
 
   /**
+   * syncEngineState()
+   *
+   * Synchronize engine state with main process.
+   */
+  private async syncEngineState(): Promise<void> {
+    try {
+      const status = await this.getEngineStatus();
+      this.state = status;
+      this.emit('stateChanged', status);
+
+      if (status.status === EngineStatus.READY) {
+        this.emit('ready');
+      }
+    } catch (error) {
+      console.error('[ENGINE_INTERFACE] Failed to sync engine state:', error);
+    }
+  }
+
+  /**
    * setupIPCListeners()
    *
    * Set up IPC event listeners for engine communication.
@@ -332,22 +640,73 @@ export class EngineInterface {
   private setupIPCListeners(): void {
     // Listen for engine events from main process
     if (window.worldedit?.on) {
-      window.worldedit.on('engine:state-changed', (...args: unknown[]) => {
-        const state = args[0] as EngineState;
-        this.state = state;
-        this.emit('stateChanged', state);
+      window.worldedit.on('engine:status-changed', (...args: unknown[]) => {
+        const update = args[0] as EngineStatusUpdate & { state: EngineState };
+        this.state = update.state;
+        this.emit('stateChanged', update.state);
+
+        if (update.state.status === EngineStatus.READY) {
+          this.emit('ready');
+        }
+
+        if (update.error) {
+          this.emit('error', update.error);
+        }
       });
 
       window.worldedit.on('engine:error', (...args: unknown[]) => {
         const error = args[0] as Error;
-        this.updateState({ hasErrors: true, errorMessage: error.message });
+        this.updateState({
+          hasErrors: true,
+          errorMessage: error.message,
+          status: EngineStatus.ERROR
+        });
         this.emit('error', error);
       });
 
       window.worldedit.on('engine:initialized', () => {
-        this.updateState({ isInitialized: true, hasErrors: false });
+        this.updateState({
+          isInitialized: true,
+          hasErrors: false,
+          status: EngineStatus.READY
+        });
         this.emit('ready');
       });
     }
+  }
+
+  /**
+   * processCommand()
+   *
+   * Process command through IPC system.
+   */
+  private async processCommand(command: IPCCommand): Promise<IPCResponse> {
+    try {
+      const response = await window.worldedit.invoke(command.channel, command);
+      return response as IPCResponse;
+    } catch (error) {
+      return {
+        id: command.id,
+        channel: command.channel,
+        type: 'response',
+        payload: null,
+        timestamp: Date.now(),
+        success: false,
+        error: {
+          code: 'IPC_ERROR',
+          message: (error as Error).message,
+          details: error
+        }
+      };
+    }
+  }
+
+  /**
+   * generateCommandId()
+   *
+   * Generate unique command ID.
+   */
+  private generateCommandId(): string {
+    return `cmd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 }

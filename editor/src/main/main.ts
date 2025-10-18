@@ -1,42 +1,73 @@
 /*
+   ===============================================================
+   WORLDEDIT MAIN PROCESS ENTRY POINT
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Main Process Entry Point
- *
- * Electron main process initialization and window management.
- * Handles application lifecycle, IPC communication, and system integration.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { app, BrowserWindow } from 'electron';
-import * as path from 'path';
-import { logger, LogLevel } from './logger';
-import { windowManager } from './window-manager';
-import { menuManager } from './menu';
-import { ipcManager } from './ipc';
-import { dialogManager } from './dialogs';
-import { projectManager } from './project';
-import { fileWatcher } from './watcher';
-import { autoSave } from './auto-save';
-import { splashScreen } from './splash';
-import { recentProjectsManager } from './recent-projects';
+import { app, BrowserWindow } from 'electron'; /* ELECTRON FRAMEWORK */
+import * as path from 'path'; /* PATH UTILITIES */
+import { logger, LogLevel } from './logger'; /* LOGGING SYSTEM */
+import { windowManager } from './window-manager'; /* WINDOW MANAGEMENT */
+import { menuManager } from './menu'; /* APPLICATION MENU */
+import { ipcManager } from './ipc'; /* IPC COMMUNICATION */
+import { dialogManager } from './dialogs'; /* DIALOG MANAGEMENT */
+import { projectManager } from './project'; /* PROJECT SYSTEM */
+import { fileWatcher } from './watcher'; /* FILE WATCHING */
+import { autoSave } from './auto-save'; /* AUTO SAVE SYSTEM */
+import { splashScreen } from './splash'; /* SPLASH SCREEN */
+import { recentProjectsManager } from './recent-projects'; /* RECENT PROJECTS */
+import { EngineStatusManager } from './engine/EngineStatusManager'; /* ENGINE STATUS */
+import { EngineCommunicationManager } from './engine/EngineCommunicationManager'; /* ENGINE IPC */
+
+/*
+	===============================================================
+             --- GLOBAL ---
+	===============================================================
+*/
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 let mainWindow: BrowserWindow | null = null;
 let isQuitting = false;
 
-/**
- * initializeApplication()
- *
- * Initializes all application systems and modules.
- * Called after app ready event.
- */
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         initializeApplication()
+	       ---
+	       comprehensive application initialization sequence
+	       that bootstraps all core systems and modules in
+	       the correct dependency order.
+
+	       this function orchestrates the startup of logging,
+	       window management, menu systems, IPC handlers,
+	       project management, file watching, and engine
+	       integration. called once after the electron app
+	       ready event fires.
+
+*/
+
 async function initializeApplication(): Promise<void> {
   try {
+    /* initialize logging system first for diagnostic output */
     logger.initialize();
 
     if (isDevelopment) {
@@ -62,8 +93,28 @@ async function initializeApplication(): Promise<void> {
 
     ipcManager.initialize();
 
+    splashScreen.updateMessage('Initializing engine...');
+    splashScreen.updateProgress(35);
+
+    // Initialize engine systems
+    const engineStatusManager = EngineStatusManager.getInstance({
+      healthCheckInterval: 5000,
+      maxErrorCount: 10,
+      statusUpdateDebounce: 100,
+      enableDetailedLogging: isDevelopment
+    });
+
+    const engineCommunicationManager = EngineCommunicationManager.getInstance({
+      commandTimeout: 30000,
+      maxQueueSize: 1000,
+      maxRetryAttempts: 3,
+      retryDelay: 1000,
+      enableStatistics: isDevelopment,
+      enableDebugLogging: isDevelopment
+    });
+
     splashScreen.updateMessage('Setting up UI...');
-    splashScreen.updateProgress(40);
+    splashScreen.updateProgress(50);
 
     setupMenuHandlers();
 
@@ -193,6 +244,23 @@ function createMainWindow(): void {
 
   mainWindow.once('ready-to-show', () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
+      // Initialize engine systems with window reference
+      const engineStatusManager = EngineStatusManager.getInstance();
+      const engineCommunicationManager = EngineCommunicationManager.getInstance();
+
+      engineStatusManager.initialize(mainWindow);
+      engineCommunicationManager.initialize(mainWindow);
+
+      // Start engine initialization sequence
+      engineStatusManager.startInitialization({
+        enableDebug: isDevelopment,
+        enableProfiling: isDevelopment,
+        maxFPS: 60,
+        enableWebGL2: true,
+        enableAudio: true,
+        enablePhysics: true
+      });
+
       // Add a small delay to ensure renderer is fully ready
       setTimeout(() => {
         if (mainWindow && !mainWindow.isDestroyed()) {
@@ -242,6 +310,13 @@ function createMainWindow(): void {
   });
 
   mainWindow.on('closed', () => {
+    // Clean up engine systems
+    const engineStatusManager = EngineStatusManager.getInstance();
+    const engineCommunicationManager = EngineCommunicationManager.getInstance();
+
+    engineStatusManager.dispose();
+    engineCommunicationManager.dispose();
+
     mainWindow = null;
 
     logger.info('MAIN', 'Main window closed');

@@ -160,6 +160,43 @@ export function MenuBar(): JSX.Element {
   };
 
   /**
+   * handleNewScene()
+   *
+   * Handles new scene creation.
+   */
+  const handleNewScene = async (): Promise<void> => {
+    try {
+      if (!state.project.isOpen || !state.project.path) {
+        await (window as any).worldedit.dialog.showError(
+          'No Project Open',
+          'Please open a project before creating a scene.'
+        );
+        return;
+      }
+
+      // For now, create a default 3D scene with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const sceneName = `Scene_${timestamp}`;
+
+      const result = await (window as any).worldedit.scene.create(state.project.path, sceneName, {
+        name: sceneName,
+        template: '3d'
+      });
+
+      if (result.success) {
+        // Load the newly created scene
+        await actions.loadSceneFromFile(result.scenePath);
+      }
+    } catch (error) {
+      console.error('[MENU] Failed to create scene:', error);
+      await (window as any).worldedit.dialog.showError(
+        'Scene Creation Error',
+        `Failed to create new scene: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  };
+
+  /**
    * handleProjectSettings()
    *
    * Shows project settings dialog.
@@ -268,6 +305,13 @@ export function MenuBar(): JSX.Element {
     File: [
       { label: 'New Project', action: handleNewProject, shortcut: 'Ctrl+N' },
       { label: 'Open Project', action: handleOpenProject, shortcut: 'Ctrl+O' },
+      { separator: true },
+      {
+        label: 'New Scene',
+        action: handleNewScene,
+        shortcut: 'Ctrl+Shift+N',
+        disabled: !state.project.isOpen
+      },
       { separator: true },
       {
         label: 'Save Project',

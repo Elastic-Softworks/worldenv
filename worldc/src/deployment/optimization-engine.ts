@@ -8,7 +8,7 @@
 
          optimization-engine.ts
            ---
-           optimization engine for WORLDSRC Alpha Phase 20.
+           optimization engine for WORLDSRC production system.
 
            provides advanced build optimization capabilities
            including minification, compression, tree-shaking,

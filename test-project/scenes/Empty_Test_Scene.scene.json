@@ -1,0 +1,59 @@
+{
+  "format": "worldenv-scene",
+  "formatVersion": "1.0.0",
+  "scene": {
+    "id": "mgvbmys0-4vg7tm",
+    "name": "Empty_Test_Scene",
+    "rootNode": {
+      "id": "mgvbmys0-sp1yb6",
+      "name": "Scene",
+      "type": "scene",
+      "enabled": true,
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "components": [],
+      "children": []
+    },
+    "settings": {
+      "ambientColor": {
+        "r": 0.2,
+        "g": 0.2,
+        "b": 0.2,
+        "a": 1
+      },
+      "fogEnabled": false,
+      "gravity": {
+        "x": 0,
+        "y": -9.81,
+        "z": 0
+      },
+      "physicsEnabled": true,
+      "audioEnabled": true
+    },
+    "metadata": {
+      "version": "1.0.0",
+      "createdAt": "2025-10-17T20:48:46.223Z",
+      "modifiedAt": "2025-10-17T20:48:46.223Z",
+      "author": "Test Script",
+      "description": "Test empty scene",
+      "engineVersion": "0.1.0",
+      "editorVersion": "0.1.0"
+    },
+    "assets": []
+  }
+}

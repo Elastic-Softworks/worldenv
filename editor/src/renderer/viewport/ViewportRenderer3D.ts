@@ -1,34 +1,88 @@
 /*
+   ===============================================================
+   WORLDEDIT 3D VIEWPORT RENDERER
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - 3D Viewport Renderer
- *
- * Three.js-based renderer for 3D viewport mode.
- * Handles scene rendering, gizmos, selection highlights, and grid overlay.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import * as THREE from 'three';
-import { EditorCamera } from './EditorCamera';
+import * as THREE from 'three'; /* THREE.JS 3D LIBRARY */
+import { EditorCamera } from './EditorCamera'; /* CAMERA SYSTEM */
+import {
+  ObjectSelectionSystem,
+  SelectionEvent
+} from './ObjectSelectionSystem'; /* SELECTION SYSTEM */
+import {
+  CameraControlsIntegration,
+  CameraControlsEvent
+} from './CameraControlsIntegration'; /* CAMERA CONTROLS */
+import { EntityRenderingSystem } from './EntityRenderingSystem'; /* ENTITY RENDERING */
+import {
+  ManipulatorManager,
+  ManipulatorMode,
+  TransformSpace
+} from './manipulators/ManipulatorManager'; /* TRANSFORM MANIPULATORS */
+import { Entity } from '../core/scene/Entity'; /* ENTITY SYSTEM */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         RenderStats
+	       ---
+	       performance metrics and statistics for 3D rendering
+	       operations. provides detailed information about draw
+	       calls, geometry complexity, and resource usage for
+	       performance monitoring and optimization.
+
+*/
 
 export interface RenderStats {
-  drawCalls: number;
-  triangles: number;
-  points: number;
-  lines: number;
-  geometries: number;
-  textures: number;
+  drawCalls: number /* number of WebGL draw calls per frame */;
+  triangles: number /* total triangles rendered */;
+  points: number /* total points rendered */;
+  lines: number /* total lines rendered */;
+  geometries: number /* number of geometry objects in memory */;
+  textures: number /* number of texture objects in memory */;
 }
 
-/**
- * ViewportRenderer3D
- *
- * Manages Three.js rendering for the 3D viewport.
- * Provides scene rendering with editor-specific overlays and tools.
- */
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         ViewportRenderer3D
+	       ---
+	       comprehensive Three.js-based renderer for the 3D viewport
+	       mode. manages scene rendering with editor-specific
+	       overlays including transform gizmos, selection highlights,
+	       grid overlay, and coordinate axes.
+
+	       the renderer integrates multiple subsystems: camera
+	       controls for navigation, object selection for interaction,
+	       entity rendering for game objects, and manipulator
+	       systems for transform operations. it provides real-time
+	       3D visualization with professional editor features.
+
+*/
 export class ViewportRenderer3D {
   private renderer!: THREE.WebGLRenderer;
   private scene!: THREE.Scene;
@@ -43,12 +97,16 @@ export class ViewportRenderer3D {
   private showGrid: boolean;
   private showAxes: boolean;
 
-  /* SELECTION SYSTEM */
+  /* INTEGRATED SYSTEMS */
+  private selectionSystem: ObjectSelectionSystem | null;
+  private cameraControls: CameraControlsIntegration | null;
+  private entityRenderingSystem: EntityRenderingSystem | null;
+  private manipulatorManager: ManipulatorManager | null;
+
+  /* LEGACY COMPATIBILITY */
   private selectedObjects: THREE.Object3D[];
   private selectionBox!: THREE.BoxHelper;
   private outlinePass: any | null;
-
-  /* GIZMOS AND HELPERS */
   private transformGizmo: THREE.Group | null;
   private showGizmos: boolean;
 
@@ -76,6 +134,14 @@ export class ViewportRenderer3D {
     this.showGrid = true;
     this.showAxes = true;
     this.showGizmos = true;
+
+    /* INITIALIZE INTEGRATED SYSTEMS */
+    this.selectionSystem = null;
+    this.cameraControls = null;
+    this.entityRenderingSystem = null;
+    this.manipulatorManager = null;
+
+    /* LEGACY COMPATIBILITY */
     this.selectedObjects = [];
     this.transformGizmo = null;
     this.outlinePass = null;
@@ -165,8 +231,100 @@ export class ViewportRenderer3D {
     this.selectionBox.visible = false;
     this.scene.add(this.selectionBox);
 
+    /* INITIALIZE INTEGRATED SYSTEMS */
+    this.initializeIntegratedSystems();
+
     this.resize();
     this.isInitialized = true;
+  }
+
+  /**
+   * initializeIntegratedSystems()
+   *
+   * Initialize selection, camera controls, and entity rendering systems.
+   */
+  private initializeIntegratedSystems(): void {
+    try {
+      /* INITIALIZE SELECTION SYSTEM */
+      this.selectionSystem = new ObjectSelectionSystem(
+        this.scene,
+        this.camera.getCamera3D(),
+        this.canvas
+      );
+      this.selectionSystem.addEventListener(
+        'selectionchange',
+        this.handleSelectionChange.bind(this)
+      );
+      this.selectionSystem.addEventListener(
+        'selectionchange',
+        this.handleSelectionChange.bind(this)
+      );
+
+      /* INITIALIZE CAMERA CONTROLS */
+      this.cameraControls = new CameraControlsIntegration(this.camera, this.canvas);
+      this.cameraControls.addEventListener('change', this.handleCameraChange.bind(this));
+      this.cameraControls.startAnimation();
+
+      /* INITIALIZE ENTITY RENDERING SYSTEM */
+      this.entityRenderingSystem = new EntityRenderingSystem();
+      this.entityRenderingSystem.initialize(this.scene);
+
+      /* INITIALIZE MANIPULATOR MANAGER */
+      this.manipulatorManager = new ManipulatorManager();
+      this.manipulatorManager.initialize(this.camera.getCamera3D(), this.canvas);
+      this.scene.add(this.manipulatorManager);
+
+      console.log('[3D_RENDERER] Integrated systems initialized successfully');
+    } catch (error) {
+      console.error('[3D_RENDERER] Failed to initialize integrated systems:', error);
+
+      /* FALLBACK TO LEGACY SYSTEMS */
+      this.selectionSystem = null;
+      this.cameraControls = null;
+      this.entityRenderingSystem = null;
+      this.manipulatorManager = null;
+    }
+  }
+
+  /**
+   * handleSelectionChange()
+   *
+   * Handle selection system events.
+   */
+  private handleSelectionChange(event: SelectionEvent): void {
+    /* UPDATE LEGACY SELECTED OBJECTS FOR COMPATIBILITY */
+    this.selectedObjects = event.selected;
+
+    /* UPDATE MANIPULATOR TARGETS */
+    if (this.manipulatorManager) {
+      this.manipulatorManager.setTargets(event.selected);
+      this.updateManipulatorTargets(event.selected);
+    }
+
+    console.log(`[3D_RENDERER] Selection changed: ${event.selected.length} objects selected`);
+  }
+
+  /**
+   * updateManipulatorTargets()
+   *
+   * Update manipulator system with new targets.
+   */
+  private updateManipulatorTargets(targets: THREE.Object3D[]): void {
+    if (this.manipulatorManager) {
+      this.manipulatorManager.setTargets(targets);
+    }
+  }
+
+  /**
+   * handleCameraChange()
+   *
+   * Handle camera controls events.
+   */
+  private handleCameraChange(event: CameraControlsEvent): void {
+    /* UPDATE MANIPULATOR SCALE BASED ON CAMERA DISTANCE */
+    if (this.manipulatorManager) {
+      this.manipulatorManager.update();
+    }
   }
 
   /**
@@ -253,11 +411,37 @@ export class ViewportRenderer3D {
     /* UPDATE PERFORMANCE STATS */
     this.updateStats(time);
 
+    /* UPDATE INTEGRATED SYSTEMS */
+    this.updateIntegratedSystems();
+
     /* RENDER SCENE */
     this.renderer.render(this.scene, this.camera.getCamera3D());
 
-    /* UPDATE GIZMOS */
+    /* UPDATE GIZMOS (LEGACY AND NEW) */
     this.updateGizmos();
+  }
+
+  /**
+   * updateIntegratedSystems()
+   *
+   * Update all integrated systems.
+   */
+  private updateIntegratedSystems(): void {
+    /* UPDATE CAMERA CONTROLS */
+    if (this.cameraControls) {
+      this.cameraControls.update();
+    }
+
+    /* UPDATE ENTITY RENDERING */
+    if (this.entityRenderingSystem) {
+      this.entityRenderingSystem.update();
+    }
+
+    /* UPDATE MANIPULATOR MANAGER */
+    if (this.manipulatorManager) {
+      this.manipulatorManager.update();
+      this.manipulatorManager.setTargets(this.selectedObjects);
+    }
   }
 
   /**
@@ -316,6 +500,11 @@ export class ViewportRenderer3D {
    */
   addObject(object: THREE.Object3D): void {
     this.scene.add(object);
+
+    /* ADD TO SELECTION SYSTEM */
+    if (this.selectionSystem) {
+      this.selectionSystem.addSelectableObject(object);
+    }
   }
 
   /**
@@ -326,7 +515,12 @@ export class ViewportRenderer3D {
   removeObject(object: THREE.Object3D): void {
     this.scene.remove(object);
 
-    /* REMOVE FROM SELECTION */
+    /* REMOVE FROM SELECTION SYSTEM */
+    if (this.selectionSystem) {
+      this.selectionSystem.removeSelectableObject(object);
+    }
+
+    /* LEGACY COMPATIBILITY */
     const index = this.selectedObjects.indexOf(object);
     if (index !== -1) {
       this.selectedObjects.splice(index, 1);
@@ -339,7 +533,12 @@ export class ViewportRenderer3D {
    * Select object for editing.
    */
   selectObject(object: THREE.Object3D): void {
-    this.selectedObjects = [object];
+    if (this.selectionSystem) {
+      this.selectionSystem.setSelection([object]);
+    } else {
+      /* LEGACY FALLBACK */
+      this.selectedObjects = [object];
+    }
   }
 
   /**
@@ -348,7 +547,12 @@ export class ViewportRenderer3D {
    * Clear object selection.
    */
   clearSelection(): void {
-    this.selectedObjects = [];
+    if (this.selectionSystem) {
+      this.selectionSystem.clearSelection();
+    } else {
+      /* LEGACY FALLBACK */
+      this.selectedObjects = [];
+    }
   }
 
   /**
@@ -357,7 +561,84 @@ export class ViewportRenderer3D {
    * Get currently selected objects.
    */
   getSelectedObjects(): THREE.Object3D[] {
-    return [...this.selectedObjects];
+    if (this.selectionSystem) {
+      return this.selectionSystem.getSelection();
+    } else {
+      /* LEGACY FALLBACK */
+      return [...this.selectedObjects];
+    }
+  }
+
+  /**
+   * addEntity()
+   *
+   * Add entity to rendering system.
+   */
+  addEntity(entity: Entity): void {
+    if (this.entityRenderingSystem) {
+      this.entityRenderingSystem.addEntity(entity);
+    }
+  }
+
+  /**
+   * removeEntity()
+   *
+   * Remove entity from rendering system.
+   */
+  removeEntity(entityId: string): void {
+    if (this.entityRenderingSystem) {
+      this.entityRenderingSystem.removeEntity(entityId);
+    }
+  }
+
+  /**
+   * updateEntity()
+   *
+   * Update entity visualization.
+   */
+  updateEntity(entityId: string): void {
+    if (this.entityRenderingSystem) {
+      this.entityRenderingSystem.updateEntity(entityId);
+    }
+  }
+
+  /**
+   * focusOnObject()
+   *
+   * Focus camera on specific object.
+   */
+  focusOnObject(object: THREE.Object3D): void {
+    if (this.cameraControls) {
+      this.cameraControls.focusOnObject(object);
+    }
+  }
+
+  /**
+   * focusOnSelection()
+   *
+   * Focus camera on selected objects.
+   */
+  focusOnSelection(): void {
+    if (!this.cameraControls) {
+      return;
+    }
+
+    const selected = this.getSelectedObjects();
+    if (selected.length === 0) {
+      return;
+    }
+
+    if (selected.length === 1) {
+      this.cameraControls.focusOnObject(selected[0]);
+    } else {
+      /* FOCUS ON COMBINED BOUNDS */
+      const box = new THREE.Box3();
+      selected.forEach((obj) => {
+        const objBox = new THREE.Box3().setFromObject(obj);
+        box.union(objBox);
+      });
+      this.cameraControls.focusOnBounds(box);
+    }
   }
 
   /**
@@ -391,6 +672,11 @@ export class ViewportRenderer3D {
    */
   setGizmosVisible(visible: boolean): void {
     this.showGizmos = visible;
+
+    /* UPDATE MANIPULATOR MANAGER */
+    if (this.manipulatorManager) {
+      this.manipulatorManager.setEnabled(visible);
+    }
   }
 
   /**
@@ -433,7 +719,12 @@ export class ViewportRenderer3D {
    * Reset camera to default position.
    */
   resetCamera(): void {
-    this.camera.reset();
+    if (this.cameraControls) {
+      this.cameraControls.reset();
+    } else {
+      /* LEGACY FALLBACK */
+      this.camera.reset();
+    }
   }
 
   /**
@@ -473,7 +764,7 @@ export class ViewportRenderer3D {
   }
 
   /**
-   * raycaster()
+   * raycast()
    *
    * Perform raycast for object picking.
    */
@@ -490,12 +781,73 @@ export class ViewportRenderer3D {
   }
 
   /**
+   * getManipulatorManager()
+   *
+   * Get manipulator manager instance.
+   */
+  getManipulatorManager(): ManipulatorManager | null {
+    return this.manipulatorManager;
+  }
+
+  /**
+   * getSelectionSystem()
+   *
+   * Get selection system instance.
+   */
+  getSelectionSystem(): ObjectSelectionSystem | null {
+    return this.selectionSystem;
+  }
+
+  /**
+   * getCameraControls()
+   *
+   * Get camera controls instance.
+   */
+  getCameraControls(): CameraControlsIntegration | null {
+    return this.cameraControls;
+  }
+
+  /**
+   * getEntityRenderingSystem()
+   *
+   * Get entity rendering system instance.
+   */
+  getEntityRenderingSystem(): EntityRenderingSystem | null {
+    return this.entityRenderingSystem;
+  }
+
+  /**
    * dispose()
    *
    * Clean up resources.
    */
   dispose(): void {
     this.stopRenderLoop();
+
+    /* DISPOSE INTEGRATED SYSTEMS */
+    if (this.selectionSystem) {
+      this.selectionSystem.dispose();
+      this.selectionSystem = null;
+    }
+
+    if (this.cameraControls) {
+      this.cameraControls.dispose();
+      this.cameraControls = null;
+    }
+
+    if (this.entityRenderingSystem) {
+      this.entityRenderingSystem.dispose();
+      this.entityRenderingSystem = null;
+    }
+
+    if (this.manipulatorManager) {
+      this.manipulatorManager.dispose();
+      this.scene.remove(this.manipulatorManager);
+      this.manipulatorManager = null;
+    }
+
+    /* FALLBACK TO LEGACY SYSTEMS */
+    console.log('[3D_RENDERER] Integrated systems disposed, fallback to legacy systems available');
 
     /* DISPOSE GEOMETRY AND MATERIALS */
     this.scene.traverse((object) => {

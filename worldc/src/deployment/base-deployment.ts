@@ -9,7 +9,7 @@
          base-deployment.ts
            ---
            base deployment interfaces and types for WORLDSRC
-           Alpha Phase 20: Beta Preparation & Production Deployment.
+           production deployment system.
 
            defines core abstractions for deployment targets,
            optimization profiles, and build configurations

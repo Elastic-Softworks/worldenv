@@ -4,74 +4,193 @@
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Build Manager
- *
- * Handles project build operations including WorldC compilation,
- * TypeScript compilation, AssemblyScript building, asset bundling,
- * and output generation.
- */
+/*
+	====================================================================
+             BUILD MANAGER - WORLDENV EDITOR
+	====================================================================
+*/
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { spawn, ChildProcess } from 'child_process';
-import { logger } from './logger';
+/*
+
+	build system orchestrator for worldenv projects.
+
+	handles complete build pipeline from source compilation
+	to asset bundling and output generation. manages multiple
+	compilation targets including WorldC, TypeScript, and
+	AssemblyScript with integrated optimization and minification.
+
+	the build process follows a staged approach:
+	1. validation of build configuration
+	2. output directory preparation
+	3. source code compilation (WorldC, TypeScript, AssemblyScript)
+	4. asset bundling and copying
+	5. HTML generation and manifest creation
+
+	supports cancellation and progress reporting for long-running
+	builds with detailed logging throughout each stage.
+
+*/
+
+/*
+	====================================================================
+             --- SETUP ---
+	====================================================================
+*/
+
+import * as fs from 'fs'; /* FILE SYSTEM OPERATIONS */
+import * as path from 'path'; /* PATH MANIPULATION */
+import { spawn, ChildProcess } from 'child_process'; /* PROCESS SPAWNING */
+import { logger } from './logger'; /* LOGGING SYSTEM */
+
+/*
+	====================================================================
+             --- TYPES ---
+	====================================================================
+*/
+
+/*
+
+         BuildConfiguration
+	       ---
+	       complete build settings for project compilation.
+
+	       defines output location, target platform, optimization
+	       settings, and feature flags for asset inclusion and
+	       source map generation.
+
+*/
 
 interface BuildConfiguration {
-  outputDirectory: string;
-  buildTarget: string;
-  optimizationLevel: string;
-  entryScene: string;
-  includeAssets: boolean;
-  includeScripts: boolean;
-  generateSourceMaps: boolean;
-  minifyOutput: boolean;
+  outputDirectory: string /* TARGET OUTPUT PATH */;
+  buildTarget: string /* BUILD TARGET PLATFORM */;
+  optimizationLevel: string /* OPTIMIZATION LEVEL (debug/release) */;
+  entryScene: string /* MAIN SCENE FILE */;
+  includeAssets: boolean /* BUNDLE ASSETS FLAG */;
+  includeScripts: boolean /* INCLUDE SCRIPTS FLAG */;
+  generateSourceMaps: boolean /* SOURCE MAP GENERATION */;
+  minifyOutput: boolean /* OUTPUT MINIFICATION */;
 }
 
+/*
+
+         BuildProgress
+	       ---
+	       progress reporting structure for build operations.
+
+	       provides stage identification, completion percentage,
+	       human-readable messages, and optional error information
+	       for build monitoring and UI updates.
+
+*/
+
 interface BuildProgress {
-  stage: string;
-  progress: number;
-  message: string;
-  error?: string;
+  stage: string /* CURRENT BUILD STAGE */;
+  progress: number /* COMPLETION PERCENTAGE (0-100) */;
+  message: string /* HUMAN-READABLE STATUS */;
+  error?: string /* OPTIONAL ERROR MESSAGE */;
 }
+
+/*
+
+         BuildCallback
+	       ---
+	       callback function type for build progress notifications.
+
+	       allows external systems to monitor build progress
+	       and update user interfaces accordingly.
+
+*/
 
 type BuildCallback = (progress: BuildProgress) => void;
 
+/*
+
+         BuildResult
+	       ---
+	       comprehensive build operation result.
+
+	       contains success status, output location, collected
+	       errors and warnings, and total build time for
+	       post-build analysis and reporting.
+
+*/
+
 interface BuildResult {
-  success: boolean;
-  outputPath: string;
-  errors: string[];
-  warnings: string[];
-  buildTime: number;
+  success: boolean /* BUILD SUCCESS STATUS */;
+  outputPath: string /* FINAL OUTPUT LOCATION */;
+  errors: string[] /* COMPILATION ERRORS */;
+  warnings: string[] /* COMPILATION WARNINGS */;
+  buildTime: number /* TOTAL BUILD TIME (MS) */;
 }
 
+/*
+	====================================================================
+             --- FUNCS ---
+	====================================================================
+*/
+
+/*
+
+         BuildManager
+	       ---
+	       main build orchestration class.
+
+	       manages complete build pipeline from configuration
+	       validation through final output generation. handles
+	       multiple compilation targets and provides progress
+	       reporting for long-running operations.
+
+	       supports build cancellation and maintains reference
+	       to current build process for cleanup operations.
+
+*/
+
 class BuildManager {
-  private currentBuild: ChildProcess | null;
-  private projectPath: string;
+  private currentBuild: ChildProcess | null; /* ACTIVE BUILD PROCESS */
+  private projectPath: string; /* CURRENT PROJECT PATH */
 
   constructor() {
     this.currentBuild = null;
     this.projectPath = '';
   }
 
-  /**
-   * setProjectPath()
-   *
-   * Sets current project path for build operations.
-   */
-  public setProjectPath(projectPath: string): void {
-    this.projectPath = projectPath;
-    logger.debug('BUILD', 'Project path set', { projectPath });
+  /*
+
+           setProjectPath()
+	         ---
+	         configures project path for build operations.
+
+	         establishes base directory for all build-related
+	         file operations and compilation processes.
+
+  */
+
+  public setProjectPath(path: string): void {
+    this.projectPath = path;
+    logger.debug('BUILD', 'Project path set', { path });
   }
 
-  /**
-   * validateConfiguration()
-   *
-   * Validates build configuration before starting build.
-   */
+  /*
+
+           validateConfiguration()
+	         ---
+	         validates build configuration before starting build.
+
+	         performs comprehensive validation of all required
+	         settings and verifies file system paths exist.
+	         returns array of error messages for invalid settings.
+
+	         validation includes:
+	         - required field presence checks
+	         - output directory accessibility
+	         - entry scene file existence
+
+  */
+
   private validateConfiguration(config: BuildConfiguration): string[] {
     const errors: string[] = [];
 
+    /* validate required configuration fields */
     if (!config.outputDirectory || config.outputDirectory.trim() === '') {
       errors.push('Output directory is required');
     }
@@ -92,11 +211,12 @@ class BuildManager {
       errors.push('No project loaded');
     }
 
-    /* VALIDATE PATHS */
+    /* validate file system paths and accessibility */
     if (config.outputDirectory) {
       try {
         const outputDir = path.resolve(config.outputDirectory);
         const parentDir = path.dirname(outputDir);
+
         if (!fs.existsSync(parentDir)) {
           errors.push('Output directory parent does not exist');
         }
@@ -105,9 +225,10 @@ class BuildManager {
       }
     }
 
-    /* VALIDATE ENTRY SCENE EXISTS */
+    /* verify entry scene file exists in project */
     if (config.entryScene && this.projectPath) {
       const scenePath = path.join(this.projectPath, 'scenes', `${config.entryScene}.scene`);
+
       if (!fs.existsSync(scenePath)) {
         errors.push('Entry scene file does not exist');
       }
@@ -116,11 +237,25 @@ class BuildManager {
     return errors;
   }
 
-  /**
-   * buildProject()
-   *
-   * Builds project with specified configuration.
-   */
+  /*
+
+           buildProject()
+	         ---
+	         orchestrates complete project build pipeline.
+
+	         executes full build process including validation,
+	         compilation, asset bundling, and output generation.
+	         provides progress callbacks for UI updates and
+	         returns comprehensive build results.
+
+	         build stages:
+	         1. configuration validation
+	         2. output directory preparation
+	         3. source compilation (WorldC, TypeScript, AssemblyScript)
+	         4. asset bundling and script copying
+	         5. HTML generation and manifest creation
+
+  */
   public async buildProject(
     config: BuildConfiguration,
     onProgress?: BuildCallback
@@ -217,11 +352,17 @@ class BuildManager {
     }
   }
 
-  /**
-   * prepareOutputDirectory()
-   *
-   * Creates and cleans output directory.
-   */
+  /*
+
+           prepareOutputDirectory()
+	         ---
+	         prepares output directory for build operation.
+
+	         creates output directory structure and cleans
+	         existing content if necessary. ensures proper
+	         permissions and directory hierarchy exists.
+
+  */
   private async prepareOutputDirectory(
     config: BuildConfiguration,
     onProgress?: BuildCallback
@@ -262,11 +403,17 @@ class BuildManager {
     logger.debug('BUILD', 'Output directory prepared', { outputDir });
   }
 
-  /**
-   * compileWorldC()
-   *
-   * Compiles WorldC source files to TypeScript/JavaScript.
-   */
+  /*
+
+           compileWorldC()
+	         ---
+	         compiles WorldC source files to target format.
+
+	         invokes WorldC compiler with project-specific
+	         configuration and optimization settings.
+	         handles compiler output and error reporting.
+
+  */
   private async compileWorldC(
     config: BuildConfiguration,
     onProgress?: BuildCallback
@@ -352,11 +499,17 @@ class BuildManager {
     });
   }
 
-  /**
-   * compileTypeScript()
-   *
-   * Compiles TypeScript source files to JavaScript.
-   */
+  /*
+
+           compileTypeScript()
+	         ---
+	         compiles TypeScript source files to JavaScript.
+
+	         uses TypeScript compiler with project configuration
+	         to generate JavaScript output with optional
+	         source maps and minification.
+
+  */
   private async compileTypeScript(
     config: BuildConfiguration,
     onProgress?: BuildCallback
@@ -415,11 +568,17 @@ class BuildManager {
     });
   }
 
-  /**
-   * buildAssemblyScript()
-   *
-   * Builds AssemblyScript modules to WebAssembly.
-   */
+  /*
+
+           buildAssemblyScript()
+	         ---
+	         builds AssemblyScript files to WebAssembly modules.
+
+	         compiles AssemblyScript source to optimized
+	         WebAssembly binary format with proper
+	         JavaScript binding generation.
+
+  */
   private async buildAssemblyScript(
     config: BuildConfiguration,
     onProgress?: BuildCallback
@@ -489,11 +648,17 @@ class BuildManager {
     });
   }
 
-  /**
-   * bundleAssets()
-   *
-   * Copies and bundles project assets.
-   */
+  /*
+
+           bundleAssets()
+	         ---
+	         bundles project assets for distribution.
+
+	         copies and processes asset files including
+	         textures, models, audio, and configuration
+	         files to output directory.
+
+  */
   private async bundleAssets(
     config: BuildConfiguration,
     onProgress?: BuildCallback
@@ -514,11 +679,17 @@ class BuildManager {
     logger.debug('BUILD', 'Assets bundled', { assetsOutputDir });
   }
 
-  /**
-   * copyScripts()
-   *
-   * Copies project scripts to output directory.
-   */
+  /*
+
+           copyScripts()
+	         ---
+	         copies script files to build output.
+
+	         transfers compiled JavaScript and other
+	         script files to final output location
+	         with proper directory structure.
+
+  */
   private async copyScripts(config: BuildConfiguration, onProgress?: BuildCallback): Promise<void> {
     onProgress?.({
       stage: 'Copying Scripts',
@@ -544,11 +715,17 @@ class BuildManager {
     logger.debug('BUILD', 'Scripts and scenes copied');
   }
 
-  /**
-   * generateIndexHtml()
-   *
-   * Generates index.html file for the build.
-   */
+  /*
+
+           generateIndexHtml()
+	         ---
+	         generates main HTML entry point file.
+
+	         creates HTML document with proper script
+	         references, asset links, and runtime
+	         initialization code.
+
+  */
   private async generateIndexHtml(
     config: BuildConfiguration,
     onProgress?: BuildCallback
@@ -567,11 +744,17 @@ class BuildManager {
     logger.debug('BUILD', 'index.html generated', { htmlPath });
   }
 
-  /**
-   * copyRuntimeFiles()
-   *
-   * Copies runtime files required for the application.
-   */
+  /*
+
+           copyRuntimeFiles()
+	         ---
+	         copies runtime support files to output.
+
+	         transfers WorldEnv runtime libraries,
+	         engine files, and support modules
+	         required for project execution.
+
+  */
   private async copyRuntimeFiles(
     config: BuildConfiguration,
     onProgress?: BuildCallback
@@ -597,11 +780,17 @@ class BuildManager {
     logger.debug('BUILD', 'Runtime files copied');
   }
 
-  /**
-   * generateManifest()
-   *
-   * Generates build manifest with configuration and metadata.
-   */
+  /*
+
+           generateManifest()
+	         ---
+	         generates build manifest and metadata.
+
+	         creates manifest file containing build
+	         information, asset references, and
+	         runtime configuration data.
+
+  */
   private async generateManifest(
     config: BuildConfiguration,
     onProgress?: BuildCallback
@@ -630,11 +819,17 @@ class BuildManager {
     logger.debug('BUILD', 'Build manifest generated', { manifestPath });
   }
 
-  /**
-   * copyDirectory()
-   *
-   * Recursively copies directory contents.
-   */
+  /*
+
+           copyDirectory()
+	         ---
+	         recursively copies directory structure.
+
+	         performs deep copy of source directory
+	         to destination with proper error handling
+	         and permission preservation.
+
+  */
   private async copyDirectory(source: string, destination: string): Promise<void> {
     if (!fs.existsSync(destination)) {
       fs.mkdirSync(destination, { recursive: true });
@@ -654,11 +849,17 @@ class BuildManager {
     }
   }
 
-  /**
-   * getIndexHtmlTemplate()
-   *
-   * Returns HTML template for the built application.
-   */
+  /*
+
+           getIndexHtmlTemplate()
+	         ---
+	         returns HTML template for index file generation.
+
+	         provides base HTML structure with proper
+	         meta tags, script references, and runtime
+	         initialization boilerplate.
+
+  */
   private getIndexHtmlTemplate(config: BuildConfiguration): string {
     return `<!DOCTYPE html>
 <html lang="en">
@@ -720,11 +921,16 @@ class BuildManager {
 </html>`;
   }
 
-  /**
-   * cancelBuild()
-   *
-   * Cancels current build operation.
-   */
+  /*
+
+           cancelBuild()
+	         ---
+	         cancels currently running build operation.
+
+	         terminates active build process and cleans
+	         up resources. safe to call multiple times.
+
+  */
   public cancelBuild(): void {
     if (this.currentBuild) {
       this.currentBuild.kill();
@@ -733,11 +939,16 @@ class BuildManager {
     }
   }
 
-  /**
-   * openBuildLocation()
-   *
-   * Opens build output directory in file explorer.
-   */
+  /*
+
+           openBuildLocation()
+	         ---
+	         opens build output location in system file explorer.
+
+	         launches system file manager to display
+	         build output directory for user inspection.
+
+  */
   public async openBuildLocation(outputPath: string): Promise<void> {
     const { shell } = require('electron');
     await shell.openPath(outputPath);
@@ -745,4 +956,11 @@ class BuildManager {
   }
 }
 
+/* singleton instance for application-wide build management */
 export const buildManager = new BuildManager();
+
+/*
+	====================================================================
+             --- EOF ---
+	====================================================================
+*/

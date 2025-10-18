@@ -1,39 +1,97 @@
 /*
+   ===============================================================
+   WORLDEDIT VIEWPORT PANEL COMPONENT
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Viewport Panel Component
- *
- * Main viewport panel for 3D/2D scene rendering using Three.js and Pixi.js.
- * Provides the primary workspace for scene editing and visualization.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { useEditorState } from '../../context/EditorStateContext';
-import { useTheme } from '../../context/ThemeContext';
-import { useUndoRedo } from '../../hooks/useUndoRedo';
-import { ViewportManager, ViewportMode, ViewportStats } from '../../viewport/ViewportManager';
-import { CameraPreset } from '../../viewport/EditorCamera';
-import { ViewportToolbar } from '../ui/ViewportToolbar';
-import { createDemoScene, animateObjects } from '../../viewport/DemoContent';
-import { EngineInterface } from '../../engine/EngineInterface';
-import { ManipulatorManager, ManipulatorMode, TransformSpace } from '../../viewport/manipulators';
-import { Button } from '../ui/Button';
-import { NewProjectDialog } from '../dialogs/NewProjectDialog';
-import { RecentProjectsDialog } from '../dialogs/RecentProjectsDialog';
-import { ProjectData } from '../../../shared/types';
-import * as THREE from 'three';
-import * as PIXI from 'pixi.js';
+import React, { useRef, useEffect, useState, useCallback } from 'react'; /* REACT CORE */
+import { useEditorState } from '../../context/EditorStateContext'; /* EDITOR STATE */
+import { useTheme } from '../../context/ThemeContext'; /* THEMING */
+import { useUndoRedo } from '../../hooks/useUndoRedo'; /* UNDO/REDO */
+import {
+  ViewportManager,
+  ViewportMode,
+  ViewportStats
+} from '../../viewport/ViewportManager'; /* VIEWPORT MANAGEMENT */
+import { CameraPreset } from '../../viewport/EditorCamera'; /* CAMERA CONTROLS */
+import { ViewportToolbar } from '../ui/ViewportToolbar'; /* TOOLBAR */
+import { createDemoScene, animateObjects } from '../../viewport/DemoContent'; /* DEMO CONTENT */
+import { EngineInterface } from '../../engine/EngineInterface'; /* ENGINE INTEGRATION */
+import {
+  ManipulatorManager,
+  ManipulatorMode,
+  TransformSpace
+} from '../../viewport/manipulators'; /* TRANSFORM TOOLS */
+import { Button } from '../ui/Button'; /* UI COMPONENTS */
+import { NewProjectDialog } from '../dialogs/NewProjectDialog'; /* PROJECT DIALOGS */
+import { RecentProjectsDialog } from '../dialogs/RecentProjectsDialog'; /* PROJECT DIALOGS */
+import { ProjectData } from '../../../shared/types'; /* TYPE DEFINITIONS */
+import * as THREE from 'three'; /* 3D RENDERING */
+import * as PIXI from 'pixi.js'; /* 2D RENDERING */
 
-/**
- * ViewportPanel component
- *
- * Central viewport for scene rendering and editing.
- * Manages 2D/3D rendering with full editor integration.
- */
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         AssetDropData
+	       ---
+	       interface definition for asset drag-and-drop operations
+	       from the asset browser panel to the viewport. this
+	       provides structured data format when users drag assets
+	       from the browser into the scene for entity creation.
+
+*/
+
+interface AssetDropData {
+  type: 'asset';
+
+  asset: {
+    name: string /* asset filename */;
+    type: string /* asset category (image, model, etc) */;
+    path: string /* full filesystem path */;
+    relativePath: string /* project-relative path */;
+  };
+}
+
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         ViewportPanel()
+	       ---
+	       primary viewport component for 3D and 2D scene rendering.
+	       this is the central workspace where users manipulate
+	       game objects, camera controls, and visual elements.
+
+	       the viewport integrates Three.js for 3D rendering and
+	       Pixi.js for 2D operations. it handles asset drops from
+	       the browser, transform gizmos for object manipulation,
+	       and provides real-time visual feedback for all editor
+	       operations.
+
+*/
+
 export function ViewportPanel(): JSX.Element {
   console.log('[VIEWPORT PANEL] Component mounting...');
   const { state, actions } = useEditorState();
@@ -57,11 +115,14 @@ export function ViewportPanel(): JSX.Element {
   const [isOpeningProject, setIsOpeningProject] = useState(false);
 
   /* MANIPULATOR STATE */
-  const manipulatorManagerRef = useRef<ManipulatorManager | null>(null);
   const [manipulatorMode, setManipulatorMode] = useState<ManipulatorMode>(
     ManipulatorMode.Translate
   );
   const [transformSpace, setTransformSpace] = useState<TransformSpace>(TransformSpace.World);
+  const manipulatorManagerRef = useRef<ManipulatorManager | null>(null);
+
+  /* SELECTION STATE */
+  const [selectedEntities, setSelectedEntities] = useState<string[]>([]);
 
   /* VIEWPORT SETTINGS STATE */
   const [showGrid, setShowGrid] = useState(true);
@@ -203,6 +264,31 @@ export function ViewportPanel(): JSX.Element {
     viewportManagerRef.current.onSelectionChange((objects) => {
       /* UPDATE EDITOR STATE WITH SELECTED OBJECTS */
       console.log('[VIEWPORT] Selection changed:', objects);
+
+      /* EXTRACT ENTITY IDS FROM SELECTED OBJECTS */
+      const entityIds: string[] = [];
+      const selectionSystem = viewportManagerRef.current?.getSelectionSystem();
+
+      if (selectionSystem) {
+        objects.forEach((obj) => {
+          const entityRenderingSystem = viewportManagerRef.current?.getEntityRenderingSystem();
+          if (entityRenderingSystem) {
+            const entity = entityRenderingSystem.getEntityFromVisual(obj);
+            if (entity) {
+              entityIds.push(entity.id);
+            }
+          }
+        });
+      }
+
+      setSelectedEntities(entityIds);
+
+      /* UPDATE HIERARCHY SELECTION */
+      if (entityIds.length > 0) {
+        actions.selectEntities(entityIds);
+      } else {
+        actions.clearSelection();
+      }
     });
 
     /* APPLY INITIAL SETTINGS */
@@ -375,6 +461,127 @@ export function ViewportPanel(): JSX.Element {
   }, []);
 
   /**
+   * handleAssetDrop()
+   *
+   * Handle asset drag-and-drop from asset browser to viewport.
+   */
+  const handleAssetDrop = useCallback(
+    async (event: React.DragEvent<HTMLCanvasElement>): Promise<void> => {
+      event.preventDefault();
+
+      try {
+        const assetDataString = event.dataTransfer.getData('application/worldedit-asset');
+        if (!assetDataString) return;
+
+        const assetData: AssetDropData = JSON.parse(assetDataString);
+        if (assetData.type !== 'asset') return;
+
+        console.log('[VIEWPORT] Asset dropped:', assetData.asset);
+
+        // Create entity from asset based on type
+        await createEntityFromAsset(assetData.asset);
+      } catch (error) {
+        console.error('[VIEWPORT] Failed to handle asset drop:', error);
+      }
+    },
+    []
+  );
+
+  /**
+   * createEntityFromAsset()
+   *
+   * Create appropriate entity from dropped asset.
+   */
+  const createEntityFromAsset = useCallback(
+    async (asset: AssetDropData['asset']): Promise<void> => {
+      if (!viewportManagerRef.current) return;
+
+      // Get mouse position in viewport for entity placement
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      // Create entity based on asset type
+      let entityName = asset.name.replace(/\.[^/.]+$/, ''); // Remove extension
+      let componentData: any = {};
+
+      switch (asset.type) {
+        case 'image':
+          entityName = `Sprite_${entityName}`;
+          componentData = {
+            SpriteComponent: {
+              texture: asset.relativePath,
+              color: 0xffffff,
+              alpha: 1.0
+            }
+          };
+          break;
+
+        case 'model':
+          entityName = `Model_${entityName}`;
+          componentData = {
+            MeshRendererComponent: {
+              mesh: asset.relativePath,
+              material: 'default',
+              castShadows: true,
+              receiveShadows: true
+            }
+          };
+          break;
+
+        case 'audio':
+          entityName = `Audio_${entityName}`;
+          componentData = {
+            AudioSourceComponent: {
+              audioClip: asset.relativePath,
+              volume: 1.0,
+              pitch: 1.0,
+              loop: false,
+              playOnStart: false
+            }
+          };
+          break;
+
+        default:
+          console.warn('[VIEWPORT] Unsupported asset type for entity creation:', asset.type);
+          return;
+      }
+
+      // TODO: Create entity through scene manager
+      // This requires integration with the entity creation system
+      console.log('[VIEWPORT] Would create entity:', {
+        name: entityName,
+        components: componentData,
+        asset: asset
+      });
+
+      // For now, just add the asset to the viewport's entity rendering system
+      if (viewportManagerRef.current.getEntityRenderingSystem()) {
+        // Create a mock entity for demonstration
+        const mockEntity = {
+          id: `entity_${Date.now()}`,
+          name: entityName,
+          type: asset.type,
+          assetPath: asset.path,
+          relativePath: asset.relativePath
+        };
+
+        console.log('[VIEWPORT] Mock entity created from asset:', mockEntity);
+      }
+    },
+    []
+  );
+
+  /**
+   * handleDragOver()
+   *
+   * Handle drag over event to enable drop.
+   */
+  const handleDragOver = useCallback((event: React.DragEvent<HTMLCanvasElement>): void => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+  }, []);
+
+  /**
    * handleCameraPreset()
    *
    * Set camera to predefined position.
@@ -482,49 +689,130 @@ export function ViewportPanel(): JSX.Element {
    *
    * Handle canvas click for object selection.
    */
-  const handleCanvasClick = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!viewportManagerRef.current) {
-        return;
-      }
+  const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!viewportManagerRef.current) {
+      return;
+    }
 
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (!rect) {
-        return;
-      }
+    /* SELECTION IS NOW HANDLED BY INTEGRATED SELECTION SYSTEM */
+    /* NO ADDITIONAL HANDLING NEEDED - EVENTS WILL BUBBLE UP */
+    console.log('[VIEWPORT] Canvas clicked - selection handled by integrated systems');
+  }, []);
 
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
+  /**
+   * handleEntityUpdated()
+   *
+   * Handle entity updates from editor state.
+   */
+  const handleEntityUpdated = useCallback((entityId: string) => {
+    if (viewportManagerRef.current) {
+      viewportManagerRef.current.updateEntity(entityId);
+    }
+  }, []);
 
-      /* PERFORM OBJECT PICKING */
-      if (currentMode === '3d') {
-        const intersections = viewportManagerRef.current.raycast(x, y);
-        if (intersections.length > 0) {
-          viewportManagerRef.current.selectObject(intersections[0].object);
-        } else {
-          viewportManagerRef.current.clearSelection();
-        }
-      } else {
-        const hitObject = viewportManagerRef.current.hitTest(x, y);
-        if (hitObject) {
-          viewportManagerRef.current.selectObject(hitObject);
-        } else {
-          viewportManagerRef.current.clearSelection();
-        }
+  /**
+   * handleEntityAdded()
+   *
+   * Handle entity additions from editor state.
+   */
+  const handleEntityAdded = useCallback(
+    (entity: { id: string; name: string; [key: string]: any }) => {
+      if (viewportManagerRef.current) {
+        viewportManagerRef.current.addEntity(entity);
       }
     },
-    [currentMode]
+    []
   );
 
   /**
-   * handleContextMenu()
+   * handleEntityRemoved()
+   *
+   * Handle entity removal from editor state.
+   */
+  const handleEntityRemoved = useCallback((entityId: string) => {
+    if (viewportManagerRef.current) {
+      viewportManagerRef.current.removeEntity(entityId);
+    }
+  }, []);
+
+  /**
+   * handleFocusOnSelection()
+   *
+   * Focus camera on currently selected objects.
+   */
+  const handleFocusOnSelection = useCallback(() => {
+    if (viewportManagerRef.current) {
+      viewportManagerRef.current.focusOnSelection();
+    }
+  }, []);
+
+  /* SYNC WITH EDITOR STATE CHANGES */
+  useEffect(() => {
+    if (state.scene.hasScene) {
+      /* UPDATE ENTITIES IN VIEWPORT WHEN SCENE CHANGES */
+      console.log('[VIEWPORT] Scene state changed, updating entities');
+    }
+  }, [state.scene.hasScene, handleEntityAdded]);
+
+  /* SYNC SELECTION FROM HIERARCHY TO VIEWPORT */
+  useEffect(() => {
+    if (state.selectedEntities.length > 0 && viewportManagerRef.current) {
+      const selectionSystem = viewportManagerRef.current.getSelectionSystem();
+      const entityRenderingSystem = viewportManagerRef.current.getEntityRenderingSystem();
+
+      if (selectionSystem && entityRenderingSystem) {
+        const visual = entityRenderingSystem.getVisualForEntity(state.selectedEntities[0]);
+        if (visual && 'position' in visual) {
+          selectionSystem.setSelection([visual as THREE.Object3D]);
+        }
+      }
+    }
+  }, [state.selectedEntities]);
+
+  /**
+   * handleSelectedEntitiesChange()
+   *
+   * Handle changes to selected entities for viewport integration.
+   */
+  const handleSelectedEntitiesChange = useCallback(() => {
+    console.log('[VIEWPORT] Selected entities updated:', selectedEntities);
+
+    /* SYNC WITH HIERARCHY PANEL */
+    if (selectedEntities.length > 0) {
+      actions.selectEntities(selectedEntities);
+    }
+  }, [selectedEntities, actions]);
+
+  /**
+   * handleSelectionChange()
+   *
+   * Handle selection changes from viewport to hierarchy.
+   */
+  const handleSelectionChange = useCallback(
+    (entityIds: string[]) => {
+      setSelectedEntities(entityIds);
+      if (entityIds.length > 0) {
+        actions.selectEntities(entityIds);
+      }
+    },
+    [actions]
+  );
+
+  /* USE EFFECT TO HANDLE SELECTED ENTITIES CHANGES */
+  useEffect(() => {
+    handleSelectedEntitiesChange();
+  }, [handleSelectedEntitiesChange]);
+
+  /* CANVAS CLICK IS NOW HANDLED BY INTEGRATED SELECTION SYSTEM */
+
+  /**
+   * handleContextMenuCanvas()
    *
    * Handle viewport context menu.
    */
-  const handleContextMenu = useCallback((e: React.MouseEvent): void => {
+  const handleContextMenuCanvas = useCallback((e: React.MouseEvent): void => {
     e.preventDefault();
     /* TODO: Show viewport context menu */
-    console.log('[VIEWPORT] Context menu at', e.clientX, e.clientY);
   }, []);
 
   /**
@@ -739,8 +1027,10 @@ export function ViewportPanel(): JSX.Element {
           <canvas
             ref={canvasRef}
             style={canvasStyle}
-            onContextMenu={handleContextMenu}
+            onContextMenu={handleContextMenuCanvas}
             onClick={handleCanvasClick}
+            onDrop={handleAssetDrop}
+            onDragOver={handleDragOver}
           />
 
           {/* NO PROJECT OVERLAY - WELCOME SCREEN */}

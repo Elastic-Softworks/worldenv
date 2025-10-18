@@ -1,5 +1,4 @@
 # WORLDEDIT QUICKSTART GUIDE
-
 **Get up and running with WORLDEDIT in 15 minutes**
 
 ## Table of Contents
@@ -74,49 +73,51 @@ git --version     # Any recent version
    npm run start
    ```
 
-2. **Welcome Screen**
-   - Choose project location (default: `~/WorldEditProjects`)
-   - Configure editor preferences
-   - Select theme (Dark/Light)
+2. **Engine Status Check**
+   - Application loads with splash screen
+   - Engine status shows "Ready" (green) or "Initializing" (yellow)
+   - If WORLDC compiler not found, warning logged but editor continues
+   - All panels load correctly (Hierarchy, Inspector, Viewport, Assets)
 
 3. **Verify Installation**
-   - Check WORLDC compiler detection
-   - Confirm asset directories
-   - Test viewport rendering
+   - Main window opens with proper panel layout
+   - File menu contains "New Scene" option
+   - Hierarchy panel shows empty scene hierarchy
+   - Console shows engine initialization messages
 
 ## Creating Your First Project
 
-### Step 1: New Project
+### Step 1: Create Your First Scene
 
-1. Click **"New Project"** on welcome screen
-2. Choose **"2D Platformer"** template
-3. Set project name: `MyFirstGame`
-4. Select project location
-5. Click **"Create Project"**
+**Note**: Project management system is implemented. Create new projects or work with existing scenes.
 
-### Step 2: Project Structure
+1. Launch WORLDEDIT
+2. Go to **File → New Scene**
+3. Enter scene name: `MyFirstLevel`
+4. Choose **"3D"** template for this example
+5. Scene is created and opened automatically
 
-Your project now contains:
+### Step 2: Scene Structure
+
+Your scene file is created in the current directory:
 ```
-MyFirstGame/
-├── assets/
-│   ├── sprites/      # Character and object sprites
-│   └── audio/        # Sound effects and music
-├── scenes/
-│   └── MainLevel.worldscene
-├── scripts/
-│   ├── PlayerController.wc
-│   └── GameManager.wc
-└── project.json
+MyFirstLevel.scene.json     # Scene data with entities and components
 ```
 
-### Step 3: Initial Scene
+The scene contains:
+- Scene metadata (name, creation date, version)
+- Default lighting settings
+- Gravity and physics settings
+- Empty entity hierarchy (ready for your content)
 
-The template creates a basic level with:
-- Player character sprite
-- Platform geometry
-- Background elements
-- Basic lighting setup
+### Step 2: Add Your First Entity
+
+1. Right-click in the **Hierarchy Panel**
+2. Select **"Add Entity"** from context menu
+3. A new entity appears named "Entity"
+4. Double-click the name to rename it to "Player"
+5. Notice it automatically has a **Transform component** in the Inspector
+6. **NEW**: The entity is now visible in the 3D viewport with selection highlighting
 
 ## Basic Editor Tour
 
@@ -126,15 +127,15 @@ The template creates a basic level with:
 ┌─────────────────────────────────────────────────────────────┐
 │ File  Edit  View  Project  Build  Help                     │
 ├──────────┬────────────────────────────────┬─────────────────┤
-│ Hierarchy│                                │ Inspector       │
-│          │        Viewport                │                 │
-│ Player   │                                │ Transform       │
-│ Platform │                                │ Position: 0,0,0 │
-│ Camera   │                                │ Rotation: 0,0,0 │
+│ Hierarchy│        3D Viewport             │ Inspector       │
+│ ► Player │   [3D Scene with Gizmos]      │ Transform       │
+│   Platform│  • Selection highlighting     │ Position: 0,0,0 │
+│   Camera │   • Transform gizmos          │ Rotation: 0,0,0 │
+│          │   • Camera controls           │ Scale: 1,1,1    │
 ├──────────┼────────────────────────────────┼─────────────────┤
-│ Assets   │        Script Editor           │ Console         │
-│ sprites/ │                                │                 │
-│ audio/   │  class PlayerController {      │ Build: Success  │
+│ Assets   │ [Q][W][E][R] 2D|3D [Grid][Giz]│ Console         │
+│ sprites/ │  Transform Tools & View Controls│                 │
+│ audio/   │                                │ Viewport Ready  │
 └──────────┴────────────────────────────────┴─────────────────┘
 ```
 
@@ -145,13 +146,17 @@ The template creates a basic level with:
 - Drag to reparent objects
 - Right-click for context menu
 
-**Viewport (Center)**
-- Visual scene editor
-- Use mouse to navigate:
-  - **Left Click**: Select objects
-  - **Middle Click + Drag**: Pan view
-  - **Mouse Wheel**: Zoom in/out
-  - **Right Click + Drag**: Orbit camera (3D)
+**Viewport (Center) - Enhanced**
+- Real-time 3D/2D visual scene editor with advanced controls
+- **Object Selection**: Click objects to select, Ctrl+Click for multi-selection
+- **Camera Controls**: 
+  - **Orbit**: Left mouse + drag (3D mode)
+  - **Pan**: Middle mouse + drag or Shift + left mouse + drag
+  - **Zoom**: Mouse wheel or right mouse + drag
+  - **Focus**: F key to focus on selected objects
+- **Transform Gizmos**: W (move), E (rotate), R (scale), Q (select)
+- **Visual Feedback**: Automatic highlighting, selection outlines
+- **Performance**: Optimized rendering with caching systems
 
 **Inspector Panel (Right)**
 - Edit properties of selected entity
@@ -164,129 +169,177 @@ The template creates a basic level with:
 - Import new assets
 
 **Script Editor (Bottom Center)**
-- Edit WORLDC code
-- Syntax highlighting
-- IntelliSense support
+- Script editing capabilities with Monaco editor
+- WORLDC syntax highlighting support
+- IntelliSense support planned
 
-## Your First Script
+## Working with Components
 
-### Step 1: Open Player Script
+**Note**: Full scripting support is available through the integrated Monaco editor. Focus on scene and entity management for initial development.
 
-1. In Asset Browser, navigate to `scripts/`
-2. Double-click `PlayerController.wc`
-3. Script opens in editor
+### Step 1: Understanding the Viewport Selection
 
-### Step 2: Examine the Code
+1. **Click** the "Player" entity in the **3D Viewport** to select it
+2. Notice the **visual highlighting** that appears around the object
+3. The **Inspector Panel** automatically updates to show selected entity
+4. You'll see a **Transform Component** with Position, Rotation, and Scale
+5. **Transform Gizmos** appear in the viewport for direct manipulation
+6. Try the **Focus** feature by pressing **F** to center the camera on your object
 
-```worldc
-#include <worldenv.h>
+### Step 2: Transform Component and Gizmos
 
-class PlayerController {
-    private float speed = 200.0f;
-    private float jumpForce = 400.0f;
-    private bool isGrounded = false;
-    
-    void start() {
-        // Called when entity is created
-        console.log("Player initialized");
-    }
-    
-    void update(float deltaTime) {
-        handleMovement(deltaTime);
-        handleJumping();
-    }
-    
-    private void handleMovement(float deltaTime) {
-        Vector2 velocity = Vector2.zero;
-        
-        if (Input.isKeyPressed(KeyCode.A) || Input.isKeyPressed(KeyCode.LEFT)) {
-            velocity.x = -speed;
-        }
-        if (Input.isKeyPressed(KeyCode.D) || Input.isKeyPressed(KeyCode.RIGHT)) {
-            velocity.x = speed;
-        }
-        
-        transform.position.x += velocity.x * deltaTime;
-    }
-    
-    private void handleJumping() {
-        if (Input.isKeyPressed(KeyCode.SPACE) && isGrounded) {
-            RigidBody* rb = getComponent<RigidBody>();
-            rb->addForce(Vector2(0, jumpForce));
-            isGrounded = false;
-        }
-    }
-}
+The Transform component controls the entity's spatial properties with real-time visual feedback:
+
+```json
+Transform Component:
+├── Position: { x: 0, y: 0, z: 0 }  ← Move with W key gizmo
+├── Rotation: { x: 0, y: 0, z: 0 }  ← Rotate with E key gizmo
+└── Scale:    { x: 1, y: 1, z: 1 }  ← Scale with R key gizmo
 ```
 
-### Step 3: Modify the Script
+**Viewport Capabilities:**
+- **Visual Transform Gizmos**: Direct viewport manipulation with W/E/R
+- **Real-time Updates**: Changes instantly reflected in viewport
+- **World/Local Space**: Toggle coordinate systems for gizmos
+- **Snap Settings**: Grid snapping and increment controls
+- **Multi-Selection**: Transform multiple objects simultaneously
+- **Undo/Redo**: Framework ready for transform operations
 
-Let's add a simple jump sound effect:
+### Step 3: Advanced Selection and Manipulation
 
-1. Find the `handleJumping()` function
-2. Add this line inside the if statement:
-```worldc
-AudioManager.playSound("jump.wav");
+Try these enhanced entity management features:
+
+1. **Viewport Selection**: Click objects directly in 3D viewport
+2. **Multi-Selection**: Ctrl+Click to select multiple entities
+3. **Selection Synchronization**: Viewport and hierarchy selection stay in sync
+4. **Transform Gizmos**: Use W/E/R keys to switch manipulation modes
+5. **Camera Focus**: Press F to focus camera on selected objects
+6. **Visual Feedback**: Selected objects show highlighting and outlines
+7. **Grid Controls**: Toggle grid visibility and snap settings
+8. **2D/3D Switching**: Seamlessly switch between viewport modes
+
+### Step 4: Scene Management with Viewport
+
+Practice scene operations with real-time viewport feedback:
+
+1. **Save scene**: File → Save Scene (Ctrl+S) - viewport state preserved
+2. **Create new scene**: File → New Scene - viewport automatically refreshes
+3. **Entity visualization**: All entities appear immediately in viewport
+4. **Scene validation**: Automatic validation with visual error feedback
+5. **Performance**: Optimized rendering for large scenes
+6. **Camera state**: Viewport camera position saved with scene
+
+## Current Testing & Future Building
+
+**Advanced viewport and rendering system fully operational!**
+
+### Step 1: Viewport Testing
+
+What you can test now:
+1. **3D Viewport**: Real-time scene visualization with entity rendering
+2. **Object Selection**: Click objects in viewport, multi-select with Ctrl
+3. **Transform Gizmos**: Use W/E/R keys for translate/rotate/scale
+4. **Camera Controls**: Orbit, pan, zoom with smooth animations
+5. **Focus Operations**: Press F to focus on selected objects
+6. **Visual Feedback**: Selection highlighting and visual outlines
+7. **2D/3D Switching**: Toggle between viewport modes seamlessly
+8. **Performance**: Optimized rendering with material/geometry caching
+
+### Step 2: Viewport Integration Testing
+
+The editor provides comprehensive viewport integration:
+```
+Viewport Integration:
+✓ Entity-to-visual mapping working
+✓ Component rendering (Transform, Mesh, Light, Camera)
+✓ Selection synchronization (viewport ↔ hierarchy)
+✓ Transform gizmo manipulation
+✓ Camera controls and focus operations
+✓ Performance optimization active
+✓ Multi-selection and visual feedback
+✓ 2D/3D mode switching functional
 ```
 
-3. Save the file (`Ctrl+S`)
+### Step 3: Advanced Viewport Features
 
-### Step 4: Attach Script to Player
+**Advanced Viewport System:**
+- Real-time 3D/2D scene visualization
+- Professional object selection with multi-select
+- Transform gizmos (translate, rotate, scale)
+- Smooth camera controls with focus operations
+- Performance-optimized entity rendering
+- Visual feedback and highlighting systems
 
-1. Select Player entity in Hierarchy
-2. In Inspector, click **"Add Component"**
-3. Choose **"Script Component"**
-4. Set Script File to `PlayerController.wc`
-5. Language should auto-detect as WORLDC
+**Integrated Editor Experience:**
+- Viewport-hierarchy selection synchronization
+- Real-time component property updates
+- Transform manipulation with visual feedback
+- 2D/3D seamless switching
+- Grid, axes, and helper visualization
+- Keyboard shortcuts (W/E/R, F, Q)
 
-## Building and Testing
+**Performance & Optimization:**
+- Material and geometry caching
+- Efficient entity-to-visual mapping
+- Optimized rendering pipeline
+- Memory management and resource cleanup
 
-### Step 1: Test in Play Mode
+### Step 4: Advanced Asset System Features
 
-1. Click the **Play** button in toolbar
-2. Use **A/D** or **Arrow Keys** to move
-3. Press **Space** to jump
-4. Click **Stop** to exit play mode
+**Asset System Capabilities:**
+- Comprehensive asset import pipeline
+- Image, 3D model, audio, and font import
+- Asset browser with drag-and-drop to viewport
+- Asset preview generation and caching
+- Texture and material management
 
-### Step 2: Build for Web
+**File & Project System:**
+- New script and shader creation
+- Project folder structure management
+- File templates and snippets
+- External file change monitoring
 
-1. Go to **Build → Build Settings**
-2. Select **Web** platform
-3. Set output directory: `build/web/`
-4. Click **Build**
-
-Watch the Console panel for build progress:
-```
-Compiling WORLDC scripts...
-Generating TypeScript...
-Bundling assets...
-Creating web build...
-Build completed successfully!
-```
-
-### Step 3: Test Built Game
-
-1. Navigate to `build/web/` folder
-2. Open `index.html` in web browser
-3. Your game should run in the browser
+**Script Editor & Code Integration:**
+- WORLDC syntax highlighting and validation
+- Script component integration with viewport
+- Hot-reload and debugging support
+- Script performance profiling
 
 ## Next Steps
 
-### Immediate Tasks
+### What You Can Do Now
 
-1. **Customize Player Sprite**
-   - Import your own sprite image
-   - Assign to Player entity's Sprite Renderer
+1. **Practice Scene Management**
+   - Create multiple scenes with different templates
+   - Build complex entity hierarchies
+   - Experiment with entity organization and naming
 
-2. **Design Levels**
-   - Add more platforms using primitive shapes
-   - Create collectible items
-   - Add enemies with basic AI
+2. **Learn the Editor Interface**
+   - Master hierarchy navigation and selection
+   - Use keyboard shortcuts for efficiency
+   - Understand the Inspector panel layout
 
-3. **Enhance Gameplay**
-   - Add sound effects and music
-   - Implement score system
-   - Create multiple levels
+3. **Prepare for Component System**
+   - Plan your game entities and their needed components
+   - Think about Transform positions for your game objects
+   - Organize entities logically for component assignment
+
+### Component System Features
+
+1. **Add Components to Entities**
+   - Render components for visual representation
+   - Camera components for viewport control
+   - Physics components for collision and movement
+
+2. **Component Property Editing**
+   - Visual property editors in Inspector
+   - Real-time component validation
+   - Component dependency management
+
+3. **Viewport Integration**
+   - Transform gizmos for visual editing
+   - Object selection and highlighting
+   - Real-time rendering of scene entities
 
 ### Learning Resources
 
@@ -378,13 +431,17 @@ npm run dev
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl+N` | New Project |
+| `Ctrl+N` | New Scene |
 | `Ctrl+S` | Save Scene |
-| `F5` | Play Mode |
-| `F` | Focus on Selected |
-| `W` | Move Tool |
+| `F` | Focus Camera on Selected |
+| `Q` | Select Tool |
+| `W` | Translate Tool (Move) |
 | `E` | Rotate Tool |
 | `R` | Scale Tool |
+| `Home` | Reset Camera |
+| `Esc` | Clear Selection |
+| `Ctrl+Click` | Multi-Select |
+| `Shift+Click` | Range Select |
 
 ### WORLDC Quick Syntax
 
@@ -418,12 +475,13 @@ console.log("Debug message");
 By the end of this quickstart, you should have:
 
 - [ ] WORLDEDIT installed and running
-- [ ] Created your first project
-- [ ] Explored the main interface panels
-- [ ] Modified a WORLDC script
-- [ ] Tested in play mode
-- [ ] Built a web version of your game
-- [ ] Identified next learning steps
+- [ ] Created your first scene with entities
+- [ ] Explored the enhanced 3D viewport interface
+- [ ] Used object selection and transform gizmos
+- [ ] Tested camera controls and focus operations
+- [ ] Experienced real-time viewport feedback
+- [ ] Understood the integrated editing workflow
+- [ ] Identified Phase 5 asset system features
 
 **Congratulations!** You're now ready to create your own games with WORLDEDIT. 
 

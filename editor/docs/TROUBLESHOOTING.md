@@ -612,6 +612,114 @@ tree project_directory
 dir /s project_directory
 ```
 
+## Core Implementation Issues
+
+### Engine Status Problems
+
+**Problem:** Engine shows "Initializing" or "Error" status.
+
+**Symptoms:**
+- Engine status indicator remains yellow (Initializing)
+- Engine status shows red (Error) 
+- Console shows WORLDC compiler warnings
+- Scene operations may be slow or fail
+
+**Solutions:**
+```bash
+# Check WORLDC compiler installation
+worldc --version
+npm list -g @worldenv/worldc
+
+# If WORLDC not found, install it
+npm install -g @worldenv/worldc
+
+# Restart the editor after installing WORLDC
+# The editor will work without WORLDC but with warnings
+
+# Check console for specific error messages
+# Look for engine initialization logs
+```
+
+### Scene Creation/Loading Issues
+
+**Problem:** Scene operations fail or produce errors.
+
+**Symptoms:**
+- "New Scene" menu item doesn't work
+- Scene files fail to load
+- Scene validation errors
+- Empty hierarchy after scene creation
+
+**Solutions:**
+```bash
+# Check file permissions in working directory
+ls -la *.scene.json
+
+# Verify scene file format
+cat MyScene.scene.json | jq '.'
+
+# Check scene file structure
+# Must have: format, version, metadata, settings, entities
+
+# Clear scene cache and retry
+# Restart editor if scene operations hang
+
+# Check console for IPC communication errors
+```
+
+### Hierarchy Panel Issues
+
+**Problem:** Entity operations don't work properly.
+
+**Symptoms:**
+- "Add Entity" context menu missing
+- Drag-and-drop doesn't work
+- Entity deletion fails
+- Hierarchy doesn't update
+
+**Solutions:**
+```bash
+# Ensure scene is loaded first
+# File → New Scene before adding entities
+
+# Check browser console for React errors
+# F12 → Console tab
+
+# Try refreshing the renderer process
+# Ctrl+R or Cmd+R in editor
+
+# Verify entity selection in hierarchy
+# Single-click to select before operations
+```
+
+### IPC Communication Problems
+
+**Problem:** Main process and renderer communication fails.
+
+**Symptoms:**
+- Operations hang indefinitely
+- "IPC handler not found" errors
+- Blank panels or missing data
+- File operations timeout
+
+**Solutions:**
+```bash
+# Check main process logs
+# Look in terminal where editor was started
+
+# Restart the entire application
+# Close all windows and restart
+
+# Check for conflicting processes
+ps aux | grep electron
+
+# Clear application cache
+# Remove ~/.config/worldedit if exists
+
+# Enable debug mode for detailed IPC logs
+npm run dev
+```
+
 ## WORLDC Language Issues
 
 ### Compilation Errors
@@ -975,6 +1083,48 @@ tar -xzf project-backup-20240101.tar.gz
 # Import project settings
 # File → Import → Project Settings → settings.json
 ```
+
+## Known Limitations
+
+### Features Not Yet Implemented
+
+**Component System:**
+- Add Component functionality in Inspector
+- Component property editors
+- Render, Camera, Light, Physics, Audio components
+
+**Play Mode:**
+- Scene simulation and testing
+- Runtime script execution
+- Physics and collision systems
+
+**Asset Import:**
+- Image, 3D model, audio file import
+- Asset browser functionality
+- Drag-and-drop from assets to scene
+
+**Build System:**
+- Web, Desktop, PWA builds
+- WORLDC compilation pipeline
+- Asset bundling and optimization
+
+### Current Working Features
+
+**Scene Management:**
+- Scene creation with templates (Empty, 2D, 3D)
+- Scene save/load operations (.scene.json format)
+- Scene validation and error recovery
+
+**Entity Management:**
+- Entity creation, deletion, reparenting
+- Hierarchy drag-and-drop operations
+- Multi-selection with Ctrl/Shift
+- Visibility and lock toggles
+
+**Transform Component:**
+- Automatic Transform component on entities
+- Position, Rotation, Scale properties
+- Component system foundation ready
 
 ## Critical UI Issues
 

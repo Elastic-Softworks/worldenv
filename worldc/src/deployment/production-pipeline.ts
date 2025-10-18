@@ -8,7 +8,7 @@
 
          production-pipeline.ts
            ---
-           production pipeline for WORLDSRC Alpha Phase 20.
+           production pipeline for WORLDSRC production system.
 
            orchestrates the entire deployment process across
            multiple target platforms with optimization,

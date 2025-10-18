@@ -1,42 +1,69 @@
 /*
+   ===============================================================
+   WORLDEDIT ASSET MANAGER
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Asset Manager
- *
- * Comprehensive asset management system for project file operations.
- * Handles asset import, organization, metadata, and file system operations.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { promisify } from 'util';
-import { logger } from './logger';
-import { fileSystem } from './file-system';
-import { FileSystemError } from '../shared/types';
+import * as fs from 'fs'; /* FILESYSTEM OPERATIONS */
+import * as path from 'path'; /* PATH UTILITIES */
+import { promisify } from 'util'; /* PROMISE UTILITIES */
+import { logger } from './logger'; /* LOGGING SYSTEM */
+import { fileSystem } from './file-system'; /* FILE SYSTEM ABSTRACTION */
+import { FileSystemError } from '../shared/types'; /* ERROR TYPES */
 
-const _readFileAsync = promisify(fs.readFile);
-const _statAsync = promisify(fs.stat);
-const copyFileAsync = promisify(fs.copyFile);
-const renameAsync = promisify(fs.rename);
+/*
+	===============================================================
+             --- GLOBAL ---
+	===============================================================
+*/
 
-/**
- * Asset item interface
- */
+const _readFileAsync = promisify(fs.readFile); /* ASYNC FILE READING */
+const _statAsync = promisify(fs.stat); /* ASYNC FILE STATS */
+const copyFileAsync = promisify(fs.copyFile); /* ASYNC FILE COPY */
+const renameAsync = promisify(fs.rename); /* ASYNC FILE RENAME */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         AssetItem
+	       ---
+	       comprehensive asset information structure that
+	       represents any file or folder within the project
+	       asset system. contains all metadata needed for
+	       browser display, file operations, and asset
+	       management workflows.
+
+*/
+
 export interface AssetItem {
-  name: string;
-  type: AssetType;
-  path: string;
-  relativePath: string;
-  size: number;
-  modified: Date;
-  created: Date;
-  extension: string;
-  metadata: AssetMetadata;
-  children?: AssetItem[];
+  name: string /* display name of the asset */;
+  type: AssetType /* categorized asset type */;
+  path: string /* absolute filesystem path */;
+  relativePath: string /* project-relative path */;
+  size: number /* file size in bytes */;
+  modified: Date /* last modification timestamp */;
+  created: Date /* creation timestamp */;
+  extension: string /* file extension */;
+  metadata: AssetMetadata /* detailed asset metadata */;
+  children?: AssetItem[] /* child items for directories */;
 }
 
 /**

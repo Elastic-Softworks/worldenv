@@ -517,3 +517,6 @@ export class ManipulatorManager extends THREE.Group {
     return this.manipulators.get(mode) || null;
   }
 }
+
+/* RE-EXPORT TYPES FOR EXTERNAL USE */
+export { ManipulatorMode, TransformSpace } from './BaseManipulator';

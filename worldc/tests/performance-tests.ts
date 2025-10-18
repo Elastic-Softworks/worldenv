@@ -89,7 +89,7 @@ class PerformanceTestSuite {
     console.log(
       '================================================================================'
     );
-    console.log('WORLDSRC PERFORMANCE TEST SUITE - ALPHA PHASE 16');
+    console.log('WORLDSRC PERFORMANCE TEST SUITE');
     console.log(
       '================================================================================'
     );

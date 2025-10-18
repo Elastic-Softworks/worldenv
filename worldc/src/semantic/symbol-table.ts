@@ -1,43 +1,75 @@
 /*
+   ===============================================================
+   WORLDC SYMBOL TABLE
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDSRC Symbol Table
- *
- * Comprehensive symbol table implementation for semantic analysis
- * supporting C, C++, TypeScript hybrid language features including
- * scoped symbol resolution, forward declarations, and template management.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { SourceLocation } from '../error/error-handler';
+import { SourceLocation } from '../error/error-handler'; /* ERROR LOCATION TRACKING */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         SymbolKind
+	       ---
+	       enumeration of all possible symbol types within the
+	       WORLDC language semantic analysis system. covers C,
+	       C++, and TypeScript language constructs for comprehensive
+	       symbol classification and resolution.
+
+*/
 
 export enum SymbolKind {
-  VARIABLE = 'VARIABLE',
-  FUNCTION = 'FUNCTION',
-  CLASS = 'CLASS',
-  INTERFACE = 'INTERFACE',
-  STRUCT = 'STRUCT',
-  ENUM = 'ENUM',
-  NAMESPACE = 'NAMESPACE',
-  TEMPLATE = 'TEMPLATE',
-  TYPEDEF = 'TYPEDEF',
-  PARAMETER = 'PARAMETER',
-  FIELD = 'FIELD',
-  METHOD = 'METHOD',
-  CONSTRUCTOR = 'CONSTRUCTOR',
-  DESTRUCTOR = 'DESTRUCTOR',
-  OPERATOR = 'OPERATOR',
-  LABEL = 'LABEL'
+  VARIABLE = 'VARIABLE' /* local and global variables */,
+  FUNCTION = 'FUNCTION' /* function declarations and definitions */,
+  CLASS = 'CLASS' /* C++ and TypeScript class definitions */,
+  INTERFACE = 'INTERFACE' /* TypeScript interface declarations */,
+  STRUCT = 'STRUCT' /* C and C++ struct definitions */,
+  ENUM = 'ENUM' /* enumeration declarations */,
+  NAMESPACE = 'NAMESPACE' /* namespace and module declarations */,
+  TEMPLATE = 'TEMPLATE' /* C++ template declarations */,
+  TYPEDEF = 'TYPEDEF' /* type alias declarations */,
+  PARAMETER = 'PARAMETER' /* function and method parameters */,
+  FIELD = 'FIELD' /* class and struct member variables */,
+  METHOD = 'METHOD' /* class member functions */,
+  CONSTRUCTOR = 'CONSTRUCTOR' /* class constructor methods */,
+  DESTRUCTOR = 'DESTRUCTOR' /* class destructor methods */,
+  OPERATOR = 'OPERATOR' /* operator overload functions */,
+  LABEL = 'LABEL' /* goto labels and statement labels */,
 }
 
+/*
+
+         SymbolVisibility
+	       ---
+	       access control enumeration for symbols that support
+	       visibility modifiers. follows C++ and TypeScript
+	       access control semantics for member visibility.
+
+*/
+
 export enum SymbolVisibility {
-  PUBLIC = 'PUBLIC',
-  PRIVATE = 'PRIVATE',
-  PROTECTED = 'PROTECTED',
-  INTERNAL = 'INTERNAL'
+  PUBLIC = 'PUBLIC' /* accessible from anywhere */,
+  PRIVATE = 'PRIVATE' /* accessible only within declaring class */,
+  PROTECTED = 'PROTECTED' /* accessible within class hierarchy */,
+  INTERNAL = 'INTERNAL' /* accessible within same module */,
 }
 
 export enum StorageClass {
@@ -48,7 +80,7 @@ export enum StorageClass {
   MUTABLE = 'MUTABLE',
   CONST = 'CONST',
   VOLATILE = 'VOLATILE',
-  THREAD_LOCAL = 'THREAD_LOCAL'
+  THREAD_LOCAL = 'THREAD_LOCAL',
 }
 
 export interface TypeInfo {
@@ -60,8 +92,8 @@ export interface TypeInfo {
   isConst: boolean;
   isVolatile: boolean;
   templateParameters?: TypeInfo[];
-  baseTypes?: TypeInfo[];           /* For inheritance */
-  memberTypes?: Map<string, TypeInfo>; /* For struct/class members */
+  baseTypes?: TypeInfo[] /* For inheritance */;
+  memberTypes?: Map<string, TypeInfo> /* For struct/class members */;
 }
 
 export interface TemplateParameter {
@@ -125,7 +157,7 @@ export enum ScopeType {
   FUNCTION = 'FUNCTION',
   BLOCK = 'BLOCK',
   TEMPLATE = 'TEMPLATE',
-  INTERFACE = 'INTERFACE'
+  INTERFACE = 'INTERFACE',
 }
 
 export class Scope {
@@ -159,7 +191,10 @@ export class Scope {
       }
 
       /* Allow function overloading */
-      if (existing.kind === SymbolKind.FUNCTION && symbol.kind === SymbolKind.FUNCTION) {
+      if (
+        existing.kind === SymbolKind.FUNCTION &&
+        symbol.kind === SymbolKind.FUNCTION
+      ) {
         return this.addOverloadedFunction(existing, symbol);
       }
 
@@ -182,7 +217,12 @@ export class Scope {
     }
 
     /* Check if signatures are different */
-    if (this.areFunctionSignaturesDifferent(existing.signature!, newSymbol.signature!)) {
+    if (
+      this.areFunctionSignaturesDifferent(
+        existing.signature!,
+        newSymbol.signature!
+      )
+    ) {
       /* Store overloads in attributes */
       const overloadKey = `overload_${this.symbols.size}`;
       existing.attributes.set(overloadKey, JSON.stringify(newSymbol));
@@ -195,13 +235,18 @@ export class Scope {
   /**
    * Check if function signatures are different
    */
-  private areFunctionSignaturesDifferent(sig1: FunctionSignature, sig2: FunctionSignature): boolean {
+  private areFunctionSignaturesDifferent(
+    sig1: FunctionSignature,
+    sig2: FunctionSignature
+  ): boolean {
     if (sig1.parameters.length !== sig2.parameters.length) {
       return true;
     }
 
     for (let i = 0; i < sig1.parameters.length; i++) {
-      if (!this.areTypesEqual(sig1.parameters[i].type, sig2.parameters[i].type)) {
+      if (
+        !this.areTypesEqual(sig1.parameters[i].type, sig2.parameters[i].type)
+      ) {
         return true;
       }
     }
@@ -213,12 +258,14 @@ export class Scope {
    * Check if two types are equal
    */
   private areTypesEqual(type1: TypeInfo, type2: TypeInfo): boolean {
-    return type1.name === type2.name &&
-           type1.isPointer === type2.isPointer &&
-           type1.isReference === type2.isReference &&
-           type1.isArray === type2.isArray &&
-           type1.arraySize === type2.arraySize &&
-           type1.isConst === type2.isConst;
+    return (
+      type1.name === type2.name &&
+      type1.isPointer === type2.isPointer &&
+      type1.isReference === type2.isReference &&
+      type1.isArray === type2.isArray &&
+      type1.arraySize === type2.arraySize &&
+      type1.isConst === type2.isConst
+    );
   }
 
   /**
@@ -259,7 +306,9 @@ export class Scope {
       }
 
       /* Find child scope */
-      currentScope = currentScope.children.find(child => child.name === parts[i]);
+      currentScope = currentScope.children.find(
+        (child) => child.name === parts[i]
+      );
       if (!currentScope) {
         return undefined;
       }
@@ -293,7 +342,11 @@ export class Scope {
   /**
    * Create child scope
    */
-  public createChild(type: ScopeType, name: string, location?: SourceLocation): Scope {
+  public createChild(
+    type: ScopeType,
+    name: string,
+    location?: SourceLocation
+  ): Scope {
     return new Scope(type, name, this, location);
   }
 
@@ -301,7 +354,7 @@ export class Scope {
    * Find child scope by name
    */
   public findChild(name: string): Scope | undefined {
-    return this.children.find(child => child.name === name);
+    return this.children.find((child) => child.name === name);
   }
 
   /**
@@ -338,7 +391,9 @@ export class Scope {
 
     /* Protected symbols accessible within same class or derived classes */
     if (symbol.visibility === SymbolVisibility.PROTECTED) {
-      return this.isInSameClass(symbol.scope) || this.isInDerivedClass(symbol.scope);
+      return (
+        this.isInSameClass(symbol.scope) || this.isInDerivedClass(symbol.scope)
+      );
     }
 
     return true;
@@ -400,12 +455,22 @@ export class SymbolTable {
         isReference: false,
         isArray: false,
         isConst: false,
-        isVolatile: false
+        isVolatile: false,
       });
     }
 
     /* WORLDSRC vector types */
-    const vectorTypes = ['vec2', 'vec3', 'vec4', 'ivec2', 'ivec3', 'ivec4', 'quat', 'mat3', 'mat4'];
+    const vectorTypes = [
+      'vec2',
+      'vec3',
+      'vec4',
+      'ivec2',
+      'ivec3',
+      'ivec4',
+      'quat',
+      'mat3',
+      'mat4',
+    ];
     for (const vectorType of vectorTypes) {
       this.addType(vectorType, {
         name: vectorType,
@@ -413,21 +478,56 @@ export class SymbolTable {
         isReference: false,
         isArray: false,
         isConst: false,
-        isVolatile: false
+        isVolatile: false,
       });
     }
 
     /* Standard library functions */
     this.addBuiltinFunction('printf', 'int', [
-      { name: 'format', type: { name: 'char', isPointer: true, isReference: false, isArray: false, isConst: true, isVolatile: false } }
+      {
+        name: 'format',
+        type: {
+          name: 'char',
+          isPointer: true,
+          isReference: false,
+          isArray: false,
+          isConst: true,
+          isVolatile: false,
+        },
+      },
     ]);
 
-    this.addBuiltinFunction('malloc', 'void', [
-      { name: 'size', type: { name: 'size_t', isPointer: false, isReference: false, isArray: false, isConst: false, isVolatile: false } }
-    ], true);
+    this.addBuiltinFunction(
+      'malloc',
+      'void',
+      [
+        {
+          name: 'size',
+          type: {
+            name: 'size_t',
+            isPointer: false,
+            isReference: false,
+            isArray: false,
+            isConst: false,
+            isVolatile: false,
+          },
+        },
+      ],
+      true
+    );
 
     this.addBuiltinFunction('free', 'void', [
-      { name: 'ptr', type: { name: 'void', isPointer: true, isReference: false, isArray: false, isConst: false, isVolatile: false } }
+      {
+        name: 'ptr',
+        type: {
+          name: 'void',
+          isPointer: true,
+          isReference: false,
+          isArray: false,
+          isConst: false,
+          isVolatile: false,
+        },
+      },
     ]);
   }
 
@@ -441,7 +541,7 @@ export class SymbolTable {
       type,
       visibility: SymbolVisibility.PUBLIC,
       location: { line: 0, column: 0, file: '<builtin>' },
-      scope: this.globalScope
+      scope: this.globalScope,
     };
 
     this.globalScope.addSymbol(symbol);
@@ -463,13 +563,13 @@ export class SymbolTable {
         isReference: false,
         isArray: false,
         isConst: false,
-        isVolatile: false
+        isVolatile: false,
       },
       parameters,
       isVirtual: false,
       isOverride: false,
       isFinal: false,
-      isAsync: false
+      isAsync: false,
     };
 
     const symbol: Symbol = {
@@ -479,7 +579,7 @@ export class SymbolTable {
       signature,
       visibility: SymbolVisibility.PUBLIC,
       location: { line: 0, column: 0, file: '<builtin>' },
-      scope: this.globalScope
+      scope: this.globalScope,
     };
 
     this.globalScope.addSymbol(symbol);
@@ -488,7 +588,11 @@ export class SymbolTable {
   /**
    * Enter new scope
    */
-  public enterScope(type: ScopeType, name: string, location?: SourceLocation): Scope {
+  public enterScope(
+    type: ScopeType,
+    name: string,
+    location?: SourceLocation
+  ): Scope {
     const newScope = this.currentScope.createChild(type, name, location);
     this.currentScope = newScope;
 
@@ -560,7 +664,7 @@ export class SymbolTable {
       type,
       visibility,
       location,
-      scope: this.currentScope
+      scope: this.currentScope,
     };
   }
 
@@ -583,7 +687,7 @@ export class SymbolTable {
       location,
       scope: this.currentScope,
       isForwardDeclaration,
-      isDefinition: !isForwardDeclaration
+      isDefinition: !isForwardDeclaration,
     };
   }
 
@@ -606,14 +710,14 @@ export class SymbolTable {
         isReference: false,
         isArray: false,
         isConst: false,
-        isVolatile: false
+        isVolatile: false,
       },
       visibility,
       location,
       scope: this.currentScope,
       baseClasses,
       interfaces,
-      members: new Map()
+      members: new Map(),
     };
   }
 
@@ -672,9 +776,9 @@ export class SymbolTable {
           kind: symbol.kind,
           type: symbol.type.name,
           visibility: symbol.visibility,
-          location: symbol.location
+          location: symbol.location,
         })),
-        children: scope.children.map(child => exportScope(child))
+        children: scope.children.map((child) => exportScope(child)),
       };
     };
 

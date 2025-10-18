@@ -98,7 +98,7 @@ class SemanticTestSuite {
     console.log(
       '================================================================================'
     );
-    console.log('WORLDSRC SEMANTIC ANALYSIS TEST SUITE - ALPHA PHASE 17');
+    console.log('WORLDSRC SEMANTIC ANALYSIS TEST SUITE');
     console.log(
       '================================================================================'
     );

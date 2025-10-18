@@ -1,17 +1,19 @@
 # WORLDEDIT API REFERENCE
 
+**Viewport & Rendering Systems Integrated**
+
 **Technical reference for WORLDEDIT APIs and interfaces**
 
 ## Table of Contents
 
 - [IPC API](#ipc-api)
+- [Viewport & Rendering](#viewport--rendering)
 - [Component System](#component-system)
 - [Engine Interface](#engine-interface)
 - [Asset Management](#asset-management)
 - [WORLDC Integration](#worldc-integration)
 - [UI Components](#ui-components)
 - [Event System](#event-system)
-- [File System](#file-system)
 - [Build System](#build-system)
 - [Type Definitions](#type-definitions)
 
@@ -33,6 +35,82 @@ interface ProjectAPI {
   addToRecent(path: string): Promise<void>;
   removeFromRecent(path: string): Promise<void>;
 }
+
+#### Scene Management
+
+```typescript
+interface SceneAPI {
+  create(name: string, template?: 'empty' | '2d' | '3d'): Promise<SceneData>;
+  load(scenePath: string): Promise<SceneData>;
+  save(sceneData: SceneData): Promise<void>;
+  delete(scenePath: string): Promise<void>;
+  list(): Promise<string[]>;
+  validate(sceneData: SceneData): Promise<ValidationResult>;
+}
+
+interface SceneData {
+  format: 'worldenv-scene';
+  version: string;
+  metadata: {
+    name: string;
+    description?: string;
+    created: string;
+    modified: string;
+    author?: string;
+  };
+  settings: {
+    gravity: Vector3;
+    ambientLight: Color;
+    fogEnabled: boolean;
+    fogColor?: Color;
+    fogDensity?: number;
+  };
+  entities: EntityData[];
+}
+
+interface EntityData {
+  id: string;
+  name: string;
+  active: boolean;
+  parent?: string;
+  children: string[];
+  components: ComponentData[];
+  transform: {
+    position: Vector3;
+    rotation: Vector3;
+    scale: Vector3;
+  };
+}
+
+// Usage
+const scene = await window.worldedit.scene.create("MainLevel", "3d");
+await window.worldedit.scene.save(sceneData);
+const loadedScene = await window.worldedit.scene.load("scenes/MainLevel.scene.json");
+```
+
+#### Engine Status
+
+```typescript
+interface EngineAPI {
+  getStatus(): Promise<EngineStatus>;
+  initialize(): Promise<void>;
+  shutdown(): Promise<void>;
+  restart(): Promise<void>;
+}
+
+interface EngineStatus {
+  state: 'initializing' | 'ready' | 'error';
+  message: string;
+  worldcAvailable: boolean;
+  lastUpdate: Date;
+}
+
+// Usage
+const status = await window.worldedit.engine.getStatus();
+if (status.state === 'ready') {
+  // Engine is ready for operations
+}
+```
 
 // Usage
 const project = await window.worldedit.project.create(
@@ -128,6 +206,219 @@ window.worldedit.events.on('project:opened', (project: ProjectData) => {
 });
 
 window.worldedit.events.emit('scene:changed', sceneData);
+```
+
+## Viewport & Rendering
+
+### Object Selection System
+
+The ObjectSelectionSystem provides advanced 3D object selection with multi-selection support, visual feedback, and raycasting.
+
+```typescript
+class ObjectSelectionSystem extends THREE.EventDispatcher {
+  // Selection operations
+  setSelection(objects: THREE.Object3D[]): void;
+  addToSelection(object: THREE.Object3D): void;
+  removeFromSelection(object: THREE.Object3D): void;
+  clearSelection(): void;
+  getSelection(): Set<THREE.Object3D>;
+  
+  // Visual feedback
+  applySelectionHighlight(object: THREE.Object3D): void;
+  removeSelectionHighlight(object: THREE.Object3D): void;
+  updateSelectionBox(): void;
+  
+  // Multi-selection
+  handleMouseDown(event: MouseEvent): void;
+  performSelection(x: number, y: number, multiSelect: boolean): void;
+  
+  // Configuration
+  setSelectableObjects(objects: THREE.Object3D[]): void;
+  enableSelection(enabled: boolean): void;
+}
+
+interface SelectionEvent {
+  type: 'selectionchange';
+  selected: THREE.Object3D[];
+  deselected: THREE.Object3D[];
+  primary: THREE.Object3D | null;
+}
+```
+
+### Camera Controls Integration
+
+Advanced camera controls with orbit, pan, zoom, and smooth animations.
+
+```typescript
+class CameraControlsIntegration {
+  // Camera manipulation
+  update(): boolean;
+  reset(): void;
+  
+  // Focus operations
+  focusOnObject(object: THREE.Object3D, fitOffset?: number): void;
+  focusOnBounds(box: THREE.Box3, fitOffset?: number): void;
+  setTarget(target: THREE.Vector3): void;
+  
+  // Animation
+  startAnimation(): void;
+  stopAnimation(): void;
+  
+  // Configuration
+  setSettings(settings: Partial<CameraControlsSettings>): void;
+  enable(enabled: boolean): void;
+}
+
+interface CameraControlsSettings {
+  enableOrbit: boolean;
+  enablePan: boolean;
+  enableZoom: boolean;
+  enableDamping: boolean;
+  dampingFactor: number;
+  minDistance: number;
+  maxDistance: number;
+  rotateSpeed: number;
+  panSpeed: number;
+  zoomSpeed: number;
+  autoRotate: boolean;
+}
+
+interface CameraControlsEvent {
+  type: 'change' | 'start' | 'end';
+  camera: THREE.Camera;
+  target: THREE.Vector3;
+}
+```
+
+### Entity Rendering System
+
+Manages entity-to-visual mapping and component rendering for 3D/2D viewports.
+
+```typescript
+class EntityRenderingSystem {
+  // Entity management
+  addEntity(entity: Entity): void;
+  removeEntity(entityId: string): void;
+  updateEntity(entityId: string): void;
+  
+  // Visual creation
+  createVisualForEntity(entity: Entity): THREE.Object3D | PIXI.DisplayObject | null;
+  updateVisualForEntity(entity: Entity): void;
+  
+  // Component rendering
+  createMeshFromRenderer(component: MeshRendererComponent): THREE.Mesh | null;
+  createSpriteFromComponent(component: SpriteComponent): PIXI.Sprite | null;
+  createLightFromComponent(component: LightComponent): THREE.Light | null;
+  
+  // Helpers and visualization
+  updateBoundingBox(entityId: string): void;
+  createColliderHelper(collider: ColliderComponent): THREE.Object3D | null;
+  
+  // Settings
+  setSettings(settings: Partial<EntityRenderingSettings>): void;
+  getSettings(): EntityRenderingSettings;
+}
+
+interface EntityRenderingSettings {
+  showWireframes: boolean;
+  showBounds: boolean;
+  showColliders: boolean;
+  showLights: boolean;
+  showLightHelpers: boolean;
+  showCameras: boolean;
+  wireframeOpacity: number;
+  boundsColor: number;
+  colliderColor: number;
+  lightHelperSize: number;
+  cameraHelperSize: number;
+}
+```
+
+### Viewport Manager
+
+Unified interface for all viewport operations and system coordination.
+
+```typescript
+class ViewportManager {
+  // Mode management
+  setMode(mode: '2D' | '3D'): void;
+  getMode(): '2D' | '3D';
+  toggleMode(): void;
+  
+  // Entity operations
+  addEntity(entity: Entity): void;
+  removeEntity(entityId: string): void;
+  updateEntity(entityId: string): void;
+  
+  // Selection
+  getSelectionSystem(): ObjectSelectionSystem | null;
+  onSelectionChange(callback: (objects: THREE.Object3D[]) => void): void;
+  
+  // Camera operations
+  getCameraControls(): CameraControlsIntegration | null;
+  resetCamera(): void;
+  focusOnSelection(): void;
+  setCameraPreset(preset: CameraPreset): void;
+  
+  // Rendering systems
+  getEntityRenderingSystem(): EntityRenderingSystem | null;
+  getManipulatorManager(): ManipulatorManager | null;
+  
+  // Settings
+  setGridVisible(visible: boolean): void;
+  setGizmosVisible(visible: boolean): void;
+  setAxesVisible(visible: boolean): void;
+}
+
+type CameraPreset = 'front' | 'back' | 'left' | 'right' | 'top' | 'bottom' | 'perspective';
+```
+
+### Manipulator System
+
+Transform gizmos and manipulation tools for object editing.
+
+```typescript
+class ManipulatorManager extends THREE.Group {
+  // Mode management
+  setMode(mode: ManipulatorMode): void;
+  getMode(): ManipulatorMode;
+  
+  // Target management
+  setTargets(targets: THREE.Object3D[]): void;
+  getTargets(): THREE.Object3D[];
+  clearTargets(): void;
+  
+  // Transform operations
+  setTransformSpace(space: TransformSpace): void;
+  getTransformSpace(): TransformSpace;
+  
+  // Updates
+  update(): void;
+  setEnabled(enabled: boolean): void;
+}
+
+enum ManipulatorMode {
+  SELECT = 'select',
+  TRANSLATE = 'translate',
+  ROTATE = 'rotate',
+  SCALE = 'scale'
+}
+
+enum TransformSpace {
+  WORLD = 'world',
+  LOCAL = 'local'
+}
+
+interface ManipulatorChangeEvent {
+  mode: ManipulatorMode;
+  targets: THREE.Object3D[];
+  transformType: 'start' | 'update' | 'end';
+  values?: {
+    position?: THREE.Vector3;
+    rotation?: THREE.Euler;
+    scale?: THREE.Vector3;
+  };
+}
 ```
 
 ## Component System
@@ -317,49 +608,164 @@ const transform = ComponentRegistry.create<TransformComponent>('Transform');
 
 ## Engine Interface
 
-### Scene Management
+### Scene Management (IPC-Based)
+
+The Scene Management system operates through IPC channels between the main process and renderer.
 
 ```typescript
-interface SceneManager {
-  createScene(name: string): Scene;
-  loadScene(path: string): Promise<Scene>;
-  saveScene(scene: Scene, path: string): Promise<void>;
-  getActiveScene(): Scene | null;
-  setActiveScene(scene: Scene): void;
-  unloadScene(scene: Scene): void;
+// Main Process Scene Manager
+interface MainProcessSceneManager {
+  createScene(projectPath: string, name: string, template: SceneTemplate): Promise<SceneData>;
+  loadScene(scenePath: string): Promise<SceneData>;
+  saveScene(scenePath: string, sceneData: SceneData): Promise<void>;
+  deleteScene(scenePath: string): Promise<void>;
+  listScenes(projectPath: string): Promise<string[]>;
+  validateScene(sceneData: SceneData): Promise<ValidationResult>;
+}
+
+// Renderer Scene Manager
+class SceneManager {
+  private activeScene: Scene | null = null;
+  private sceneCache: Map<string, Scene> = new Map();
   
-  // Scene events
-  onSceneLoaded(callback: (scene: Scene) => void): void;
-  onSceneUnloaded(callback: (scene: Scene) => void): void;
-  onActiveSceneChanged(callback: (scene: Scene | null) => void): void;
+  async createScene(name: string, template: SceneTemplate = 'empty'): Promise<Scene> {
+    const sceneData = await window.worldedit.scene.create(name, template);
+    const scene = this.deserializeScene(sceneData);
+    this.setActiveScene(scene);
+    return scene;
+  }
+  
+  async loadScene(scenePath: string): Promise<Scene> {
+    const sceneData = await window.worldedit.scene.load(scenePath);
+    const scene = this.deserializeScene(sceneData);
+    this.setActiveScene(scene);
+    return scene;
+  }
+  
+  async saveActiveScene(): Promise<void> {
+    if (this.activeScene) {
+      const sceneData = this.serializeScene(this.activeScene);
+      await window.worldedit.scene.save(sceneData);
+    }
+  }
+  
+  getActiveScene(): Scene | null {
+    return this.activeScene;
+  }
+  
+  setActiveScene(scene: Scene | null): void {
+    this.activeScene = scene;
+    this.emit('activeSceneChanged', scene);
+  }
 }
 
 class Scene {
   readonly id: string;
   name: string;
+  private entities: Map<string, Entity> = new Map();
+  private rootEntities: Set<string> = new Set();
   
   // Entity management
-  createEntity(name?: string): Entity;
-  addEntity(entity: Entity): void;
-  removeEntity(entity: Entity): void;
-  findEntity(name: string): Entity | null;
-  findEntityById(id: string): Entity | null;
-  getAllEntities(): Entity[];
+  createEntity(name: string = 'Entity'): Entity {
+    const entity = new Entity(generateUUID(), name);
+    this.addEntity(entity);
+    return entity;
+  }
   
-  // Hierarchy
-  getRootEntities(): Entity[];
+  addEntity(entity: Entity): void {
+    this.entities.set(entity.id, entity);
+    if (!entity.parent) {
+      this.rootEntities.add(entity.id);
+    }
+    this.emit('entityAdded', entity);
+  }
+  
+  removeEntity(entityId: string): void {
+    const entity = this.entities.get(entityId);
+    if (entity) {
+      // Remove children first
+      entity.children.forEach(childId => this.removeEntity(childId));
+      
+      // Remove from parent
+      if (entity.parent) {
+        const parent = this.entities.get(entity.parent);
+        parent?.removeChild(entityId);
+      } else {
+        this.rootEntities.delete(entityId);
+      }
+      
+      this.entities.delete(entityId);
+      this.emit('entityRemoved', entity);
+    }
+  }
+  
+  findEntity(name: string): Entity | null {
+    for (const entity of this.entities.values()) {
+      if (entity.name === name) {
+        return entity;
+      }
+    }
+    return null;
+  }
+  
+  findEntityById(id: string): Entity | null {
+    return this.entities.get(id) || null;
+  }
+  
+  getAllEntities(): Entity[] {
+    return Array.from(this.entities.values());
+  }
+  
+  getRootEntities(): Entity[] {
+    return Array.from(this.rootEntities)
+      .map(id => this.entities.get(id))
+      .filter(entity => entity !== undefined) as Entity[];
+  }
   
   // Serialization
-  serialize(): SceneData;
-  deserialize(data: SceneData): void;
+  serialize(): SceneData {
+    return {
+      format: 'worldenv-scene',
+      version: '1.0.0',
+      metadata: {
+        name: this.name,
+        created: new Date().toISOString(),
+        modified: new Date().toISOString()
+      },
+      settings: {
+        gravity: { x: 0, y: -9.81, z: 0 },
+        ambientLight: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 },
+        fogEnabled: false
+      },
+      entities: this.getAllEntities().map(entity => entity.serialize())
+    };
+  }
   
-  // Lifecycle
-  update(deltaTime: number): void;
-  render(camera: Camera): void;
-  
-  // Events
-  onEntityAdded(callback: (entity: Entity) => void): void;
-  onEntityRemoved(callback: (entity: Entity) => void): void;
+  deserialize(data: SceneData): void {
+    this.name = data.metadata.name;
+    this.entities.clear();
+    this.rootEntities.clear();
+    
+    // First pass: create all entities
+    data.entities.forEach(entityData => {
+      const entity = Entity.deserialize(entityData);
+      this.entities.set(entity.id, entity);
+    });
+    
+    // Second pass: establish parent-child relationships
+    data.entities.forEach(entityData => {
+      const entity = this.entities.get(entityData.id);
+      if (entity && entityData.parent) {
+        const parent = this.entities.get(entityData.parent);
+        if (parent) {
+          parent.addChild(entity.id);
+          entity.parent = parent.id;
+        }
+      } else if (entity) {
+        this.rootEntities.add(entity.id);
+      }
+    });
+  }
 }
 ```
 
@@ -369,35 +775,120 @@ class Scene {
 class Entity {
   readonly id: string;
   name: string;
-  active: boolean;
+  active: boolean = true;
+  visible: boolean = true;
+  locked: boolean = false;
+  parent: string | null = null;
+  children: string[] = [];
+  private components: Map<string, IComponent> = new Map();
+  
+  constructor(id: string, name: string) {
+    this.id = id;
+    this.name = name;
+    
+    // Every entity gets a Transform component by default
+    this.addComponent(new TransformComponent());
+  }
   
   // Component management
-  addComponent<T extends Component>(component: T): T;
-  removeComponent<T extends Component>(type: string): boolean;
-  getComponent<T extends Component>(type: string): T | null;
-  getComponents(): Component[];
-  hasComponent(type: string): boolean;
+  addComponent<T extends IComponent>(component: T): T {
+    this.components.set(component.type, component);
+    this.emit('componentAdded', component);
+    return component;
+  }
   
-  // Hierarchy
-  get parent(): Entity | null;
-  set parent(value: Entity | null);
+  removeComponent(type: string): boolean {
+    const component = this.components.get(type);
+    if (component && type !== 'Transform') { // Cannot remove Transform
+      this.components.delete(type);
+      this.emit('componentRemoved', component);
+      return true;
+    }
+    return false;
+  }
   
-  get children(): Entity[];
-  addChild(child: Entity): void;
-  removeChild(child: Entity): void;
+  getComponent<T extends IComponent>(type: string): T | null {
+    return (this.components.get(type) as T) || null;
+  }
   
-  // Lifecycle
-  destroy(): void;
-  isDestroyed(): boolean;
+  getComponents(): IComponent[] {
+    return Array.from(this.components.values());
+  }
   
-  // Events
-  onComponentAdded(callback: (component: Component) => void): void;
-  onComponentRemoved(callback: (component: Component) => void): void;
-  onDestroy(callback: () => void): void;
+  hasComponent(type: string): boolean {
+    return this.components.has(type);
+  }
+  
+  // Hierarchy management
+  addChild(childId: string): void {
+    if (!this.children.includes(childId)) {
+      this.children.push(childId);
+    }
+  }
+  
+  removeChild(childId: string): void {
+    const index = this.children.indexOf(childId);
+    if (index !== -1) {
+      this.children.splice(index, 1);
+    }
+  }
   
   // Serialization
-  serialize(): EntityData;
-  deserialize(data: EntityData): void;
+  serialize(): EntityData {
+    return {
+      id: this.id,
+      name: this.name,
+      active: this.active,
+      parent: this.parent,
+      children: [...this.children],
+      components: this.getComponents().map(comp => comp.serialize()),
+      transform: {
+        position: this.getComponent<TransformComponent>('Transform')?.position || { x: 0, y: 0, z: 0 },
+        rotation: this.getComponent<TransformComponent>('Transform')?.rotation || { x: 0, y: 0, z: 0 },
+        scale: this.getComponent<TransformComponent>('Transform')?.scale || { x: 1, y: 1, z: 1 }
+      }
+    };
+  }
+  
+  static deserialize(data: EntityData): Entity {
+    const entity = new Entity(data.id, data.name);
+    entity.active = data.active;
+    entity.parent = data.parent;
+    entity.children = [...data.children];
+    
+    // Deserialize components (Transform is already added in constructor)
+    data.components.forEach(compData => {
+      if (compData.type !== 'Transform') {
+        const component = ComponentRegistry.createComponent(compData.type);
+        if (component) {
+          component.deserialize(compData);
+          entity.addComponent(component);
+        }
+      } else {
+        // Update existing Transform component
+        const transform = entity.getComponent<TransformComponent>('Transform');
+        if (transform) {
+          transform.deserialize(compData);
+        }
+      }
+    });
+    
+    return entity;
+  }
+  
+  // Utility methods
+  isRoot(): boolean {
+    return this.parent === null;
+  }
+  
+  hasChildren(): boolean {
+    return this.children.length > 0;
+  }
+  
+  getDepth(): number {
+    // This would need scene context to traverse parents
+    return 0; // Placeholder
+  }
 }
 ```
 
@@ -453,60 +944,247 @@ enum GizmoMode {
 
 ## Asset Management
 
-### Asset Manager
+**Comprehensive Asset System with Import, Preview, and Drag-and-Drop**
+
+### Asset Browser Panel
+
+Enhanced asset browser with professional file management capabilities.
 
 ```typescript
-interface AssetManager {
-  importAsset(path: string, type?: AssetType): Promise<Asset>;
-  loadAsset<T extends Asset>(id: string): Promise<T>;
-  unloadAsset(id: string): void;
-  
-  // Asset queries
-  getAsset<T extends Asset>(id: string): T | null;
-  getAssetsByType<T extends Asset>(type: AssetType): T[];
-  getAllAssets(): Asset[];
+interface AssetBrowserPanel {
+  // Asset navigation
+  setCurrentPath(path: string): void;
+  getCurrentPath(): string;
+  navigateUp(): void;
   
   // Asset operations
-  duplicateAsset(id: string, newName: string): Promise<Asset>;
-  deleteAsset(id: string): Promise<void>;
-  renameAsset(id: string, newName: string): Promise<void>;
+  importAssets(files: FileList, options?: AssetImportOptions): Promise<AssetItem[]>;
+  createFolder(name: string): Promise<void>;
+  renameAsset(asset: AssetItem, newName: string): Promise<void>;
+  deleteAsset(asset: AssetItem): Promise<void>;
   
-  // Dependencies
-  getDependencies(id: string): string[];
-  getDependents(id: string): string[];
+  // Asset selection
+  selectAsset(asset: AssetItem): void;
+  selectMultiple(assets: AssetItem[]): void;
+  clearSelection(): void;
+  getSelection(): AssetItem[];
+  
+  // Search and filtering
+  setSearchQuery(query: string): void;
+  filterByType(types: AssetType[]): void;
+  sortBy(field: 'name' | 'size' | 'modified', order: 'asc' | 'desc'): void;
+  
+  // View modes
+  setViewMode(mode: 'grid' | 'list'): void;
+  getViewMode(): 'grid' | 'list';
+}
+
+interface AssetImportOptions {
+  generateThumbnails?: boolean;
+  compressImages?: boolean;
+  targetDirectory?: string;
+  overwriteExisting?: boolean;
+}
+```
+
+### Asset Item Structure
+
+```typescript
+interface AssetItem {
+  name: string;
+  type: AssetType;
+  path: string;
+  relativePath: string;
+  size: number;
+  modified: Date;
+  created: Date;
+  extension: string;
+  metadata: AssetMetadata;
+  children?: AssetItem[];
+}
+
+interface AssetMetadata {
+  id: string;
+  imported: Date;
+  tags: string[];
+  description?: string;
+  thumbnail?: string;
+  imageInfo?: ImageMetadata;
+  audioInfo?: AudioMetadata;
+  modelInfo?: ModelMetadata;
+}
+
+interface ImageMetadata {
+  width: number;
+  height: number;
+  format: string;
+  channels: number;
+  compressed: boolean;
+}
+
+interface AudioMetadata {
+  duration: number;
+  channels: number;
+  sampleRate: number;
+  bitRate: number;
+  format: string;
+}
+
+interface ModelMetadata {
+  vertices: number;
+  faces: number;
+  animations: string[];
+  materials: string[];
+}
+```
+
+### Asset Import Pipeline
+
+```typescript
+class AssetImportPipeline {
+  // Import operations
+  async importFiles(filePaths: string[], options?: AssetImportOptions): Promise<AssetItem[]>;
+  async importSingleFile(filePath: string, options?: AssetImportOptions): Promise<AssetItem>;
+  
+  // Format support
+  getSupportedFormats(): string[];
+  isFormatSupported(extension: string): boolean;
+  
+  // Thumbnail generation
+  async generateThumbnail(asset: AssetItem): Promise<string>;
+  getThumbnailPath(asset: AssetItem): string;
+  
+  // Metadata extraction
+  async extractMetadata(filePath: string, type: AssetType): Promise<AssetMetadata>;
+  
+  // Progress tracking
+  onProgress(callback: (progress: ImportProgress) => void): void;
+}
+
+interface ImportProgress {
+  importing: boolean;
+  progress: number;
+  currentFile?: string;
+  completedFiles: number;
+  totalFiles: number;
+}
+```
+
+### Asset Properties Dialog
+
+```typescript
+interface AssetPropertiesDialog {
+  // Display
+  show(asset: AssetItem): void;
+  hide(): void;
+  isVisible(): boolean;
+  
+  // Metadata editing
+  updateTags(tags: string[]): void;
+  updateDescription(description: string): void;
+  saveChanges(): Promise<void>;
   
   // Events
-  onAssetImported(callback: (asset: Asset) => void): void;
-  onAssetLoaded(callback: (asset: Asset) => void): void;
-  onAssetUnloaded(callback: (asset: Asset) => void): void;
-  onAssetDeleted(callback: (assetId: string) => void): void;
+  onSave(callback: (asset: AssetItem, metadata: Partial<AssetMetadata>) => void): void;
+  onCancel(callback: () => void): void;
+}
+```
+
+### Drag-and-Drop Integration
+
+```typescript
+interface AssetDragDrop {
+  // Drag operations
+  startDrag(asset: AssetItem, event: DragEvent): void;
+  setDragData(asset: AssetItem): string;
+  
+  // Drop operations
+  handleDrop(event: DragEvent): Promise<void>;
+  createEntityFromAsset(asset: AssetItem): Promise<void>;
+  
+  // Asset-to-component mapping
+  mapAssetToComponent(asset: AssetItem): ComponentData;
+  getSupportedDropTypes(): AssetType[];
 }
 
-enum AssetType {
-  TEXTURE = 'texture',
-  MODEL = 'model',
-  AUDIO = 'audio',
-  SCRIPT = 'script',
-  SCENE = 'scene',
-  PREFAB = 'prefab',
-  MATERIAL = 'material',
-  ANIMATION = 'animation'
+interface AssetDropData {
+  type: 'asset';
+  asset: {
+    name: string;
+    type: string;
+    path: string;
+    relativePath: string;
+  };
+}
+```
+
+### IPC Asset Operations
+
+Main process asset management APIs accessible from renderer.
+
+```typescript
+interface AssetIPC {
+  // File operations
+  'asset:list'(relativePath?: string): Promise<AssetItem[]>;
+  'asset:import'(args: { filePaths: string[]; options?: AssetImportOptions }): Promise<AssetItem[]>;
+  'asset:create-folder'(args: { relativePath: string; name: string }): Promise<void>;
+  'asset:rename'(args: { oldPath: string; newName: string }): Promise<void>;
+  'asset:delete'(relativePath: string): Promise<void>;
+  
+  // Search and metadata
+  'asset:search'(options: AssetSearchOptions): Promise<AssetItem[]>;
+  'asset:get-metadata'(relativePath: string): Promise<AssetMetadata>;
+  'asset:update-metadata'(args: { relativePath: string; metadata: Partial<AssetMetadata> }): Promise<void>;
+  
+  // Thumbnails
+  'asset:get-thumbnail'(assetPath: string): Promise<string>;
 }
 
-abstract class Asset {
-  readonly id: string;
-  readonly path: string;
-  readonly type: AssetType;
-  name: string;
-  
-  abstract load(): Promise<void>;
-  abstract unload(): void;
-  
-  isLoaded(): boolean;
-  getSize(): number;
-  getMetadata(): AssetMetadata;
-  
-  // Serialization
+interface AssetSearchOptions {
+  query?: string;
+  types?: AssetType[];
+  tags?: string[];
+  dateRange?: { from?: Date; to?: Date };
+  sizeRange?: { min?: number; max?: number };
+}
+```
+
+### Asset Type Support
+
+```typescript
+type AssetType =
+  | 'folder'
+  | 'image'     // PNG, JPG, GIF, WebP, BMP, TIFF
+  | 'audio'     // MP3, WAV, OGG, FLAC, AAC, M4A
+  | 'model'     // GLTF, GLB, OBJ, FBX, DAE, 3DS
+  | 'script'    // JS, TS, WC (WorldC)
+  | 'scene'     // Scene files
+  | 'material'  // Material definitions
+  | 'font'      // TTF, OTF, WOFF, WOFF2
+  | 'data'      // JSON, XML, YAML
+  | 'shader'    // GLSL, HLSL
+  | 'unknown';
+
+// Asset type detection
+function getAssetType(filePath: string): AssetType;
+function getAssetIcon(type: AssetType): string;
+function getSupportedExtensions(type: AssetType): string[];
+```
+
+### Keyboard Shortcuts
+
+Asset browser supports comprehensive keyboard navigation:
+
+```typescript
+interface AssetKeyboardShortcuts {
+  'Delete': 'Delete selected assets';
+  'F2': 'Rename selected asset';
+  'F5': 'Refresh asset list';
+  'Enter': 'Open folder or show properties';
+  'Escape': 'Clear selection';
+  'Ctrl+A': 'Select all assets';
+  'Ctrl+I': 'Import assets';
+}
   serialize(): AssetData;
   deserialize(data: AssetData): void;
 }

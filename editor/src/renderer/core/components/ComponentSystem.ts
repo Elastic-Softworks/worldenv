@@ -1,43 +1,69 @@
 /*
+   ===============================================================
+   WORLDEDIT COMPONENT SYSTEM
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Component System
- *
- * Component system manager for node component operations.
- * Handles component attachment, removal, and lifecycle management.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { IComponent, ComponentSerialData } from './Component';
-import { componentRegistry } from './ComponentRegistry';
-import { Node } from '../hierarchy/Node';
+import { IComponent, ComponentSerialData } from './Component'; /* COMPONENT INTERFACE */
+import { componentRegistry } from './ComponentRegistry'; /* COMPONENT REGISTRY */
+import { Node } from '../hierarchy/Node'; /* NODE HIERARCHY */
 
-/**
- * Component change event types
- */
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         ComponentChangeType
+	       ---
+	       enumeration of all possible component system events
+	       that can occur during component lifecycle management.
+	       these events are dispatched to notify other systems
+	       of component state changes.
+
+*/
 export enum ComponentChangeType {
-  COMPONENT_ADDED = 'component_added',
-  COMPONENT_REMOVED = 'component_removed',
-  COMPONENT_ENABLED = 'component_enabled',
-  COMPONENT_DISABLED = 'component_disabled',
-  COMPONENT_MODIFIED = 'component_modified',
-  COMPONENT_REORDERED = 'component_reordered',
+  COMPONENT_ADDED = 'component_added' /* component attached to node */,
+  COMPONENT_REMOVED = 'component_removed' /* component detached from node */,
+  COMPONENT_ENABLED = 'component_enabled' /* component activated */,
+  COMPONENT_DISABLED = 'component_disabled' /* component deactivated */,
+  COMPONENT_MODIFIED = 'component_modified' /* component properties changed */,
+  COMPONENT_REORDERED = 'component_reordered' /* component order changed */
 }
 
-/**
- * Component change event
- */
+/*
+
+         ComponentChangeEvent
+	       ---
+	       event data structure for component system notifications.
+	       contains all information needed to track component
+	       lifecycle changes and update dependent systems like
+	       the inspector panel and renderer.
+
+*/
 export interface ComponentChangeEvent {
-  type: ComponentChangeType;
-  nodeId: string;
-  componentType: string;
-  componentId: string;
-  component?: IComponent;
-  previousIndex?: number;
-  newIndex?: number;
+  type: ComponentChangeType /* type of change that occurred */;
+  nodeId: string /* ID of node containing the component */;
+  componentType: string /* type name of the component */;
+  componentId: string /* unique ID of the component instance */;
+  component?: IComponent /* component instance (if available) */;
+  previousIndex?: number /* old position in component list */;
+  newIndex?: number /* new position in component list */;
   timestamp: Date;
 }
 
@@ -90,7 +116,7 @@ export class ComponentSystem {
   private emitChange(event: Omit<ComponentChangeEvent, 'timestamp'>): void {
     const fullEvent: ComponentChangeEvent = {
       ...event,
-      timestamp: new Date(),
+      timestamp: new Date()
     };
 
     for (const listener of this._listeners) {
@@ -130,7 +156,7 @@ export class ComponentSystem {
     if (!componentRegistry.isRegistered(componentType)) {
       return {
         success: false,
-        error: `Component type '${componentType}' is not registered`,
+        error: `Component type '${componentType}' is not registered`
       };
     }
 
@@ -139,7 +165,7 @@ export class ComponentSystem {
     if (!component) {
       return {
         success: false,
-        error: `Failed to create component of type '${componentType}'`,
+        error: `Failed to create component of type '${componentType}'`
       };
     }
 
@@ -163,7 +189,7 @@ export class ComponentSystem {
     if (this.hasComponent(nodeId, component.type)) {
       return {
         success: false,
-        error: `Component of type '${component.type}' already exists on node`,
+        error: `Component of type '${component.type}' already exists on node`
       };
     }
 
@@ -175,13 +201,13 @@ export class ComponentSystem {
       if (deps.missing.length > 0) {
         return {
           success: false,
-          error: `Missing dependencies: ${deps.missing.join(', ')}`,
+          error: `Missing dependencies: ${deps.missing.join(', ')}`
         };
       }
       if (deps.conflicts.length > 0) {
         return {
           success: false,
-          error: `Conflicts with existing components: ${deps.conflicts.join(', ')}`,
+          error: `Conflicts with existing components: ${deps.conflicts.join(', ')}`
         };
       }
     }
@@ -198,7 +224,7 @@ export class ComponentSystem {
     const attachment: ComponentAttachment = {
       component,
       index,
-      enabled: component.enabled,
+      enabled: component.enabled
     };
 
     nodeComponents.set(component.type, attachment);
@@ -209,12 +235,12 @@ export class ComponentSystem {
       nodeId,
       componentType: component.type,
       componentId: component.id,
-      component,
+      component
     });
 
     return {
       success: true,
-      component,
+      component
     };
   }
 
@@ -228,7 +254,7 @@ export class ComponentSystem {
     if (!nodeComponents) {
       return {
         success: false,
-        error: 'Node has no components',
+        error: 'Node has no components'
       };
     }
 
@@ -236,21 +262,19 @@ export class ComponentSystem {
     if (!attachment) {
       return {
         success: false,
-        error: `Component of type '${componentType}' not found on node`,
+        error: `Component of type '${componentType}' not found on node`
       };
     }
 
     // Check if other components depend on this one
     const existingTypes = this.getComponentTypes(nodeId);
     const dependents = componentRegistry.getComponentsByDependency(componentType);
-    const conflictingDependents = dependents.filter(dep =>
-      existingTypes.includes(dep.type)
-    );
+    const conflictingDependents = dependents.filter((dep) => existingTypes.includes(dep.type));
 
     if (conflictingDependents.length > 0) {
       return {
         success: false,
-        error: `Cannot remove component: required by ${conflictingDependents.map(d => d.displayName).join(', ')}`,
+        error: `Cannot remove component: required by ${conflictingDependents.map((d) => d.displayName).join(', ')}`
       };
     }
 
@@ -282,12 +306,12 @@ export class ComponentSystem {
       type: ComponentChangeType.COMPONENT_REMOVED,
       nodeId,
       componentType,
-      componentId: attachment.component.id,
+      componentId: attachment.component.id
     });
 
     return {
       success: true,
-      component: attachment.component,
+      component: attachment.component
     };
   }
 
@@ -384,11 +408,13 @@ export class ComponentSystem {
       attachment.enabled = enabled;
 
       this.emitChange({
-        type: enabled ? ComponentChangeType.COMPONENT_ENABLED : ComponentChangeType.COMPONENT_DISABLED,
+        type: enabled
+          ? ComponentChangeType.COMPONENT_ENABLED
+          : ComponentChangeType.COMPONENT_DISABLED,
         nodeId,
         componentType,
         componentId: attachment.component.id,
-        component: attachment.component,
+        component: attachment.component
       });
     }
 
@@ -430,7 +456,7 @@ export class ComponentSystem {
       componentType,
       componentId: this.getComponent(nodeId, componentType)?.id || '',
       previousIndex: currentIndex,
-      newIndex: clampedIndex,
+      newIndex: clampedIndex
     });
 
     return true;
@@ -523,7 +549,10 @@ export class ComponentSystem {
    *
    * Deserializes components onto node.
    */
-  deserializeComponents(nodeId: string, data: Record<string, ComponentSerialData>): ComponentOperationResult[] {
+  deserializeComponents(
+    nodeId: string,
+    data: Record<string, ComponentSerialData>
+  ): ComponentOperationResult[] {
     const results: ComponentOperationResult[] = [];
 
     // Clear existing components first
@@ -541,7 +570,7 @@ export class ComponentSystem {
       if (!component) {
         results.push({
           success: false,
-          error: `Failed to create component of type '${componentData.type}'`,
+          error: `Failed to create component of type '${componentData.type}'`
         });
         continue;
       }
@@ -559,7 +588,7 @@ export class ComponentSystem {
         component.dispose();
         results.push({
           success: false,
-          error: `Failed to deserialize component '${componentData.type}': ${error}`,
+          error: `Failed to deserialize component '${componentData.type}': ${error}`
         });
       }
     }
@@ -603,7 +632,7 @@ export class ComponentSystem {
 
     for (const component of components) {
       const componentErrors = component.validate();
-      errors.push(...componentErrors.map(err => `${component.displayName}: ${err}`));
+      errors.push(...componentErrors.map((err) => `${component.displayName}: ${err}`));
     }
 
     return errors;

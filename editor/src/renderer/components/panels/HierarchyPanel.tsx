@@ -364,6 +364,32 @@ export function HierarchyPanel(): JSX.Element {
   };
 
   /**
+   * handleAddEntity()
+   *
+   * Adds new entity as child of selected node.
+   */
+  const handleAddEntity = (parentNodeId: string, entityType: NodeType): void => {
+    const entityNames: Record<NodeType, string> = {
+      [NodeType.SCENE]: 'Scene',
+      [NodeType.CAMERA]: 'Camera',
+      [NodeType.LIGHT]: 'Light',
+      [NodeType.ENTITY_2D]: '2D Entity',
+      [NodeType.ENTITY_3D]: '3D Entity',
+      [NodeType.SPRITE]: 'Sprite',
+      [NodeType.MESH]: 'Mesh',
+      [NodeType.AUDIO_SOURCE]: 'Audio Source',
+      [NodeType.SCRIPT]: 'Script',
+      [NodeType.GROUP]: 'Group'
+    };
+
+    const baseName = entityNames[entityType] || 'Entity';
+    const name = `${baseName}_${Date.now().toString(36)}`;
+
+    actions.createNode(name, entityType, parentNodeId);
+    setContextMenu((prev) => ({ ...prev, visible: false }));
+  };
+
+  /**
    * handleRenameNode()
    *
    * Starts node renaming.
@@ -446,12 +472,92 @@ export function HierarchyPanel(): JSX.Element {
 
     return (
       <div style={menuStyle}>
-        {/* Create submenu */}
-        <div style={menuItemStyle} onClick={(e) => e.stopPropagation()}>
-          <span>+</span>
-          <span>Create</span>
-          <div style={{ marginLeft: 'auto' }}>{'>'}</div>
+        {/* Add Entity Options */}
+        <div
+          style={{
+            ...menuItemStyle,
+            borderBottom: `1px solid ${theme.colors.panel.border}`,
+            marginBottom: theme.spacing.xs,
+            paddingBottom: theme.spacing.xs,
+            fontWeight: 'bold',
+            color: theme.colors.foreground.secondary
+          }}
+        >
+          Add Entity
         </div>
+
+        <div
+          style={menuItemStyle}
+          onClick={() => handleAddEntity(contextMenu.nodeId!, NodeType.ENTITY_3D)}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = theme.colors.background.tertiary;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          3D Entity
+        </div>
+
+        <div
+          style={menuItemStyle}
+          onClick={() => handleAddEntity(contextMenu.nodeId!, NodeType.ENTITY_2D)}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = theme.colors.background.tertiary;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          2D Entity
+        </div>
+
+        <div
+          style={menuItemStyle}
+          onClick={() => handleAddEntity(contextMenu.nodeId!, NodeType.CAMERA)}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = theme.colors.background.tertiary;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          Camera
+        </div>
+
+        <div
+          style={menuItemStyle}
+          onClick={() => handleAddEntity(contextMenu.nodeId!, NodeType.LIGHT)}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = theme.colors.background.tertiary;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          Light
+        </div>
+
+        <div
+          style={menuItemStyle}
+          onClick={() => handleAddEntity(contextMenu.nodeId!, NodeType.GROUP)}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = theme.colors.background.tertiary;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          Group
+        </div>
+
+        {/* Separator */}
+        <div
+          style={{
+            borderTop: `1px solid ${theme.colors.panel.border}`,
+            margin: `${theme.spacing.xs} 0`
+          }}
+        />
 
         {/* Rename */}
         <div

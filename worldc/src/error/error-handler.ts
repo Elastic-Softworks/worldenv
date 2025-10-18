@@ -1,43 +1,92 @@
 /*
+   ===============================================================
+   WORLDC ERROR HANDLING SYSTEM
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDC Error Handling System
- *
- * Comprehensive error handling for lexical analysis, parsing, and compilation.
- * Provides detailed error reporting, recovery mechanisms, and logging capabilities.
- */
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         ErrorType
+	       ---
+	       enumeration of all possible error categories within
+	       the WORLDC compiler pipeline. covers lexical analysis,
+	       parsing, semantic analysis, type checking, and runtime
+	       error classification for comprehensive error handling.
+
+*/
 
 export enum ErrorType {
-  LEXICAL_ERROR = 'LEXICAL_ERROR',
-  SYNTAX_ERROR = 'SYNTAX_ERROR',
-  SEMANTIC_ERROR = 'SEMANTIC_ERROR',
-  TYPE_ERROR = 'TYPE_ERROR',
-  RUNTIME_ERROR = 'RUNTIME_ERROR',
-  COMPILATION_ERROR = 'COMPILATION_ERROR',
-  INTERNAL_ERROR = 'INTERNAL_ERROR',
-  FATAL = 'FATAL',
+  LEXICAL_ERROR = 'LEXICAL_ERROR' /* tokenization and lexical analysis errors */,
+  SYNTAX_ERROR = 'SYNTAX_ERROR' /* parsing and grammar errors */,
+  SEMANTIC_ERROR = 'SEMANTIC_ERROR' /* semantic analysis and validation errors */,
+  TYPE_ERROR = 'TYPE_ERROR' /* type system and inference errors */,
+  RUNTIME_ERROR = 'RUNTIME_ERROR' /* execution-time errors and exceptions */,
+  COMPILATION_ERROR = 'COMPILATION_ERROR' /* code generation and compilation errors */,
+  INTERNAL_ERROR = 'INTERNAL_ERROR' /* compiler internal errors and bugs */,
+  FATAL = 'FATAL' /* unrecoverable system errors */,
 }
+
+/*
+
+         ErrorSeverity
+	       ---
+	       severity classification for error reporting and
+	       filtering. determines how errors are displayed
+	       and whether compilation should continue or halt.
+
+*/
 
 export enum ErrorSeverity {
-  INFO = 'INFO',
-  WARNING = 'WARNING',
-  ERROR = 'ERROR',
-  FATAL = 'FATAL',
+  INFO = 'INFO' /* informational messages and hints */,
+  WARNING = 'WARNING' /* warnings that don't prevent compilation */,
+  ERROR = 'ERROR' /* errors that prevent successful compilation */,
+  FATAL = 'FATAL' /* critical errors that halt the compiler */,
 }
+
+/*
+
+         SourceLocation
+	       ---
+	       precise location information for error reporting
+	       including line, column, file, and text length.
+	       enables accurate error highlighting and navigation
+	       in development tools.
+
+*/
 
 export interface SourceLocation {
-  line: number;
-  column: number;
-  file?: string;
-  length?: number;
+  line: number /* line number starting from 1 */;
+  column: number /* column number starting from 1 */;
+  file?: string /* source file path or identifier */;
+  length?: number /* length of error span in characters */;
 }
 
+/*
+
+         WorldCError
+	       ---
+	       comprehensive error information structure containing
+	       all data needed for error reporting, recovery, and
+	       diagnostic display. includes location, severity,
+	       and contextual information for developer assistance.
+
+*/
+
 export interface WorldCError {
-  type: ErrorType;
+  type: ErrorType /* category of error that occurred */;
   severity: ErrorSeverity;
   message: string;
   location?: SourceLocation;

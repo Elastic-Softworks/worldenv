@@ -1,43 +1,76 @@
 /*
+   ===============================================================
+   WORLDEDIT COMPONENT SYSTEM
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Component System
- *
- * Base component interface and property system for entity-component architecture.
- * Provides type-safe component definitions and property serialization.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { generateId } from '../../utils/IdGenerator';
+import { generateId } from '../../utils/IdGenerator'; /* ID GENERATION UTILITIES */
 
-/**
- * Component property types
- */
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         PropertyType
+	       ---
+	       enumeration of supported property types within the
+	       component system. these types define how component
+	       properties are stored, serialized, and edited in
+	       the inspector panel.
+
+*/
+
 export type PropertyType =
-  | 'string'
-  | 'number'
-  | 'boolean'
-  | 'vector2'
-  | 'vector3'
-  | 'color'
-  | 'asset'
-  | 'enum'
-  | 'object';
+  | 'string' /* text strings and labels */
+  | 'number' /* numeric values and measurements */
+  | 'boolean' /* true/false toggle properties */
+  | 'vector2' /* 2D coordinates and directions */
+  | 'vector3' /* 3D positions, rotations, scales */
+  | 'color' /* RGB/RGBA color values */
+  | 'asset' /* references to project assets */
+  | 'enum' /* predefined option lists */
+  | 'object'; /* complex nested structures */
 
-/**
- * Vector2 interface
- */
+/*
+
+         Vector2
+	       ---
+	       two-dimensional vector for 2D positions, directions,
+	       and scale operations. used throughout the engine for
+	       2D mathematics and UI positioning.
+
+*/
+
 export interface Vector2 {
-  x: number;
-  y: number;
+  x: number /* horizontal component */;
+  y: number /* vertical component */;
 }
 
-/**
- * Vector3 interface
- */
+/*
+
+         Vector3
+	       ---
+	       three-dimensional vector for 3D positions, rotations,
+	       and scale operations. fundamental type for all 3D
+	       spatial mathematics in the engine.
+
+*/
 export interface Vector3 {
   x: number;
   y: number;
@@ -78,10 +111,12 @@ export interface PropertyMetadata {
   precision?: number;
   minLength?: number;
   maxLength?: number;
-  options?: string[];
+  options?: string[] | number[];
   fileFilter?: string;
   defaultValue?: any;
   placeholder?: string;
+  visible?: boolean | ((component: any) => boolean);
+  assetTypes?: string[];
 }
 
 /**
@@ -453,7 +488,11 @@ export abstract class Component implements IComponent {
           return false;
         break;
       case 'enum':
-        if (metadata.options && !metadata.options.includes(value)) return false;
+        if (
+          metadata.options &&
+          !metadata.options.some((option) => String(option) === String(value))
+        )
+          return false;
         break;
     }
 

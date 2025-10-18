@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "name": "Test Project",
+  "engine_version": "0.1.0",
+  "created": 1760734126225,
+  "modified": 1760734126225,
+  "settings": {
+    "default_scene": "3D_Test_Scene.scene.json",
+    "viewport": {
+      "mode": "3d",
+      "grid_visible": true,
+      "grid_size": 1,
+      "snap_enabled": false,
+      "snap_value": 0.5
+    },
+    "rendering": {
+      "renderer": "webgl",
+      "antialias": true,
+      "vsync": true,
+      "target_fps": 60,
+      "resolution_scale": 1
+    },
+    "physics": {
+      "enabled": true,
+      "gravity": [
+        0,
+        -9.81
+      ],
+      "fixed_timestep": 0.016
+    },
+    "audio": {
+      "master_volume": 1,
+      "music_volume": 0.8,
+      "sfx_volume": 1
+    }
+  },
+  "scenes": [
+    "Empty_Test_Scene.scene.json",
+    "2D_Test_Scene.scene.json",
+    "3D_Test_Scene.scene.json"
+  ],
+  "prefabs": [],
+  "assets": {
+    "textures": [],
+    "audio": [],
+    "scripts": [],
+    "fonts": [],
+    "data": [],
+    "materials": [],
+    "shaders": []
+  }
+}

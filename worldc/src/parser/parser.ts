@@ -1,18 +1,28 @@
 /*
+   ===============================================================
+   WORLDC PARSER
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDC Parser
- *
- * Recursive descent parser supporting C, C++, and TypeScript syntax
- * in a unified language for game development with simplified verbiage
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { TokenType, Token, SourcePosition } from '../lexer/tokens';
-import { Lexer } from '../lexer/lexer';
+import {
+  TokenType,
+  Token,
+  SourcePosition,
+} from '../lexer/tokens'; /* TOKEN DEFINITIONS */
+import { Lexer } from '../lexer/lexer'; /* LEXICAL ANALYZER */
 import {
   ASTNode,
   Program,

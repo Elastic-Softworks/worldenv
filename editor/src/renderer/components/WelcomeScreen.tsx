@@ -267,7 +267,7 @@ export function WelcomeScreen(): JSX.Element {
                 color: theme.colors.accent.primary
               }}
             >
-              Phase 11: Project Management
+              Project Management
             </h3>
 
             <p

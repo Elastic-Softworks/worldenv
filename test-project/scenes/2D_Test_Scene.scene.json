@@ -1,0 +1,141 @@
+{
+  "format": "worldenv-scene",
+  "formatVersion": "1.0.0",
+  "scene": {
+    "id": "mgvbmys0-7o46pr",
+    "name": "2D_Test_Scene",
+    "rootNode": {
+      "id": "mgvbmys0-0xwj50",
+      "name": "Scene",
+      "type": "scene",
+      "enabled": true,
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "components": [],
+      "children": [
+        {
+          "id": "mgvbmys0-ro4s1u",
+          "name": "Main Camera",
+          "type": "camera",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 10
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          },
+          "components": [
+            {
+              "id": "mgvbmys0-coiq86",
+              "type": "camera",
+              "enabled": true,
+              "properties": {
+                "fov": 60,
+                "aspect": 1.7777777777777777,
+                "near": 0.1,
+                "far": 1000,
+                "orthographic": true,
+                "size": 10
+              }
+            }
+          ],
+          "children": []
+        },
+        {
+          "id": "mgvbmys0-pjsxxq",
+          "name": "Sprite",
+          "type": "entity_2d",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          },
+          "components": [
+            {
+              "id": "mgvbmys0-1c4t4y",
+              "type": "render",
+              "enabled": true,
+              "properties": {
+                "color": {
+                  "r": 0.2,
+                  "g": 0.8,
+                  "b": 0.4,
+                  "a": 1
+                },
+                "visible": true,
+                "castShadows": false,
+                "receiveShadows": false
+              }
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    "settings": {
+      "ambientColor": {
+        "r": 0.2,
+        "g": 0.2,
+        "b": 0.2,
+        "a": 1
+      },
+      "fogEnabled": false,
+      "gravity": {
+        "x": 0,
+        "y": -9.81,
+        "z": 0
+      },
+      "physicsEnabled": true,
+      "audioEnabled": true
+    },
+    "metadata": {
+      "version": "1.0.0",
+      "createdAt": "2025-10-17T20:48:46.224Z",
+      "modifiedAt": "2025-10-17T20:48:46.224Z",
+      "author": "Test Script",
+      "description": "Test 2d scene",
+      "engineVersion": "0.1.0",
+      "editorVersion": "0.1.0"
+    },
+    "assets": []
+  }
+}

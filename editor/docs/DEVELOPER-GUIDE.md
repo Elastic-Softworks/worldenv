@@ -1,5 +1,7 @@
 # WORLDEDIT DEVELOPER GUIDE
 
+**Viewport & Rendering Systems Architecture**
+
 **Complete guide for developing and contributing to WORLDEDIT**
 
 ## Table of Contents
@@ -7,6 +9,7 @@
 - [Development Environment](#development-environment)
 - [Build System](#build-system)
 - [Project Architecture](#project-architecture)
+- [Viewport System Architecture](#viewport-system-architecture)
 - [Development Workflow](#development-workflow)
 - [Code Standards](#code-standards)
 - [Testing](#testing)
@@ -307,35 +310,240 @@ editor/
 
 ### Data Flow
 
+**Core Implementation:**
 ```
-User Input → UI Components → Context/State → IPC → Main Process → File System
-                ↓                                      ↓
-        Viewport Rendering ← Engine Interface ← Asset Processing
+User Action → React Components → IPC Channel → Main Process → Scene Manager
+     ↓              ↓                            ↓              ↓
+UI Update ← Context State ← IPC Response ← File Operations ← Scene Data
+     ↓              ↓
+Hierarchy Panel ← EditorState
+     ↓              ↓
+Inspector Panel ← Scene Manager (Renderer)
+```
+
+**Engine Integration Flow:**
+```
+Editor UI → Scene Operations → IPC → Main Process Scene Manager
+    ↓                                        ↓
+Hierarchy Updates ← Scene Events ← Engine Status Check
+    ↓                                        ↓
+Real-time UI ← Component System ← WORLDC Integration
 ```
 
 ### Inter-Process Communication
 
-**IPC Channels:**
+**Scene Management IPC (Implemented):**
 ```typescript
-// Main → Renderer
-ipcMain.handle('file:open', async (event, path) => {
-  return await FileSystem.readFile(path);
+// Scene creation
+ipcMain.handle('scene:create', async (event, name, template) => {
+  return await sceneManager.createScene(name, template);
 });
 
-// Renderer → Main
-const content = await ipcRenderer.invoke('file:open', filePath);
-```
+// Scene loading
+ipcMain.handle('scene:load', async (event, scenePath) => {
+  return await sceneManager.loadScene(scenePath);
+});
 
-**Event System:**
-```typescript
-// Publisher
-EventBus.emit('scene:changed', sceneData);
-
-// Subscriber
-EventBus.on('scene:changed', (sceneData) => {
-  updateViewport(sceneData);
+// Scene saving
+ipcMain.handle('scene:save', async (event, sceneData) => {
+  return await sceneManager.saveScene(sceneData);
 });
 ```
+
+**Engine Status IPC (Implemented):**
+```typescript
+// Engine status monitoring
+ipcMain.handle('engine:status', async () => {
+  return engineInterface.getStatus();
+});
+
+// Engine initialization
+ipcMain.handle('engine:initialize', async () => {
+  return await engineInterface.initialize();
+});
+```
+
+**File System IPC (Enhanced):**
+```typescript
+// Enhanced file operations for scene management
+ipcMain.handle('fs:readJSON', async (event, path) => {
+  const content = await fs.readFile(path, 'utf8');
+  return JSON.parse(content);
+});
+
+ipcMain.handle('fs:writeJSON', async (event, path, data) => {
+  const content = JSON.stringify(data, null, 2);
+  return await fs.writeFile(path, content, 'utf8');
+});
+```
+
+**Event System (Real-time Updates):**
+```typescript
+// Scene change events
+sceneManager.on('sceneLoaded', (sceneData) => {
+  mainWindow.webContents.send('scene:loaded', sceneData);
+});
+
+// Engine status updates
+engineInterface.on('statusChanged', (status) => {
+  mainWindow.webContents.send('engine:statusChanged', status);
+});
+
+// Renderer event handling
+window.worldedit.events.on('scene:loaded', (sceneData) => {
+  editorState.setActiveScene(sceneData);
+  hierarchyPanel.updateHierarchy(sceneData.entities);
+});
+```
+
+## Viewport System Architecture
+
+### Overview
+
+The viewport and rendering system provides comprehensive real-time 3D/2D scene visualization, object manipulation, and visual feedback. The system is built around several key components that work together to create a professional editing experience.
+
+### Core Architecture
+
+```
+ViewportManager
+    ├── ViewportRenderer3D (Three.js)
+    │   ├── ObjectSelectionSystem
+    │   ├── CameraControlsIntegration  
+    │   ├── EntityRenderingSystem
+    │   └── ManipulatorManager
+    │
+    ├── ViewportRenderer2D (PIXI.js)
+    │   ├── 2D Selection System
+    │   ├── 2D Camera Controls
+    │   └── Sprite Rendering
+    │
+    └── Shared Systems
+        ├── Event Coordination
+        ├── Performance Optimization
+        └── Resource Management
+```
+
+### ObjectSelectionSystem
+
+Provides advanced object selection with visual feedback:
+
+```typescript
+class ObjectSelectionSystem extends THREE.EventDispatcher {
+  // Multi-selection with Ctrl/Shift
+  handleMouseDown(event: MouseEvent): void;
+  performSelection(x: number, y: number, multiSelect: boolean): void;
+  
+  // Visual feedback
+  applySelectionHighlight(object: THREE.Object3D): void;
+  updateSelectionBox(): void;
+  
+  // Event integration  
+  dispatchSelectionEvent(type: string): void;
+}
+```
+
+**Key Features:**
+- Raycasting-based object picking
+- Multi-selection with keyboard modifiers
+- Visual highlighting with outline materials
+- Selection box visualization
+- Bidirectional hierarchy synchronization
+
+### CameraControlsIntegration
+
+Advanced camera controls with smooth animations:
+
+```typescript
+class CameraControlsIntegration {
+  // Core navigation
+  handleRotate(deltaX: number, deltaY: number): void;
+  handlePan(deltaX: number, deltaY: number): void; 
+  handleZoom(delta: number): void;
+  
+  // Focus operations
+  focusOnObject(object: THREE.Object3D): void;
+  focusOnBounds(box: THREE.Box3): void;
+  
+  // Animation system
+  update(): boolean;
+  startAnimation(): void;
+}
+```
+
+**Key Features:**
+- Orbit, pan, and zoom controls
+- Focus-on-object functionality
+- Touch support for mobile devices
+- Configurable interaction settings
+- Smooth damping and animation
+
+### EntityRenderingSystem
+
+Maps scene entities to visual objects:
+
+```typescript
+class EntityRenderingSystem {
+  // Entity lifecycle
+  addEntity(entity: Entity): void;
+  updateEntity(entityId: string): void;
+  removeEntity(entityId: string): void;
+  
+  // Visual creation
+  createVisualForEntity(entity: Entity): THREE.Object3D;
+  createMeshFromRenderer(component: MeshRendererComponent): THREE.Mesh;
+  createLightFromComponent(component: LightComponent): THREE.Light;
+  
+  // Performance optimization
+  private materialCache: Map<string, THREE.Material>;
+  private geometryCache: Map<string, THREE.BufferGeometry>;
+}
+```
+
+**Key Features:**
+- Component-driven visual creation
+- Material and geometry caching
+- Helper visualization (lights, cameras, colliders)
+- Performance optimization with dirty tracking
+- Support for both 3D and 2D rendering
+
+### ManipulatorManager
+
+Transform gizmos for object manipulation:
+
+```typescript
+class ManipulatorManager extends THREE.Group {
+  setMode(mode: ManipulatorMode): void; // TRANSLATE, ROTATE, SCALE
+  setTargets(targets: THREE.Object3D[]): void;
+  setTransformSpace(space: TransformSpace): void; // WORLD, LOCAL
+}
+```
+
+**Key Features:**
+- Multiple manipulation modes
+- World and local transform spaces
+- Multi-object manipulation
+- Undo/redo integration (framework ready)
+- Keyboard shortcuts (W/E/R)
+
+### Performance Optimization
+
+The viewport system includes several performance optimizations:
+
+1. **Material Caching**: Shared materials reduce memory usage
+2. **Geometry Caching**: Primitive geometries are cached and reused
+3. **Dirty Tracking**: Only updated objects are re-rendered
+4. **Frustum Culling**: Off-screen objects are automatically culled
+5. **LOD System**: Framework ready for level-of-detail optimization
+
+### Integration Points
+
+The viewport system integrates with other editor systems:
+
+- **Hierarchy Panel**: Bidirectional selection synchronization
+- **Inspector Panel**: Real-time property updates
+- **Component System**: Visual representation of component data
+- **Scene Manager**: Entity lifecycle management
+- **Undo/Redo**: Transform operation history (framework ready)
 
 ## Development Workflow
 

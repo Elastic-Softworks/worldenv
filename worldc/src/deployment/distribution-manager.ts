@@ -8,7 +8,7 @@
 
          distribution-manager.ts
            ---
-           distribution manager for WORLDSRC Alpha Phase 20.
+           distribution manager for WORLDSRC production system.
 
            handles package creation, release management,
            and distribution preparation for multiple target

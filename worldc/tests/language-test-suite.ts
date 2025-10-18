@@ -162,7 +162,7 @@ class LanguageTestSuite {
     console.log(
       '================================================================================'
     );
-    console.log('WORLDSRC LANGUAGE TEST SUITE - ALPHA PHASE 16');
+    console.log('WORLDSRC LANGUAGE TEST SUITE');
     console.log(
       '================================================================================'
     );

@@ -22,6 +22,11 @@ export * from './core/SpriteComponent';
 export * from './core/MeshRendererComponent';
 export * from './core/CameraComponent';
 export * from './core/ScriptComponent';
+export * from './core/LightComponent';
+export * from './core/RigidBodyComponent';
+export * from './core/ColliderComponent';
+export * from './core/AudioSourceComponent';
+export * from './core/AudioListenerComponent';
 
 // Component factories
 import { createTransformComponent } from './core/TransformComponent';
@@ -29,10 +34,16 @@ import { createSpriteComponent } from './core/SpriteComponent';
 import { createMeshRendererComponent } from './core/MeshRendererComponent';
 import { createCameraComponent } from './core/CameraComponent';
 import { createScriptComponent } from './core/ScriptComponent';
+import { createLightComponent } from './core/LightComponent';
+import { createRigidBodyComponent } from './core/RigidBodyComponent';
+import { createColliderComponent } from './core/ColliderComponent';
+import { createAudioSourceComponent } from './core/AudioSourceComponent';
+import { createAudioListenerComponent } from './core/AudioListenerComponent';
 
 // Registry and system instances
 import { componentRegistry } from './ComponentRegistry';
 import { componentSystem } from './ComponentSystem';
+import { initializeComponentHelp } from './ComponentHelp';
 
 /**
  * initializeComponentSystem()
@@ -45,6 +56,9 @@ export function initializeComponentSystem(): void {
 
   // Register core components
   registerCoreComponents();
+
+  // Initialize component help system
+  initializeComponentHelp();
 
   console.log('[COMPONENT_SYSTEM] Component system initialized');
 }
@@ -125,6 +139,76 @@ function registerCoreComponents(): void {
     conflicts: []
   });
 
+  // Light Component
+  componentRegistry.register({
+    type: 'Light',
+    displayName: 'Light',
+    description: 'Provides illumination for 3D scenes with various light types',
+    category: 'Rendering',
+    icon: 'Light',
+    factory: createLightComponent,
+    isCore: false,
+    isVisible: true,
+    dependencies: ['Transform'],
+    conflicts: []
+  });
+
+  // RigidBody Component
+  componentRegistry.register({
+    type: 'RigidBody',
+    displayName: 'Rigid Body',
+    description: 'Handles physics simulation with mass, velocity, and forces',
+    category: 'Physics',
+    icon: 'Physics',
+    factory: createRigidBodyComponent,
+    isCore: false,
+    isVisible: true,
+    dependencies: ['Transform'],
+    conflicts: []
+  });
+
+  // Collider Component
+  componentRegistry.register({
+    type: 'Collider',
+    displayName: 'Collider',
+    description: 'Defines collision shape and physics material properties',
+    category: 'Physics',
+    icon: 'Collider',
+    factory: createColliderComponent,
+    isCore: false,
+    isVisible: true,
+    dependencies: ['Transform'],
+    conflicts: []
+  });
+
+  // AudioSource Component
+  componentRegistry.register({
+    type: 'AudioSource',
+    displayName: 'Audio Source',
+    description: 'Plays audio clips with 2D and 3D spatial audio support',
+    category: 'Audio',
+    icon: 'AudioSource',
+    factory: createAudioSourceComponent,
+    isCore: false,
+    isVisible: true,
+    dependencies: ['Transform'],
+    conflicts: []
+  });
+
+  // AudioListener Component
+  componentRegistry.register({
+    type: 'AudioListener',
+    displayName: 'Audio Listener',
+    description: 'Defines the position and orientation for 3D spatial audio',
+    category: 'Audio',
+    icon: 'AudioListener',
+    factory: createAudioListenerComponent,
+    isCore: false,
+    isVisible: true,
+    dependencies: ['Transform'],
+    conflicts: []
+  });
+
   console.log(
     `[COMPONENT_SYSTEM] Registered ${componentRegistry.getAllDescriptors().length} core components`
   );
@@ -175,6 +259,18 @@ export function createDefaultNodeComponents(nodeType: string): string[] {
       break;
     case 'mesh':
       defaultComponents.push('MeshRenderer');
+      break;
+    case 'light':
+      defaultComponents.push('Light');
+      break;
+    case 'physics':
+      defaultComponents.push('RigidBody', 'Collider');
+      break;
+    case 'audio':
+      defaultComponents.push('AudioSource');
+      break;
+    case 'listener':
+      defaultComponents.push('AudioListener');
       break;
   }
 

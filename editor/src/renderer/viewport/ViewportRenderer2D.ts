@@ -7,12 +7,13 @@
 /**
  * WORLDEDIT - 2D Viewport Renderer
  *
- * Pixi.js-based renderer for 2D viewport mode.
- * Handles sprite rendering, selection highlights, grid overlay, and 2D gizmos.
+ * PIXI.js-based renderer for 2D viewport mode.
+ * Handles sprite rendering, UI overlays, and 2D scene management.
  */
 
 import * as PIXI from 'pixi.js';
 import { EditorCamera } from './EditorCamera';
+import { Entity } from '../core/scene/Entity';
 
 export interface RenderStats2D {
   drawCalls: number;
@@ -47,7 +48,22 @@ export class ViewportRenderer2D {
 
   /* SELECTION SYSTEM */
   private selectedObjects: PIXI.DisplayObject[];
-  private selectionGraphics: PIXI.Graphics | null;
+  private selectionGraphics!: PIXI.Graphics;
+  private selectionEnabled: boolean;
+  private multiSelectEnabled: boolean;
+
+  /* ENTITY RENDERING */
+  private entityContainer: PIXI.Container;
+  private entityLookup: Map<string, PIXI.DisplayObject>;
+  private visualToEntity: Map<PIXI.DisplayObject, Entity>;
+
+  /* CAMERA CONTROLS */
+  private isDragging: boolean;
+  private dragStart: PIXI.Point;
+  private lastPointerPosition: PIXI.Point;
+  private zoomLevel: number;
+  private minZoom: number;
+  private maxZoom: number;
 
   /* GIZMOS AND HELPERS */
   private transformGizmo: PIXI.Container | null;
@@ -75,9 +91,25 @@ export class ViewportRenderer2D {
     this.showGizmos = true;
     this.gridSize = ViewportRenderer2D.GRID_SIZE;
     this.selectedObjects = [];
+    this.selectionEnabled = true;
+    this.multiSelectEnabled = true;
     this.transformGizmo = null;
     this.lastFrameTime = 0;
     this.frameCount = 0;
+    this.gridGraphics = null;
+
+    /* INITIALIZE ENTITY SYSTEM */
+    this.entityContainer = new PIXI.Container();
+    this.entityLookup = new Map();
+    this.visualToEntity = new Map();
+
+    /* INITIALIZE CAMERA CONTROLS */
+    this.isDragging = false;
+    this.dragStart = new PIXI.Point();
+    this.lastPointerPosition = new PIXI.Point();
+    this.zoomLevel = 1.0;
+    this.minZoom = 0.1;
+    this.maxZoom = 10.0;
     this.worldContainer = null;
     this.gridContainer = null;
     this.gizmoContainer = null;
@@ -119,6 +151,199 @@ export class ViewportRenderer2D {
 
     this.resize();
     this.isInitialized = true;
+  }
+
+  /**
+   * setupInteraction()
+   *
+   * Set up mouse and touch interaction for 2D viewport.
+   */
+  private setupInteraction(): void {
+    this.app.stage.eventMode = 'static';
+    this.app.stage.hitArea = this.app.screen;
+
+    /* MOUSE EVENTS */
+    this.app.stage.on('pointerdown', this.onPointerDown.bind(this));
+    this.app.stage.on('pointermove', this.onPointerMove.bind(this));
+    this.app.stage.on('pointerup', this.onPointerUp.bind(this));
+    this.app.stage.on('wheel', this.onWheel.bind(this));
+
+    /* KEYBOARD EVENTS */
+    window.addEventListener('keydown', this.onKeyDown.bind(this));
+  }
+
+  /**
+   * onPointerDown()
+   *
+   * Handle pointer down for selection and camera controls.
+   */
+  private onPointerDown(event: PIXI.FederatedPointerEvent): void {
+    if (!this.selectionEnabled) {
+      return;
+    }
+
+    const globalPoint = event.global;
+    this.dragStart.copyFrom(globalPoint);
+    this.lastPointerPosition.copyFrom(globalPoint);
+
+    if (event.button === 0) {
+      /* LEFT CLICK */
+      this.handleSelection(event);
+    } else if (event.button === 1 || event.button === 2) {
+      /* MIDDLE/RIGHT CLICK */
+      this.isDragging = true;
+    }
+  }
+
+  /**
+   * onPointerMove()
+   *
+   * Handle pointer move for camera panning.
+   */
+  private onPointerMove(event: PIXI.FederatedPointerEvent): void {
+    const globalPoint = event.global;
+
+    if (this.isDragging) {
+      const deltaX = globalPoint.x - this.lastPointerPosition.x;
+      const deltaY = globalPoint.y - this.lastPointerPosition.y;
+
+      /* PAN CAMERA */
+      this.app.stage.x += deltaX;
+      this.app.stage.y += deltaY;
+    }
+
+    this.lastPointerPosition.copyFrom(globalPoint);
+  }
+
+  /**
+   * onPointerUp()
+   *
+   * Handle pointer up to end interactions.
+   */
+  private onPointerUp(event: PIXI.FederatedPointerEvent): void {
+    this.isDragging = false;
+  }
+
+  /**
+   * onWheel()
+   *
+   * Handle mouse wheel for zooming.
+   */
+  private onWheel(event: WheelEvent): void {
+    event.preventDefault();
+
+    const delta = event.deltaY > 0 ? 0.9 : 1.1;
+    const newZoom = this.zoomLevel * delta;
+
+    if (newZoom >= this.minZoom && newZoom <= this.maxZoom) {
+      this.zoomLevel = newZoom;
+      this.app.stage.scale.set(this.zoomLevel);
+    }
+  }
+
+  /**
+   * onKeyDown()
+   *
+   * Handle keyboard shortcuts.
+   */
+  private onKeyDown(event: KeyboardEvent): void {
+    switch (event.code) {
+      case 'KeyA':
+        if (event.ctrlKey || event.metaKey) {
+          this.selectAll();
+          event.preventDefault();
+        }
+        break;
+
+      case 'Escape':
+        this.clearSelection();
+        event.preventDefault();
+        break;
+
+      case 'Delete':
+      case 'Backspace':
+        this.deleteSelected();
+        event.preventDefault();
+        break;
+    }
+  }
+
+  /**
+   * handleSelection()
+   *
+   * Handle object selection in 2D viewport.
+   */
+  private handleSelection(event: PIXI.FederatedPointerEvent): void {
+    const localPoint = this.entityContainer.toLocal(event.global);
+    const hitObject = this.hitTest(localPoint.x, localPoint.y);
+
+    const isMultiSelect = event.ctrlKey || event.metaKey;
+
+    if (hitObject) {
+      if (isMultiSelect && this.multiSelectEnabled) {
+        this.toggleObjectSelection(hitObject);
+      } else {
+        this.selectObject(hitObject);
+      }
+    } else if (!isMultiSelect) {
+      this.clearSelection();
+    }
+
+    this.updateSelectionGraphics();
+  }
+
+  /**
+   * toggleObjectSelection()
+   *
+   * Toggle selection state of object.
+   */
+  private toggleObjectSelection(object: PIXI.DisplayObject): void {
+    const index = this.selectedObjects.indexOf(object);
+    if (index >= 0) {
+      this.selectedObjects.splice(index, 1);
+    } else {
+      this.selectedObjects.push(object);
+    }
+  }
+
+  /**
+   * selectAll()
+   *
+   * Select all selectable objects.
+   */
+  private selectAll(): void {
+    this.selectedObjects = [];
+    this.entityContainer.children.forEach((child) => {
+      if (child.eventMode !== 'none') {
+        this.selectedObjects.push(child);
+      }
+    });
+    this.updateSelectionGraphics();
+  }
+
+  /**
+   * deleteSelected()
+   *
+   * Delete selected objects.
+   */
+  private deleteSelected(): void {
+    if (this.selectedObjects.length === 0) {
+      return;
+    }
+
+    /* EMIT DELETE EVENT FOR EXTERNAL HANDLING */
+    const entities = this.selectedObjects
+      .map((obj) => this.visualToEntity.get(obj))
+      .filter((entity) => entity !== undefined);
+
+    if (entities.length > 0) {
+      console.log(
+        '[2D_RENDERER] Delete request for entities:',
+        entities.map((e) => e.id)
+      );
+    }
+
+    this.clearSelection();
   }
 
   /**
@@ -392,7 +617,146 @@ export class ViewportRenderer2D {
    * Add object to the scene.
    */
   addObject(object: PIXI.DisplayObject): void {
-    this.worldContainer?.addChild(object);
+    this.entityContainer.addChild(object);
+
+    /* MAKE OBJECT INTERACTIVE */
+    object.eventMode = 'static';
+  }
+
+  /**
+   * addEntity()
+   *
+   * Add entity to 2D rendering system.
+   */
+  addEntity(entity: Entity): void {
+    const visual = this.createVisualForEntity(entity);
+    if (visual) {
+      this.entityLookup.set(entity.id, visual);
+      this.visualToEntity.set(visual, entity);
+      this.addObject(visual);
+    }
+  }
+
+  /**
+   * removeEntity()
+   *
+   * Remove entity from 2D rendering system.
+   */
+  removeEntity(entityId: string): void {
+    const visual = this.entityLookup.get(entityId);
+    if (visual) {
+      this.removeObject(visual);
+      this.entityLookup.delete(entityId);
+      this.visualToEntity.delete(visual);
+    }
+  }
+
+  /**
+   * updateEntity()
+   *
+   * Update entity visualization.
+   */
+  updateEntity(entityId: string): void {
+    const visual = this.entityLookup.get(entityId);
+    const entity = visual ? this.visualToEntity.get(visual) : null;
+
+    if (visual && entity) {
+      this.updateVisualForEntity(visual, entity);
+    }
+  }
+
+  /**
+   * createVisualForEntity()
+   *
+   * Create PIXI visual object for entity.
+   */
+  private createVisualForEntity(entity: Entity): PIXI.DisplayObject | null {
+    /* CREATE CONTAINER FOR ENTITY */
+    const container = new PIXI.Container();
+    container.name = entity.name || `Entity_${entity.id}`;
+
+    /* CHECK FOR SPRITE COMPONENT */
+    const spriteComponent = entity.getComponent('Sprite');
+    if (spriteComponent) {
+      const sprite = this.createSpriteFromComponent(spriteComponent);
+      if (sprite) {
+        container.addChild(sprite);
+      }
+    }
+
+    /* CREATE DEFAULT VISUAL IF NO RENDERABLE COMPONENTS */
+    if (container.children.length === 0) {
+      const defaultGraphics = new PIXI.Graphics();
+      defaultGraphics.beginFill(0x888888);
+      defaultGraphics.drawRect(-5, -5, 10, 10);
+      defaultGraphics.endFill();
+      container.addChild(defaultGraphics);
+    }
+
+    /* UPDATE TRANSFORM */
+    const transform = entity.getComponent('Transform');
+    if (transform) {
+      this.updateTransformForVisual(container, transform);
+    }
+
+    return container;
+  }
+
+  /**
+   * createSpriteFromComponent()
+   *
+   * Create PIXI sprite from sprite component.
+   */
+  private createSpriteFromComponent(spriteComponent: any): PIXI.Sprite | null {
+    if (!spriteComponent.texture) {
+      return null;
+    }
+
+    try {
+      const texture = PIXI.Texture.from(spriteComponent.texture);
+      const sprite = new PIXI.Sprite(texture);
+      sprite.tint = spriteComponent.color || 0xffffff;
+      sprite.alpha = spriteComponent.alpha || 1.0;
+      return sprite;
+    } catch (error) {
+      console.warn('[2D_RENDERER] Failed to create sprite:', error);
+      return null;
+    }
+  }
+
+  /**
+   * updateVisualForEntity()
+   *
+   * Update visual object based on entity state.
+   */
+  private updateVisualForEntity(visual: PIXI.DisplayObject, entity: Entity): void {
+    /* UPDATE TRANSFORM */
+    const transform = entity.getComponent('Transform');
+    if (transform && visual instanceof PIXI.Container) {
+      this.updateTransformForVisual(visual, transform);
+    }
+
+    /* UPDATE SPRITE PROPERTIES */
+    const spriteComponent = entity.getComponent('Sprite');
+    if (spriteComponent && visual instanceof PIXI.Container) {
+      const sprite = visual.children.find((child) => child instanceof PIXI.Sprite) as PIXI.Sprite;
+      if (sprite) {
+        sprite.tint = spriteComponent.color || 0xffffff;
+        sprite.alpha = spriteComponent.alpha || 1.0;
+        sprite.visible = spriteComponent.enabled !== false;
+      }
+    }
+  }
+
+  /**
+   * updateTransformForVisual()
+   *
+   * Update visual transform from Transform component.
+   */
+  private updateTransformForVisual(visual: PIXI.DisplayObject, transform: any): void {
+    visual.position.set(transform.position.x, transform.position.y);
+    visual.rotation = transform.rotation.z || 0;
+    visual.scale.set(transform.scale.x || 1, transform.scale.y || 1);
   }
 
   /**
@@ -401,12 +765,13 @@ export class ViewportRenderer2D {
    * Remove object from the scene.
    */
   removeObject(object: PIXI.DisplayObject): void {
-    this.worldContainer?.removeChild(object);
+    this.entityContainer.removeChild(object);
 
     /* REMOVE FROM SELECTION */
     const index = this.selectedObjects.indexOf(object);
     if (index !== -1) {
       this.selectedObjects.splice(index, 1);
+      this.updateSelectionGraphics();
     }
   }
 
@@ -417,6 +782,28 @@ export class ViewportRenderer2D {
    */
   selectObject(object: PIXI.DisplayObject): void {
     this.selectedObjects = [object];
+    this.updateSelectionGraphics();
+  }
+
+  /**
+   * setSelectionEnabled()
+   *
+   * Enable or disable object selection.
+   */
+  setSelectionEnabled(enabled: boolean): void {
+    this.selectionEnabled = enabled;
+    if (!enabled) {
+      this.clearSelection();
+    }
+  }
+
+  /**
+   * setMultiSelectEnabled()
+   *
+   * Enable or disable multi-selection.
+   */
+  setMultiSelectEnabled(enabled: boolean): void {
+    this.multiSelectEnabled = enabled;
   }
 
   /**
@@ -599,7 +986,15 @@ export class ViewportRenderer2D {
   dispose(): void {
     this.stopRenderLoop();
 
-    /* DISPOSE PIXI APPLICATION */
+    /* REMOVE EVENT LISTENERS */
+    window.removeEventListener('keydown', this.onKeyDown.bind(this));
+
+    /* CLEAR COLLECTIONS */
+    this.entityLookup.clear();
+    this.visualToEntity.clear();
+    this.selectedObjects = [];
+
+    /* DISPOSE APPLICATION */
     this.app.destroy(true, true);
 
     /* DISPOSE CAMERA */

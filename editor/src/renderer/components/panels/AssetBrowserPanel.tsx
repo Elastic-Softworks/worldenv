@@ -7,15 +7,16 @@
 /**
  * WORLDEDIT - Asset Browser Panel Component
  *
- * Asset browser panel for managing project assets.
- * Provides file system navigation and asset organization.
+ * Phase 5 Enhanced: Comprehensive asset management with import, preview, and drag-and-drop.
+ * Provides professional asset organization and viewport integration.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useEditorState } from '../../context/EditorStateContext';
 import { useTheme } from '../../context/ThemeContext';
 import { DropZone, DropZoneIndicator } from '../ui/DropZone';
 import { ContextMenu, useContextMenu, CommonMenuItems, createSeparator } from '../ui/ContextMenu';
+import { AssetPropertiesDialog } from '../dialogs/AssetPropertiesDialog';
 
 /**
  * Asset item interface
@@ -46,14 +47,102 @@ interface AssetItem {
     tags: string[];
     description?: string;
     thumbnail?: string;
+    imageInfo?: {
+      width: number;
+      height: number;
+      format: string;
+    };
+    audioInfo?: {
+      duration: number;
+      channels: number;
+      sampleRate: number;
+    };
   };
   children?: AssetItem[];
 }
 
 /**
+ * Asset import options
+ */
+interface AssetImportOptions {
+  generateThumbnails?: boolean;
+  compressImages?: boolean;
+  targetDirectory?: string;
+  overwriteExisting?: boolean;
+}
+
+/**
+ * Asset preview component props
+ */
+interface AssetPreviewProps {
+  asset: AssetItem;
+  onLoadError?: () => void;
+}
+
+/**
+ * AssetPreview component for thumbnail display
+ */
+function AssetPreview({ asset, onLoadError }: AssetPreviewProps): JSX.Element {
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    if (asset.type === 'image' && asset.metadata.thumbnail) {
+      setThumbnailUrl(`file://${asset.metadata.thumbnail}`);
+    } else if (asset.type === 'image') {
+      // For images without thumbnails, use the original file
+      setThumbnailUrl(`file://${asset.path}`);
+    }
+  }, [asset]);
+
+  const handleLoadError = () => {
+    setLoadError(true);
+    onLoadError?.();
+  };
+
+  if (loadError || !thumbnailUrl) {
+    return (
+      <div className="asset-preview-fallback">
+        <span className="asset-icon">{getAssetIcon(asset.type)}</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={thumbnailUrl}
+      alt={asset.name}
+      className="asset-thumbnail"
+      onError={handleLoadError}
+      loading="lazy"
+    />
+  );
+}
+
+/**
+ * Get icon for asset type
+ */
+function getAssetIcon(type: string): string {
+  const icons: Record<string, string> = {
+    folder: '[DIR]',
+    image: '[IMG]',
+    audio: '[SND]',
+    model: '[3D]',
+    script: '[JS]',
+    scene: '[SCN]',
+    material: '[MAT]',
+    font: '[FNT]',
+    data: '[DAT]',
+    shader: '[SHD]',
+    unknown: '[?]'
+  };
+  return icons[type] || icons.unknown;
+}
+
+/**
  * AssetBrowserPanel component
  *
- * File browser for project assets with preview and management.
+ * Professional asset management with import, preview, and drag-and-drop functionality.
  */
 export function AssetBrowserPanel(): JSX.Element {
   console.log('[ASSETS PANEL] Component mounting...');
@@ -64,7 +153,18 @@ export function AssetBrowserPanel(): JSX.Element {
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [loading, setLoading] = useState(false);
-  const [_searchQuery, _setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [importProgress, setImportProgress] = useState<{
+    importing: boolean;
+    progress: number;
+    currentFile?: string;
+  }>({ importing: false, progress: 0 });
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showPropertiesDialog, setShowPropertiesDialog] = useState(false);
+  const [selectedAssetForProperties, setSelectedAssetForProperties] = useState<AssetItem | null>(
+    null
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
 
   /**
@@ -78,6 +178,102 @@ export function AssetBrowserPanel(): JSX.Element {
       setAssets([]);
     }
   }, [currentPath, state.project.isOpen]);
+
+  /**
+   * Filter assets based on search query
+   */
+  const filteredAssets = assets.filter((asset) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      asset.name.toLowerCase().includes(query) ||
+      asset.extension.toLowerCase().includes(query) ||
+      asset.metadata.tags.some((tag) => tag.toLowerCase().includes(query))
+    );
+  });
+
+  /**
+   * Handle keyboard shortcuts
+   */
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!state.project.isOpen) return;
+
+      // Check if we're focused on the asset browser
+      const activeElement = document.activeElement;
+      const isAssetBrowserFocused = activeElement?.closest('[data-panel="assets"]');
+
+      if (!isAssetBrowserFocused) return;
+
+      switch (event.key) {
+        case 'Delete':
+          if (selectedAssets.length > 0) {
+            event.preventDefault();
+            const firstAsset = assets.find((asset) => asset.relativePath === selectedAssets[0]);
+            if (firstAsset) {
+              handleDelete(firstAsset);
+            }
+          }
+          break;
+
+        case 'F2':
+          if (selectedAssets.length === 1) {
+            event.preventDefault();
+            const firstAsset = assets.find((asset) => asset.relativePath === selectedAssets[0]);
+            if (firstAsset) {
+              handleRename(firstAsset);
+            }
+          }
+          break;
+
+        case 'F5':
+          event.preventDefault();
+          loadAssets(currentPath);
+          break;
+
+        case 'Enter':
+          if (selectedAssets.length === 1) {
+            event.preventDefault();
+            const firstAsset = assets.find((asset) => asset.relativePath === selectedAssets[0]);
+            if (firstAsset) {
+              if (firstAsset.type === 'folder') {
+                setCurrentPath(firstAsset.relativePath);
+              } else {
+                handleShowProperties(firstAsset);
+              }
+            }
+          }
+          break;
+
+        case 'Escape':
+          if (selectedAssets.length > 0) {
+            event.preventDefault();
+            setSelectedAssets([]);
+          }
+          break;
+      }
+
+      // Handle Ctrl combinations
+      if (event.ctrlKey) {
+        switch (event.key) {
+          case 'a':
+            event.preventDefault();
+            setSelectedAssets(assets.map((asset) => asset.relativePath));
+            break;
+
+          case 'i':
+            event.preventDefault();
+            triggerFileImport();
+            break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedAssets, assets, currentPath, state.project.isOpen, loadAssets]);
 
   /**
    * loadAssets()
@@ -113,11 +309,216 @@ export function AssetBrowserPanel(): JSX.Element {
       finalAssets.push(...assetList);
       setAssets(finalAssets);
     } catch (error) {
-      console.error('[ASSETS] Failed to load assets:', error);
+      console.error('[ASSETS PANEL] Failed to load assets:', error);
       setAssets([]);
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  /**
+   * handleAssetImport()
+   *
+   * Handle file import with progress tracking.
+   */
+  const handleAssetImport = useCallback(
+    async (files: FileList | File[]): Promise<void> => {
+      const fileArray = Array.from(files);
+      if (fileArray.length === 0) return;
+
+      setImportProgress({ importing: true, progress: 0 });
+
+      try {
+        const filePaths = fileArray.map((file) => file.path || file.name);
+        const options: AssetImportOptions = {
+          generateThumbnails: true,
+          compressImages: false,
+          targetDirectory: currentPath,
+          overwriteExisting: false
+        };
+
+        // Import assets with progress tracking
+        for (let i = 0; i < filePaths.length; i++) {
+          setImportProgress({
+            importing: true,
+            progress: (i / filePaths.length) * 100,
+            currentFile: filePaths[i]
+          });
+
+          await window.electronAPI.invoke('asset:import', {
+            filePaths: [filePaths[i]],
+            options
+          });
+        }
+
+        setImportProgress({ importing: true, progress: 100 });
+
+        // Reload assets to show imported files
+        await loadAssets(currentPath);
+      } catch (error) {
+        console.error('[ASSETS PANEL] Import failed:', error);
+      } finally {
+        setImportProgress({ importing: false, progress: 0 });
+      }
+    },
+    [currentPath, loadAssets]
+  );
+
+  /**
+   * handleDragStart()
+   *
+   * Handle drag start for asset items.
+   */
+  const handleDragStart = useCallback((event: React.DragEvent, asset: AssetItem): void => {
+    if (asset.type === 'folder') return;
+
+    event.dataTransfer.setData(
+      'application/worldedit-asset',
+      JSON.stringify({
+        type: 'asset',
+        asset: {
+          name: asset.name,
+          type: asset.type,
+          path: asset.path,
+          relativePath: asset.relativePath
+        }
+      })
+    );
+
+    event.dataTransfer.effectAllowed = 'copy';
+  }, []);
+
+  /**
+   * handleContextMenu()
+   *
+   * Handle right-click context menu for assets.
+   */
+  const handleContextMenu = useCallback(
+    (event: React.MouseEvent, asset?: AssetItem): void => {
+      event.preventDefault();
+
+      const menuItems = [];
+
+      if (asset) {
+        if (asset.type === 'folder') {
+          menuItems.push(
+            { label: 'Open', onClick: () => setCurrentPath(asset.relativePath) },
+            createSeparator(),
+            { label: 'New Folder', onClick: () => handleCreateFolder() },
+            createSeparator(),
+            { label: 'Rename', onClick: () => handleRename(asset) },
+            { label: 'Delete', onClick: () => handleDelete(asset) }
+          );
+        } else {
+          menuItems.push(
+            { label: 'Import to Viewport', onClick: () => handleImportToViewport(asset) },
+            { label: 'Show Properties', onClick: () => handleShowProperties(asset) },
+            createSeparator(),
+            { label: 'Rename', onClick: () => handleRename(asset) },
+            { label: 'Delete', onClick: () => handleDelete(asset) }
+          );
+        }
+      } else {
+        menuItems.push(
+          { label: 'Import Files...', onClick: () => triggerFileImport() },
+          { label: 'New Folder', onClick: () => handleCreateFolder() },
+          createSeparator(),
+          { label: 'Refresh', onClick: () => loadAssets(currentPath) }
+        );
+      }
+
+      showContextMenu(event, menuItems);
+    },
+    [currentPath, loadAssets, showContextMenu]
+  );
+
+  /**
+   * Utility functions for context menu actions
+   */
+  const triggerFileImport = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleCreateFolder = async () => {
+    const name = prompt('Enter folder name:');
+    if (name) {
+      try {
+        await window.electronAPI.invoke('asset:create-folder', {
+          relativePath: currentPath,
+          name
+        });
+        await loadAssets(currentPath);
+      } catch (error) {
+        console.error('[ASSETS PANEL] Failed to create folder:', error);
+      }
+    }
+  };
+
+  const handleRename = async (asset: AssetItem) => {
+    const newName = prompt('Enter new name:', asset.name);
+    if (newName && newName !== asset.name) {
+      try {
+        await window.electronAPI.invoke('asset:rename', {
+          oldPath: asset.relativePath,
+          newName
+        });
+        await loadAssets(currentPath);
+      } catch (error) {
+        console.error('[ASSETS PANEL] Failed to rename asset:', error);
+      }
+    }
+  };
+
+  const handleDelete = async (asset: AssetItem) => {
+    if (confirm(`Delete "${asset.name}"? This action cannot be undone.`)) {
+      try {
+        await window.electronAPI.invoke('asset:delete', asset.relativePath);
+        await loadAssets(currentPath);
+      } catch (error) {
+        console.error('[ASSETS PANEL] Failed to delete asset:', error);
+      }
+    }
+  };
+
+  const handleImportToViewport = (asset: AssetItem) => {
+    // TODO: Integrate with viewport system to add asset as entity
+    console.log('[ASSETS PANEL] Import to viewport:', asset);
+  };
+
+  const handleShowProperties = (asset: AssetItem) => {
+    setSelectedAssetForProperties(asset);
+    setShowPropertiesDialog(true);
+  };
+
+  /**
+   * handleSaveAssetProperties()
+   *
+   * Save updated asset metadata.
+   */
+  const handleSaveAssetProperties = useCallback(
+    async (asset: AssetItem, updatedMetadata: Partial<AssetItem['metadata']>) => {
+      try {
+        await window.electronAPI.invoke('asset:update-metadata', {
+          relativePath: asset.relativePath,
+          metadata: updatedMetadata
+        });
+        // Reload assets to reflect changes
+        await loadAssets(currentPath);
+      } catch (error) {
+        console.error('[ASSETS PANEL] Failed to save asset properties:', error);
+      }
+    },
+    [currentPath, loadAssets]
+  );
+
+  /**
+   * handleClosePropertiesDialog()
+   *
+   * Close the properties dialog.
+   */
+  const handleClosePropertiesDialog = useCallback(() => {
+    setShowPropertiesDialog(false);
+    setSelectedAssetForProperties(null);
   }, []);
 
   /**
@@ -791,11 +1192,97 @@ export function AssetBrowserPanel(): JSX.Element {
         </div>
       </div>
 
-      {/* Path Bar */}
+      {/* Breadcrumb Navigation */}
       <div style={pathBarStyle}>
-        <span>Path: {currentPath || 'assets'}</span>
+        <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+          {(() => {
+            const pathSegments = (currentPath || 'assets').split('/').filter(Boolean);
+            const breadcrumbs = [];
+
+            // Root breadcrumb
+            breadcrumbs.push(
+              <button
+                key="root"
+                onClick={() => setCurrentPath('assets')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color:
+                    currentPath === 'assets'
+                      ? theme.colors.accent.primary
+                      : theme.colors.foreground.secondary,
+                  cursor: 'pointer',
+                  padding: '2px 4px',
+                  borderRadius: '2px',
+                  fontSize: '12px'
+                }}
+                onMouseEnter={(e) => {
+                  if (currentPath !== 'assets') {
+                    e.currentTarget.style.backgroundColor = theme.colors.background.tertiary;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                assets
+              </button>
+            );
+
+            // Path segment breadcrumbs
+            pathSegments.forEach((segment, index) => {
+              const segmentPath = pathSegments.slice(0, index + 1).join('/');
+              const isLast = index === pathSegments.length - 1;
+
+              breadcrumbs.push(
+                <span
+                  key={`sep-${index}`}
+                  style={{ margin: '0 4px', color: theme.colors.foreground.tertiary }}
+                >
+                  /
+                </span>
+              );
+
+              breadcrumbs.push(
+                <button
+                  key={`seg-${index}`}
+                  onClick={() => setCurrentPath(segmentPath)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: isLast ? theme.colors.accent.primary : theme.colors.foreground.secondary,
+                    cursor: isLast ? 'default' : 'pointer',
+                    padding: '2px 4px',
+                    borderRadius: '2px',
+                    fontSize: '12px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLast) {
+                      e.currentTarget.style.backgroundColor = theme.colors.background.tertiary;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  {segment}
+                </button>
+              );
+            });
+
+            return breadcrumbs;
+          })()}
+        </div>
         {selectedAssets.length > 0 && (
-          <span style={{ marginLeft: theme.spacing.md }}>({selectedAssets.length} selected)</span>
+          <span
+            style={{
+              marginLeft: theme.spacing.md,
+              fontSize: '12px',
+              color: theme.colors.foreground.secondary
+            }}
+          >
+            ({selectedAssets.length} selected)
+          </span>
         )}
       </div>
 
@@ -853,6 +1340,14 @@ export function AssetBrowserPanel(): JSX.Element {
         x={contextMenu.x}
         y={contextMenu.y}
         onClose={hideContextMenu}
+      />
+
+      {/* Asset Properties Dialog */}
+      <AssetPropertiesDialog
+        asset={selectedAssetForProperties}
+        visible={showPropertiesDialog}
+        onClose={handleClosePropertiesDialog}
+        onSave={handleSaveAssetProperties}
       />
     </div>
   );

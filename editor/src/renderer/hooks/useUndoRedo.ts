@@ -1,36 +1,73 @@
 /*
+   ===============================================================
+   WORLDEDIT UNDO/REDO HOOK
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Undo/Redo Hook
- *
- * React hook for undo/redo functionality.
- * Provides state management and command execution for undo/redo operations.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { useEffect, useState, useCallback } from 'react';
-import { UndoRedoManager, ICommand } from '../core/undo';
+import { useEffect, useState, useCallback } from 'react'; /* REACT HOOKS */
+import { UndoRedoManager, ICommand } from '../core/undo'; /* UNDO SYSTEM */
 
-/**
- * Undo/redo state interface
- */
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         UndoRedoState
+	       ---
+	       state interface for undo/redo operations that tracks
+	       the current state of the command history stack.
+	       provides information needed by UI components to
+	       enable/disable undo/redo buttons and display
+	       operation descriptions.
+
+*/
+
 export interface UndoRedoState {
-  canUndo: boolean;
-  canRedo: boolean;
-  undoCount: number;
-  redoCount: number;
-  lastUndoDescription: string | null;
-  lastRedoDescription: string | null;
+  canUndo: boolean /* whether undo operation is available */;
+  canRedo: boolean /* whether redo operation is available */;
+  undoCount: number /* number of operations in undo stack */;
+  redoCount: number /* number of operations in redo stack */;
+  lastUndoDescription: string | null /* description of last undoable operation */;
+  lastRedoDescription: string | null /* description of last redoable operation */;
 }
 
-/**
- * useUndoRedo hook
- *
- * Provides undo/redo functionality with React state management.
- */
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         useUndoRedo()
+	       ---
+	       react hook that provides comprehensive undo/redo
+	       functionality with state management and command
+	       execution. integrates with the editor's command
+	       pattern system to provide reversible operations.
+
+	       the hook manages the undo/redo stack state and
+	       provides functions for executing, undoing, and
+	       redoing commands. it automatically updates when
+	       the command history changes.
+
+*/
 export function useUndoRedo() {
   const [state, setState] = useState<UndoRedoState>({
     canUndo: false,
@@ -112,7 +149,7 @@ export function useUndoRedo() {
           return true;
         }
 
-        if ((event.key === 'y') || (event.key === 'z' && event.shiftKey)) {
+        if (event.key === 'y' || (event.key === 'z' && event.shiftKey)) {
           event.preventDefault();
           redo();
           return true;

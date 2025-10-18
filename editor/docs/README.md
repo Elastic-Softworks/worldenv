@@ -1,5 +1,7 @@
 # WORLDEDIT DOCUMENTATION
 
+**Phase 5 Complete - Professional Asset Management & Viewport Integration**
+
 **Professional game development editor for the WORLDENV engine**
 
 ## Quick Navigation
@@ -24,9 +26,15 @@ WORLDEDIT is a professional game development editor built for the WORLDENV engin
 
 ### Key Features
 
-- **Visual Scene Editor** - Real-time 2D/3D viewport with object manipulation
-- **Component System** - Modular entity-component architecture
-- **Asset Management** - Comprehensive file browser with drag-and-drop support
+- **Advanced Viewport System** - Real-time 3D/2D visualization with professional controls
+- **Object Selection & Manipulation** - Multi-select, transform gizmos, visual feedback
+- **Smart Camera Controls** - Orbit, pan, zoom, focus with smooth animations
+- **Component-Based Rendering** - Entity-component architecture with real-time visualization
+- **Performance Optimized** - Material/geometry caching, efficient rendering pipeline
+- **Professional Asset Management** - Import, organize, preview with drag-and-drop to viewport
+- **Asset Import Pipeline** - Support for images, 3D models, audio, fonts with thumbnails
+- **Asset Properties & Metadata** - Tag management, descriptions, technical information
+- **Integrated Editing** - Viewport-hierarchy synchronization, keyboard shortcuts
 - **WORLDC Integration** - Advanced scripting with hybrid C/C++/TypeScript syntax
 - **Multi-Platform Deployment** - Export to web, desktop, and PWA formats
 - **Professional UI** - VS Code-inspired interface with dockable panels
@@ -90,53 +98,86 @@ npm run start
 ## Project Status
 
 **Current Version**: 0.1.0 (Pre-Alpha)  
-**Development Phase**: Alpha Phase 20 Complete  
-**Next Milestone**: Beta Testing & Community Release
+**Development Phase**: Phase 5 Complete (Asset System Overhaul)  
+**Next Milestone**: Phase 6 - File & Project System
 
-### Recent Achievements
-- Complete editor infrastructure
-- Visual scene editing system
-- Component-based architecture
-- WORLDC language integration
-- Multi-platform build system
-- Professional UI framework
+### Phase 1-5 Completed Features ✅
+- **Engine Foundation**: Status system, IPC communication, WORLDC integration
+- **Scene Management**: Create/save/load scenes with .scene.json format
+- **Entity System**: Create, delete, reparent entities with hierarchy management
+- **Component System**: 10 core components with Inspector integration and help system
+- **Advanced Viewport**: Real-time 3D/2D rendering with object manipulation
+- **Selection System**: Multi-selection, highlighting, visual feedback
+- **Transform Gizmos**: Professional translate, rotate, scale tools
+- **Camera Controls**: Orbit, pan, zoom, focus operations with smooth animations
+- **Performance Optimization**: Material/geometry caching, efficient rendering
+- **Professional Asset Management**: Import, organize, preview with metadata
+- **Asset Import Pipeline**: Images, 3D models, audio, fonts with thumbnails
+- **Drag-and-Drop Integration**: Asset browser to viewport with entity creation
+- **Asset Properties**: Metadata editing, tags, descriptions, technical info
+- **Asset Organization**: Search, filtering, breadcrumb navigation, keyboard shortcuts
 
-### Upcoming Features
-- Enhanced asset pipeline
-- Advanced animation tools
-- Collaborative editing
-- Cloud deployment
-- Mobile platform support
+### Phase 6 Ready to Begin
+- Project structure and file templates
+- Script creation and management
+- File system integration and monitoring
+- Project settings and configuration
+
+### Upcoming Features ⏳
+- File & Project System (Phase 6)
+- Script Editor & WORLDC Integration (Phase 7)
+- Build System & Compilation (Phase 8)
 
 ## Quick Examples
 
-### Creating Your First Project
+### Creating Your First Scene (Phase 5 Enhanced)
 1. Launch WORLDEDIT
-2. Click "New Project" → "2D Platformer"
-3. Name your project and click "Create"
-4. Press F5 to test in play mode
+2. Go to "File" → "New Scene"
+3. Enter scene name and choose template (Empty/2D/3D)
+4. Add entities with right-click → "Add Entity"
+5. **Import Assets**: Drag files into asset browser or use Ctrl+I
+6. **Create from Assets**: Drag assets from browser to viewport
+7. **Manipulate Objects**: Use W/E/R keys for transform gizmos
+8. **Focus Camera**: Press F to focus on selected objects
+9. **Organize Assets**: Use tags, descriptions, and folders
+10. Save scene with Ctrl+S
 
-### Basic WORLDC Script
-```worldc
-class PlayerController {
-    private float speed = 200.0f;
-    
-    void update(float deltaTime) {
-        if (Input.isKeyPressed(KeyCode.A)) {
-            transform.position.x -= speed * deltaTime;
-        }
-        if (Input.isKeyPressed(KeyCode.D)) {
-            transform.position.x += speed * deltaTime;
-        }
+### Basic Scene Structure
+```json
+{
+  "format": "worldenv-scene",
+  "version": "1.0.0",
+  "metadata": {
+    "name": "MyFirstLevel",
+    "created": "2024-01-15T10:30:00Z"
+  },
+  "entities": [
+    {
+      "id": "uuid-here",
+      "name": "Player",
+      "transform": {
+        "position": { "x": 0, "y": 0, "z": 0 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 }
+      }
     }
+  ]
 }
 ```
 
-### Building for Web
-1. Build → Build Settings
-2. Select "Web" platform
-3. Click "Build"
-4. Open `build/web/index.html`
+### Current Working Features (Phase 5 Complete)
+- **Advanced 3D/2D Viewport**: Real-time scene visualization with object manipulation
+- **Professional Asset Management**: Import, organize, preview with metadata editing
+- **Drag-and-Drop Workflow**: Assets to viewport with automatic entity creation
+- **Asset Import Pipeline**: Images, 3D models, audio, fonts with thumbnails
+- **Object Selection**: Click selection, multi-select, visual highlighting
+- **Transform Gizmos**: Professional W/E/R translate/rotate/scale tools
+- **Camera Controls**: Orbit, pan, zoom, focus with smooth animations
+- **Scene Management**: Create/save/load with viewport and asset integration
+- **Component System**: 10 core components with asset-driven properties
+- **Search & Organization**: Real-time asset filtering, tags, breadcrumb navigation
+- **Keyboard Shortcuts**: Comprehensive shortcuts for viewport and asset operations
+- **Performance**: Optimized rendering and asset loading with caching systems
 
 ## Community & Support
 
@@ -174,7 +215,17 @@ Built with love by Elastic Softworks using:
 
 ---
 
-**Ready to Start Building Games?**
+**Ready to Experience Professional Game Development?**
+
+**Phase 5 brings you:**
+- Professional 3D viewport with real-time rendering
+- Comprehensive asset management with import pipeline
+- Drag-and-drop workflow from assets to viewport
+- Asset properties with metadata and tag management
+- Advanced object selection and manipulation
+- Transform gizmos for precise editing
+- Smooth camera controls with focus operations
+- Performance-optimized rendering and asset loading
 
 **[Get Started with QUICKSTART.md](QUICKSTART.md)**
 

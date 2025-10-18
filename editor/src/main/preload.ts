@@ -186,6 +186,35 @@ const api = {
   },
 
   /**
+   * Scene operations
+   */
+  scene: {
+    create: (projectPath: string, fileName: string, options?: unknown): Promise<unknown> => {
+      return ipcRenderer.invoke('scene:create', {
+        projectPath,
+        fileName,
+        options
+      }) as Promise<unknown>;
+    },
+
+    load: (scenePath: string): Promise<unknown> => {
+      return ipcRenderer.invoke('scene:load', { scenePath }) as Promise<unknown>;
+    },
+
+    save: (scenePath: string, sceneData: unknown): Promise<unknown> => {
+      return ipcRenderer.invoke('scene:save', { scenePath, sceneData }) as Promise<unknown>;
+    },
+
+    delete: (scenePath: string): Promise<unknown> => {
+      return ipcRenderer.invoke('scene:delete', { scenePath }) as Promise<unknown>;
+    },
+
+    list: (projectPath: string): Promise<unknown> => {
+      return ipcRenderer.invoke('scene:list', { projectPath }) as Promise<unknown>;
+    }
+  },
+
+  /**
    * Asset operations
    */
   asset: {
@@ -245,12 +274,44 @@ const api = {
       return ipcRenderer.invoke('engine:save-scene', { path, sceneData }) as Promise<void>;
     },
 
-    loadScene: (path: string): Promise<unknown> => {
-      return ipcRenderer.invoke('engine:load-scene', path) as Promise<unknown>;
+    loadScene: (command: unknown): Promise<unknown> => {
+      return ipcRenderer.invoke('engine:load-scene', command) as Promise<unknown>;
     },
 
     getEngineInfo: (): Promise<unknown> => {
       return ipcRenderer.invoke('engine:get-engine-info') as Promise<unknown>;
+    },
+
+    getStatus: (): Promise<unknown> => {
+      return ipcRenderer.invoke('engine:get-status') as Promise<unknown>;
+    },
+
+    getHealthCheck: (): Promise<unknown> => {
+      return ipcRenderer.invoke('engine:get-health-check') as Promise<unknown>;
+    },
+
+    startInitialization: (options?: unknown): Promise<unknown> => {
+      return ipcRenderer.invoke('engine:start-initialization', options) as Promise<unknown>;
+    },
+
+    initialize: (command: unknown): Promise<unknown> => {
+      return ipcRenderer.invoke('engine:initialize', command) as Promise<unknown>;
+    },
+
+    setPlayMode: (command: unknown): Promise<unknown> => {
+      return ipcRenderer.invoke('engine:set-play-mode', command) as Promise<unknown>;
+    },
+
+    createEntity: (command: unknown): Promise<unknown> => {
+      return ipcRenderer.invoke('engine:create-entity', command) as Promise<unknown>;
+    },
+
+    updateComponent: (command: unknown): Promise<unknown> => {
+      return ipcRenderer.invoke('engine:update-component', command) as Promise<unknown>;
+    },
+
+    getStats: (): Promise<unknown> => {
+      return ipcRenderer.invoke('engine:get-stats') as Promise<unknown>;
     }
   },
 

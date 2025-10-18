@@ -1,45 +1,83 @@
 /*
+   ===============================================================
+   WORLDEDIT VIEWPORT MANAGER
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Viewport Manager
- *
- * Manages viewport rendering modes and coordinates between 2D and 3D renderers.
- * Provides unified interface for viewport operations regardless of current mode.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { ViewportRenderer3D, RenderStats } from './ViewportRenderer3D';
-import { ViewportRenderer2D, RenderStats2D } from './ViewportRenderer2D';
-import { EditorCamera, CameraPreset } from './EditorCamera';
-import * as THREE from 'three';
-import * as PIXI from 'pixi.js';
+import { ViewportRenderer3D, RenderStats } from './ViewportRenderer3D'; /* 3D RENDERING */
+import { ViewportRenderer2D, RenderStats2D } from './ViewportRenderer2D'; /* 2D RENDERING */
+import { EditorCamera, CameraPreset } from './EditorCamera'; /* CAMERA CONTROLS */
+import { ManipulatorManager } from './manipulators/ManipulatorManager'; /* TRANSFORM TOOLS */
+import {
+  ManipulatorMode,
+  TransformSpace
+} from './manipulators/BaseManipulator'; /* MANIPULATOR TYPES */
+import { ObjectSelectionSystem } from './ObjectSelectionSystem'; /* SELECTION SYSTEM */
+import { CameraControlsIntegration } from './CameraControlsIntegration'; /* CAMERA INTEGRATION */
+import { EntityRenderingSystem } from './EntityRenderingSystem'; /* ENTITY RENDERING */
+import { Entity } from '../core/scene/Entity'; /* ENTITY SYSTEM */
+import * as THREE from 'three'; /* 3D LIBRARY */
+import * as PIXI from 'pixi.js'; /* 2D LIBRARY */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
 
 export type ViewportMode = '2d' | '3d';
 
 export interface ViewportStats {
-  mode: ViewportMode;
-  fps: number;
-  frameCount: number;
-  renderStats: RenderStats | RenderStats2D;
+  mode: ViewportMode /* current rendering mode */;
+  fps: number /* frames per second */;
+  frameCount: number /* total frames rendered */;
+  renderStats: RenderStats | RenderStats2D /* detailed render metrics */;
 }
 
 export interface ViewportSettings {
-  showGrid: boolean;
-  showGizmos: boolean;
-  showAxes: boolean;
-  snapToGrid: boolean;
-  gridSize: number;
+  showGrid: boolean /* display grid overlay */;
+  showGizmos: boolean /* display transform gizmos */;
+  showAxes: boolean /* display coordinate axes */;
+  snapToGrid: boolean /* snap transforms to grid */;
+  gridSize: number /* grid cell size in units */;
 }
 
-/**
- * ViewportManager
- *
- * Central manager for viewport rendering operations.
- * Handles mode switching and provides unified API for editor interactions.
- */
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         ViewportManager
+	       ---
+	       central coordinator for viewport rendering operations.
+	       manages the complexity of switching between 2D and 3D
+	       rendering modes while maintaining a unified interface
+	       for editor interactions.
+
+	       this class orchestrates multiple subsystems: the 3D
+	       renderer (Three.js), 2D renderer (Pixi.js), camera
+	       controls, object selection, transform manipulators,
+	       and entity rendering. it provides a single point of
+	       control for all viewport-related operations.
+
+*/
+
 export class ViewportManager {
   private canvas: HTMLCanvasElement;
   private renderer3D: ViewportRenderer3D | null;
@@ -348,6 +386,109 @@ export class ViewportManager {
       return this.renderer3D.raycast(x, y);
     }
     return [];
+  }
+
+  /**
+   * addEntity()
+   *
+   * Add entity to viewport rendering system.
+   */
+  addEntity(entity: Entity): void {
+    if (this.currentMode === '3d' && this.renderer3D) {
+      this.renderer3D.addEntity(entity);
+    }
+  }
+
+  /**
+   * removeEntity()
+   *
+   * Remove entity from viewport rendering system.
+   */
+  removeEntity(entityId: string): void {
+    if (this.currentMode === '3d' && this.renderer3D) {
+      this.renderer3D.removeEntity(entityId);
+    }
+  }
+
+  /**
+   * updateEntity()
+   *
+   * Update entity visualization.
+   */
+  updateEntity(entityId: string): void {
+    if (this.currentMode === '3d' && this.renderer3D) {
+      this.renderer3D.updateEntity(entityId);
+    }
+  }
+
+  /**
+   * focusOnObject()
+   *
+   * Focus camera on specific object.
+   */
+  focusOnObject(object: THREE.Object3D): void {
+    if (this.currentMode === '3d' && this.renderer3D) {
+      this.renderer3D.focusOnObject(object);
+    }
+  }
+
+  /**
+   * focusOnSelection()
+   *
+   * Focus camera on currently selected objects.
+   */
+  focusOnSelection(): void {
+    if (this.currentMode === '3d' && this.renderer3D) {
+      this.renderer3D.focusOnSelection();
+    }
+  }
+
+  /**
+   * getManipulatorManager()
+   *
+   * Get manipulator manager for transform operations.
+   */
+  getManipulatorManager(): ManipulatorManager | null {
+    if (this.currentMode === '3d' && this.renderer3D) {
+      return this.renderer3D.getManipulatorManager();
+    }
+    return null;
+  }
+
+  /**
+   * getSelectionSystem()
+   *
+   * Get selection system for object picking.
+   */
+  getSelectionSystem(): ObjectSelectionSystem | null {
+    if (this.currentMode === '3d' && this.renderer3D) {
+      return this.renderer3D.getSelectionSystem();
+    }
+    return null;
+  }
+
+  /**
+   * getCameraControls()
+   *
+   * Get camera controls for advanced navigation.
+   */
+  getCameraControls(): CameraControlsIntegration | null {
+    if (this.currentMode === '3d' && this.renderer3D) {
+      return this.renderer3D.getCameraControls();
+    }
+    return null;
+  }
+
+  /**
+   * getEntityRenderingSystem()
+   *
+   * Get entity rendering system.
+   */
+  getEntityRenderingSystem(): EntityRenderingSystem | null {
+    if (this.currentMode === '3d' && this.renderer3D) {
+      return this.renderer3D.getEntityRenderingSystem();
+    }
+    return null;
   }
 
   /**

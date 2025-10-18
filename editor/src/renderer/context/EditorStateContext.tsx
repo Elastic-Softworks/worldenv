@@ -342,6 +342,7 @@ interface EditorStateContextType {
     copyToClipboard: (data: any[]) => void;
     clearClipboard: () => void;
     createNewScene: (name?: string) => void;
+    loadSceneFromFile: (scenePath: string) => Promise<void>;
     createNode: (name: string, type: NodeType, parentId?: string) => void;
     deleteNode: (nodeId: string) => void;
     duplicateNode: (nodeId: string) => void;
@@ -578,6 +579,21 @@ export function EditorStateProvider({ children }: EditorStateProviderProps): JSX
     createNewScene: (name?: string) => {
       sceneManager.createNewScene(name);
       updateSceneState();
+    },
+
+    loadSceneFromFile: async (scenePath: string) => {
+      try {
+        const result = await (window as any).worldedit.scene.load(scenePath);
+        if (result.success && result.sceneData) {
+          // TODO: Convert IPC scene data to local Scene format and load into sceneManager
+          // For now, create a new scene with the loaded name
+          sceneManager.createNewScene(result.sceneData.scene.name);
+          updateSceneState();
+        }
+      } catch (error) {
+        console.error('[EDITOR_STATE] Failed to load scene from file:', error);
+        throw error;
+      }
     },
 
     createNode: (name: string, type: NodeType, parentId?: string) => {

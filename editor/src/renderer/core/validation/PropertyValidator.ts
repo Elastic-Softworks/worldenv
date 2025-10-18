@@ -96,7 +96,7 @@ export class PropertyValidator {
       name: 'enum_validation',
       validate: (value: any, metadata: PropertyMetadata): ValidationResult => {
         if (metadata.type === 'enum' && metadata.options) {
-          if (!metadata.options.includes(value)) {
+          if (!metadata.options.some((option) => String(option) === String(value))) {
             return {
               isValid: false,
               error: `${metadata.displayName} must be one of: ${metadata.options.join(', ')}`
@@ -215,8 +215,12 @@ export class PropertyValidator {
           }
 
           const color = value as Color;
-          if (typeof color.r !== 'number' || typeof color.g !== 'number' ||
-              typeof color.b !== 'number' || typeof color.a !== 'number') {
+          if (
+            typeof color.r !== 'number' ||
+            typeof color.g !== 'number' ||
+            typeof color.b !== 'number' ||
+            typeof color.a !== 'number'
+          ) {
             return {
               isValid: false,
               error: `${metadata.displayName} components must be numbers`
@@ -231,8 +235,16 @@ export class PropertyValidator {
           }
 
           // Color components should be in [0, 1] range
-          if (color.r < 0 || color.r > 1 || color.g < 0 || color.g > 1 ||
-              color.b < 0 || color.b > 1 || color.a < 0 || color.a > 1) {
+          if (
+            color.r < 0 ||
+            color.r > 1 ||
+            color.g < 0 ||
+            color.g > 1 ||
+            color.b < 0 ||
+            color.b > 1 ||
+            color.a < 0 ||
+            color.a > 1
+          ) {
             return {
               isValid: false,
               error: `${metadata.displayName} components must be between 0 and 1`
@@ -309,7 +321,7 @@ export class PropertyValidator {
    * Removes a custom validation rule by name.
    */
   public removeCustomRule(ruleName: string): boolean {
-    const index = this.customRules.findIndex(rule => rule.name === ruleName);
+    const index = this.customRules.findIndex((rule) => rule.name === ruleName);
     if (index >= 0) {
       this.customRules.splice(index, 1);
       return true;
@@ -323,7 +335,7 @@ export class PropertyValidator {
    * Checks if any validation results have errors.
    */
   public static hasErrors(results: { [key: string]: ValidationResult }): boolean {
-    return Object.values(results).some(result => !result.isValid);
+    return Object.values(results).some((result) => !result.isValid);
   }
 
   /**
@@ -333,8 +345,8 @@ export class PropertyValidator {
    */
   public static getErrors(results: { [key: string]: ValidationResult }): string[] {
     return Object.values(results)
-      .filter(result => !result.isValid && result.error)
-      .map(result => result.error!);
+      .filter((result) => !result.isValid && result.error)
+      .map((result) => result.error!);
   }
 
   /**
@@ -344,8 +356,8 @@ export class PropertyValidator {
    */
   public static getWarnings(results: { [key: string]: ValidationResult }): string[] {
     return Object.values(results)
-      .filter(result => result.warning)
-      .map(result => result.warning!);
+      .filter((result) => result.warning)
+      .map((result) => result.warning!);
   }
 
   /**

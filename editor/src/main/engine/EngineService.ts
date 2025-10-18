@@ -1,15 +1,21 @@
 /*
+   ===============================================================
+   WORLDEDIT ENGINE SERVICE
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Engine Service
- *
- * Service layer for managing engine integration within editor.
- * Provides high-level API for engine operations and state management.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
 import {
   EngineWrapper,
@@ -17,27 +23,73 @@ import {
   EngineEvent,
   EngineState,
   EngineStats
-} from './EngineWrapper';
-import { SceneData } from '../../shared/types/SceneTypes';
-import { EventEmitter } from 'events';
+} from './EngineWrapper'; /* ENGINE WRAPPER INTEGRATION */
+import { SceneData } from '../../shared/types/SceneTypes'; /* SCENE DATA TYPES */
+import { EventEmitter } from 'events'; /* EVENT SYSTEM */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         EngineServiceConfig
+	       ---
+	       configuration interface for engine service behavior
+	       controlling synchronization, debugging, performance,
+	       and profiling features during engine operations.
+
+*/
 
 export interface EngineServiceConfig {
-  enableAutoSync: boolean;
-  enableDebugMode: boolean;
-  maxFPS: number;
-  enableProfiling: boolean;
+  enableAutoSync: boolean /* automatic scene synchronization */;
+  enableDebugMode: boolean /* engine debug information display */;
+  maxFPS: number /* maximum frames per second limit */;
+  enableProfiling: boolean /* performance profiling data collection */;
 }
+
+/*
+
+         EngineServiceEvent
+	       ---
+	       enumeration of events emitted by the engine service
+	       during lifecycle operations. provides notifications
+	       for engine state changes and synchronization events.
+
+*/
 
 export enum EngineServiceEvent {
-  ENGINE_READY = 'engineReady',
-  ENGINE_ERROR = 'engineError',
-  PLAY_MODE_CHANGED = 'playModeChanged',
-  SCENE_SYNCED = 'sceneSynced',
-  STATS_UPDATED = 'statsUpdated'
+  ENGINE_READY = 'engineReady' /* engine initialization completed */,
+  ENGINE_ERROR = 'engineError' /* engine error occurred */,
+  PLAY_MODE_CHANGED = 'playModeChanged' /* play/edit mode changed */,
+  SCENE_SYNCED = 'sceneSynced' /* scene synchronization completed */,
+  STATS_UPDATED = 'statsUpdated' /* performance statistics updated */
 }
 
-/**
- * EngineService class
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         EngineService
+	       ---
+	       high-level service layer that manages engine integration
+	       within the editor environment. provides a simplified
+	       interface for engine operations, state management, and
+	       synchronization between editor and runtime systems.
+
+	       the service orchestrates engine lifecycle, scene
+	       synchronization, play mode transitions, and performance
+	       monitoring. it abstracts the complexity of the underlying
+	       engine wrapper and provides event-driven notifications
+	       for UI updates.
+
+*/
  *
  * Manages engine integration and provides editor interface.
  * Handles engine lifecycle, scene synchronization, and play mode.

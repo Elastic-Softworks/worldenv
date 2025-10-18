@@ -8,7 +8,7 @@
 
          index.ts
            ---
-           WORLDSRC Alpha Phase 20: Beta Preparation & Production Deployment
+           WORLDSRC production deployment system
 
            main deployment manager for WORLDSRC language production
            builds. handles web deployment, electron packaging,

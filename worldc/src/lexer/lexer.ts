@@ -1,29 +1,68 @@
 /*
+   ===============================================================
+   WORLDC LEXICAL ANALYZER
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDC Lexical Analyzer
- *
- * Comprehensive lexer supporting C, C++, and TypeScript syntax
- * in a unified language for game development with simplified verbiage
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { TokenType, Token, SourcePosition, TokenUtils } from './tokens';
+import {
+  TokenType,
+  Token,
+  SourcePosition,
+  TokenUtils,
+} from './tokens'; /* TOKEN DEFINITIONS */
 import {
   globalErrorHandler,
   WorldCErrorHandler,
   ErrorType,
-} from '../error/error-handler';
+} from '../error/error-handler'; /* ERROR HANDLING */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         LexerOptions
+	       ---
+	       configuration interface for lexical analysis behavior.
+	       controls how the lexer processes whitespace, comments,
+	       and newlines during tokenization. strict mode enables
+	       additional validation for production code.
+
+*/
 
 export interface LexerOptions {
-  skipWhitespace?: boolean;
-  skipComments?: boolean;
-  preserveNewlines?: boolean;
-  strict?: boolean;
+  skipWhitespace?: boolean /* ignore whitespace tokens */;
+  skipComments?: boolean /* ignore comment tokens */;
+  preserveNewlines?: boolean /* keep newline tokens for formatting */;
+  strict?: boolean /* enable strict validation mode */;
 }
+
+/*
+
+         LexerError
+	       ---
+	       specialized error class for lexical analysis failures.
+	       provides detailed position information and integrates
+	       with the global error handling system for comprehensive
+	       error reporting and debugging.
+
+*/
 
 export class LexerError extends Error {
   constructor(
@@ -36,7 +75,7 @@ export class LexerError extends Error {
     );
     this.name = 'LexerError';
 
-    // Report to global error handler
+    /* report to global error handler for centralized logging */
     globalErrorHandler.reportLexicalError(message, {
       line: position.line,
       column: position.column,
@@ -44,6 +83,28 @@ export class LexerError extends Error {
     });
   }
 }
+
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         Lexer
+	       ---
+	       comprehensive lexical analyzer for the WORLDC language.
+	       tokenizes source code supporting C, C++, and TypeScript
+	       syntax elements in a unified hybrid language.
+
+	       the lexer processes input character by character,
+	       identifying keywords, operators, literals, and
+	       identifiers. it maintains position tracking for
+	       detailed error reporting and supports configurable
+	       processing modes through LexerOptions.
+
+*/
 
 export class Lexer {
   private input: string;

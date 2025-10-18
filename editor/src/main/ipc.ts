@@ -1,31 +1,55 @@
 /*
+   ===============================================================
+   WORLDEDIT IPC HANDLERS
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - IPC Handlers
- *
- * Inter-process communication handlers between main and renderer processes.
- * Provides safe API for file system, dialogs, project operations, and WorldC compilation.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { ipcMain, BrowserWindow, app } from 'electron';
-import * as fs from 'fs';
-import * as path from 'path';
-import { logger } from './logger';
-import { fileSystem } from './file-system';
-import { dialogManager } from './dialogs';
-import { projectManager } from './project';
-import { assetManager, AssetType } from './asset-manager';
-import { fileWatcher } from './watcher';
-import { autoSave } from './auto-save';
-import { recentProjectsManager } from './recent-projects';
-import { buildManager } from './build-manager';
-// Asset manager placeholder - types defined inline
+import { ipcMain, BrowserWindow, app } from 'electron'; /* ELECTRON FRAMEWORK */
+import * as fs from 'fs'; /* FILESYSTEM OPERATIONS */
+import * as path from 'path'; /* PATH UTILITIES */
+import { logger } from './logger'; /* LOGGING SYSTEM */
+import { fileSystem } from './file-system'; /* FILE SYSTEM ABSTRACTION */
+import { dialogManager } from './dialogs'; /* DIALOG MANAGEMENT */
+import { projectManager } from './project'; /* PROJECT SYSTEM */
+import { assetManager, AssetType } from './asset-manager'; /* ASSET MANAGEMENT */
+import { fileWatcher } from './watcher'; /* FILE WATCHING */
+import { autoSave } from './auto-save'; /* AUTO SAVE SYSTEM */
+import { recentProjectsManager } from './recent-projects'; /* RECENT PROJECTS */
+import { buildManager } from './build-manager'; /* BUILD SYSTEM */
+import { EngineStatusManager } from './engine/EngineStatusManager'; /* ENGINE STATUS */
+import { SceneManager } from './scene-manager'; /* SCENE MANAGEMENT */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         AssetImportOptions
+	       ---
+	       configuration interface for asset import operations
+	       controlling how assets are processed and organized
+	       during the import workflow.
+
+*/
+
 interface AssetImportOptions {
-  preserveStructure: boolean;
+  preserveStructure: boolean /* maintain original directory structure */;
   generateThumbnails: boolean;
   overwriteExisting: boolean;
   targetFolder?: string;
@@ -87,6 +111,7 @@ class IPCManager {
     this.registerScriptHandlers();
     this.registerBuildHandlers();
     this.registerWorldCHandlers();
+    this.registerSceneHandlers();
 
     this.initialized = true;
 
@@ -637,30 +662,73 @@ class IPCManager {
    * Registers engine operation IPC handlers.
    */
   private registerEngineHandlers(): void {
+    // NOTE: Engine handlers moved to EngineCommunicationManager
+    // Keeping only non-conflicting handlers here
+    /*
+    // Engine status handlers - NOW HANDLED BY EngineCommunicationManager
+    ipcMain.handle('engine:get-status', () => {
+      try {
+        const engineStatusManager = EngineStatusManager.getInstance();
+        return engineStatusManager.getState();
+      } catch (error) {
+        logger.error('IPC', 'Get engine status failed', { error });
+        throw error;
+      }
+    });
+
+    ipcMain.handle('engine:get-health-check', () => {
+      try {
+        const engineStatusManager = EngineStatusManager.getInstance();
+        return engineStatusManager.getHealthCheck();
+      } catch (error) {
+        logger.error('IPC', 'Get health check failed', { error });
+        throw error;
+      }
+    });
+
+    ipcMain.handle('engine:start-initialization', async (_event, options) => {
+      try {
+        const engineStatusManager = EngineStatusManager.getInstance();
+        engineStatusManager.startInitialization(options);
+        logger.info('IPC', 'Engine initialization started', { options });
+      } catch (error) {
+        logger.error('IPC', 'Engine initialization failed', { error });
+        throw error;
+      }
+    });
+
     ipcMain.handle(
-      'engine:export-scene',
-      async (_event, args: { sceneData: unknown; options?: unknown }) => {
+      'engine:complete-initialization',
+      async (_event, capabilities) => {
         try {
-          // For now, just return the scene data as-is
-          // In a full implementation, this would use SceneSerializer
-          await Promise.resolve();
-          return {
-            success: true,
-            data: args.sceneData,
-            format: 'worldenv-scene',
-            exportedAt: new Date().toISOString()
-          };
+          const engineStatusManager = EngineStatusManager.getInstance();
+          engineStatusManager.completeInitialization(capabilities);
+          logger.info('IPC', 'Engine initialization completed', {
+            capabilities
+          });
         } catch (error) {
-          logger.error('IPC', 'Scene export failed', { error });
+          logger.error('IPC', 'Engine initialization completion failed', {
+            error
+          });
           throw error;
         }
       }
     );
 
+    ipcMain.handle('engine:set-error', async (_event, error: string) => {
+      try {
+        const engineStatusManager = EngineStatusManager.getInstance();
+        engineStatusManager.setError(error);
+        logger.error('IPC', 'Engine error set', { error });
+      } catch (error) {
+        logger.error('IPC', 'Set engine error failed', { error });
+        throw error;
+      }
+    });
+
     ipcMain.handle('engine:validate-scene', async (_event, sceneData: unknown) => {
       try {
         // Basic validation - in full implementation would use SceneSerializer
-        await Promise.resolve();
         if (!sceneData || typeof sceneData !== 'object') {
           return {
             isValid: false,
@@ -720,6 +788,7 @@ class IPCManager {
         throw error;
       }
     });
+    */
   }
 
   /**
@@ -1249,6 +1318,99 @@ export class CustomComponent {
         errors: [errorMessage]
       });
     }
+  }
+  /**
+   * registerSceneHandlers()
+   *
+   * Registers scene management IPC handlers.
+   */
+  private registerSceneHandlers(): void {
+    const sceneManager = SceneManager.getInstance();
+
+    /* CREATE SCENE */
+    ipcMain.handle(
+      'scene:create',
+      async (
+        _event,
+        command: {
+          projectPath: string;
+          fileName: string;
+          options?: {
+            name?: string;
+            author?: string;
+            description?: string;
+            template?: 'empty' | '2d' | '3d';
+          };
+        }
+      ) => {
+        try {
+          const scenePath = await sceneManager.createScene(
+            command.projectPath,
+            command.fileName,
+            command.options || {}
+          );
+          return { success: true, scenePath };
+        } catch (error) {
+          logger.error('IPC', 'Scene creation failed', { error });
+          throw error;
+        }
+      }
+    );
+
+    /* LOAD SCENE */
+    ipcMain.handle('scene:load', async (_event, command: { scenePath: string }) => {
+      try {
+        const sceneData = await sceneManager.loadScene(command.scenePath);
+        return { success: true, sceneData };
+      } catch (error) {
+        logger.error('IPC', 'Scene loading failed', { error });
+        throw error;
+      }
+    });
+
+    /* SAVE SCENE */
+    ipcMain.handle(
+      'scene:save',
+      async (
+        _event,
+        command: {
+          scenePath: string;
+          sceneData: any;
+        }
+      ) => {
+        try {
+          await sceneManager.saveScene(command.scenePath, command.sceneData);
+          return { success: true };
+        } catch (error) {
+          logger.error('IPC', 'Scene saving failed', { error });
+          throw error;
+        }
+      }
+    );
+
+    /* DELETE SCENE */
+    ipcMain.handle('scene:delete', async (_event, command: { scenePath: string }) => {
+      try {
+        await sceneManager.deleteScene(command.scenePath);
+        return { success: true };
+      } catch (error) {
+        logger.error('IPC', 'Scene deletion failed', { error });
+        throw error;
+      }
+    });
+
+    /* LIST SCENES */
+    ipcMain.handle('scene:list', async (_event, command: { projectPath: string }) => {
+      try {
+        const scenes = await sceneManager.listProjectScenes(command.projectPath);
+        return { success: true, scenes };
+      } catch (error) {
+        logger.error('IPC', 'Scene listing failed', { error });
+        throw error;
+      }
+    });
+
+    logger.info('IPC', 'Scene handlers registered');
   }
 }
 

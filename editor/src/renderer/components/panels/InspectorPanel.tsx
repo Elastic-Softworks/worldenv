@@ -31,6 +31,11 @@ import type {
   Vector3,
   Color
 } from '../../core/components/Component';
+import {
+  componentHelpRegistry,
+  getPropertyTooltip,
+  getComponentTooltip
+} from '../../core/components/ComponentHelp';
 
 /**
  * UI Component data interface
@@ -406,7 +411,7 @@ export function InspectorPanel(): JSX.Element {
         case 'string':
           return (
             <div style={containerStyle}>
-              <div style={labelStyle}>
+              <div style={labelStyle} title={getPropertyTooltip(component.type, propertyKey)}>
                 <span>{propertyMetadata.displayName}</span>
                 {propertyMetadata.required && <span style={{ color: '#ff6b6b' }}>*</span>}
               </div>
@@ -425,7 +430,7 @@ export function InspectorPanel(): JSX.Element {
         case 'number':
           return (
             <div style={containerStyle}>
-              <div style={labelStyle}>
+              <div style={labelStyle} title={getPropertyTooltip(component.type, propertyKey)}>
                 <span>{propertyMetadata.displayName}</span>
                 {propertyMetadata.required && <span style={{ color: '#ff6b6b' }}>*</span>}
               </div>
@@ -471,7 +476,7 @@ export function InspectorPanel(): JSX.Element {
           const vec2Value = (propertyValue as Vector2) || { x: 0, y: 0 };
           return (
             <div style={containerStyle}>
-              <div style={labelStyle}>
+              <div style={labelStyle} title={getPropertyTooltip(component.type, propertyKey)}>
                 <span>{propertyMetadata.displayName}</span>
                 {propertyMetadata.required && <span style={{ color: '#ff6b6b' }}>*</span>}
               </div>
@@ -492,7 +497,7 @@ export function InspectorPanel(): JSX.Element {
           const vec3Value = (propertyValue as Vector3) || { x: 0, y: 0, z: 0 };
           return (
             <div style={containerStyle}>
-              <div style={labelStyle}>
+              <div style={labelStyle} title={getPropertyTooltip(component.type, propertyKey)}>
                 <span>{propertyMetadata.displayName}</span>
                 {propertyMetadata.required && <span style={{ color: '#ff6b6b' }}>*</span>}
               </div>
@@ -520,7 +525,7 @@ export function InspectorPanel(): JSX.Element {
             .padStart(2, '0')}`;
           return (
             <div style={containerStyle}>
-              <div style={labelStyle}>
+              <div style={labelStyle} title={getPropertyTooltip(component.type, propertyKey)}>
                 <span>{propertyMetadata.displayName}</span>
                 {propertyMetadata.required && <span style={{ color: '#ff6b6b' }}>*</span>}
               </div>
@@ -564,7 +569,7 @@ export function InspectorPanel(): JSX.Element {
         case 'enum':
           return (
             <div style={containerStyle}>
-              <div style={labelStyle}>
+              <div style={labelStyle} title={getPropertyTooltip(component.type, propertyKey)}>
                 <span>{propertyMetadata.displayName}</span>
                 {propertyMetadata.required && <span style={{ color: '#ff6b6b' }}>*</span>}
               </div>
@@ -788,7 +793,11 @@ export function InspectorPanel(): JSX.Element {
               {availableComponents.map((componentType) => {
                 const info = ComponentUtils.getComponentDisplayInfo(componentType);
                 return (
-                  <option key={componentType} value={componentType}>
+                  <option
+                    key={componentType}
+                    value={componentType}
+                    title={getComponentTooltip(componentType)}
+                  >
                     {info?.displayName || componentType}
                   </option>
                 );

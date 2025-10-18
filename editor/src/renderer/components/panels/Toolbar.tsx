@@ -15,7 +15,9 @@ import React, { useState, useEffect } from 'react';
 import { useEditorState } from '../../context/EditorStateContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Button } from '../ui/Button';
-import { EngineInterface } from '../../engine/EngineInterface';
+import { EngineInterface, EngineState } from '../../engine/EngineInterface';
+import { EngineStatusBadge } from '../ui/EngineStatus';
+import { EngineStatus } from '../../../shared/types/EngineTypes';
 
 /**
  * Toolbar component
@@ -30,6 +32,14 @@ export function Toolbar(): JSX.Element {
   const [isPlayMode, setIsPlayMode] = useState(false);
   const [isEngineReady, setIsEngineReady] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [engineState, setEngineState] = useState<EngineState>({
+    status: EngineStatus.UNINITIALIZED,
+    isInitialized: false,
+    isRunning: false,
+    isPlayMode: false,
+    isPaused: false,
+    hasErrors: false
+  });
 
   /**
    * handleSaveProject()
@@ -59,6 +69,12 @@ export function Toolbar(): JSX.Element {
       setIsEngineReady(true);
     };
 
+    const handleStateChanged = (_event: string, ...args: unknown[]): void => {
+      const state = args[0] as EngineState;
+      setEngineState(state);
+      setIsEngineReady(state.status === EngineStatus.READY);
+    };
+
     const handlePlayModeStarted = (): void => {
       setIsPlayMode(true);
       setIsPaused(false);
@@ -86,6 +102,7 @@ export function Toolbar(): JSX.Element {
     };
 
     engineInterface.addEventListener('ready', handleEngineReady);
+    engineInterface.addEventListener('stateChanged', handleStateChanged);
     engineInterface.addEventListener('playModeStarted', handlePlayModeStarted);
     engineInterface.addEventListener('playModeStopped', handlePlayModeStopped);
     engineInterface.addEventListener('playModePaused', handlePlayModePaused);
@@ -99,6 +116,7 @@ export function Toolbar(): JSX.Element {
 
     return () => {
       engineInterface.removeEventListener('ready', handleEngineReady);
+      engineInterface.removeEventListener('stateChanged', handleStateChanged);
       engineInterface.removeEventListener('playModeStarted', handlePlayModeStarted);
       engineInterface.removeEventListener('playModeStopped', handlePlayModeStopped);
       engineInterface.removeEventListener('playModePaused', handlePlayModePaused);
@@ -378,11 +396,7 @@ export function Toolbar(): JSX.Element {
       {state.project.isOpen && (
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md }}>
           {/* Engine Status */}
-          {!isEngineReady && (
-            <span style={{ fontSize: '12px', color: theme.colors.accent.warning }}>
-              Engine: Not Ready
-            </span>
-          )}
+          <EngineStatusBadge engineState={engineState} />
           {isPlayMode && (
             <span style={{ fontSize: '12px', color: theme.colors.accent.success }}>
               {isPaused ? 'PAUSED' : 'PLAYING'}

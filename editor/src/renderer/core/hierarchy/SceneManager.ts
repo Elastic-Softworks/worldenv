@@ -1,43 +1,79 @@
 /*
+   ===============================================================
+   WORLDEDIT SCENE MANAGER
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Scene Manager
- *
- * Manages scene lifecycle, file operations, and scene state.
- * Provides interface between scene data and editor UI.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { Scene, SceneSerialData, SceneChangeEvent, SceneChangeListener } from './Scene';
-import { Node, NodeType } from './Node';
+import {
+  Scene,
+  SceneSerialData,
+  SceneChangeEvent,
+  SceneChangeListener
+} from './Scene'; /* SCENE MANAGEMENT */
+import { Node, NodeType } from './Node'; /* NODE HIERARCHY */
 
-/**
- * Scene file format
- */
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         SceneFile
+	       ---
+	       file system representation of a scene document
+	       including metadata and serialized scene data.
+	       used for scene persistence and project management
+	       operations.
+
+*/
 export interface SceneFile {
-  path: string;
-  name: string;
-  data: SceneSerialData;
-  lastModified: Date;
+  path: string /* absolute filesystem path */;
+  name: string /* display name without extension */;
+  data: SceneSerialData /* serialized scene content */;
+  lastModified: Date /* last file modification time */;
 }
 
-/**
- * Scene manager events
- */
+/*
+
+         SceneManagerEvent
+	       ---
+	       enumeration of scene lifecycle events that can
+	       occur during scene management operations. these
+	       events notify the editor UI of scene state changes.
+
+*/
 export enum SceneManagerEvent {
-  SCENE_CREATED = 'scene_created',
-  SCENE_LOADED = 'scene_loaded',
-  SCENE_SAVED = 'scene_saved',
-  SCENE_CLOSED = 'scene_closed',
-  SCENE_CHANGED = 'scene_changed',
+  SCENE_CREATED = 'scene_created' /* new scene created */,
+  SCENE_LOADED = 'scene_loaded' /* scene loaded from file */,
+  SCENE_SAVED = 'scene_saved' /* scene saved to file */,
+  SCENE_CLOSED = 'scene_closed' /* scene closed by user */,
+  SCENE_CHANGED = 'scene_changed' /* scene content modified */
 }
 
-/**
- * Scene manager event data
- */
+/*
+
+         SceneManagerEventData
+	       ---
+	       event data structure containing information about
+	       scene management operations. provides context for
+	       UI updates and system notifications.
+
+*/
 export interface SceneManagerEventData {
   type: SceneManagerEvent;
   scene?: Scene;
@@ -73,7 +109,7 @@ export class SceneManager {
       this.emitEvent({
         type: SceneManagerEvent.SCENE_CHANGED,
         scene: this._currentScene || undefined,
-        timestamp: new Date(),
+        timestamp: new Date()
       });
     };
   }
@@ -93,9 +129,15 @@ export class SceneManager {
   /**
    * Property getters
    */
-  get currentScene(): Scene | null { return this._currentScene; }
-  get hasScene(): boolean { return this._currentScene !== null; }
-  get recentScenes(): readonly SceneFile[] { return this._recentScenes; }
+  get currentScene(): Scene | null {
+    return this._currentScene;
+  }
+  get hasScene(): boolean {
+    return this._currentScene !== null;
+  }
+  get recentScenes(): readonly SceneFile[] {
+    return this._recentScenes;
+  }
 
   /**
    * emitEvent()
@@ -151,7 +193,7 @@ export class SceneManager {
     this.emitEvent({
       type: SceneManagerEvent.SCENE_CREATED,
       scene: this._currentScene,
-      timestamp: new Date(),
+      timestamp: new Date()
     });
 
     return this._currentScene;
@@ -169,14 +211,14 @@ export class SceneManager {
     const camera = this._currentScene.createNode('Main Camera', NodeType.CAMERA);
     camera.setTransform({
       position: { x: 0, y: 0, z: 10 },
-      rotation: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 }
     });
 
     // Create directional light
     const light = this._currentScene.createNode('Directional Light', NodeType.LIGHT);
     light.setTransform({
       position: { x: 5, y: 10, z: 5 },
-      rotation: { x: -45, y: 45, z: 0 },
+      rotation: { x: -45, y: 45, z: 0 }
     });
   }
 
@@ -199,7 +241,7 @@ export class SceneManager {
       this.emitEvent({
         type: SceneManagerEvent.SCENE_LOADED,
         scene: this._currentScene,
-        timestamp: new Date(),
+        timestamp: new Date()
       });
 
       return this._currentScene;
@@ -209,7 +251,7 @@ export class SceneManager {
       this.emitEvent({
         type: SceneManagerEvent.SCENE_LOADED,
         error: errorMessage,
-        timestamp: new Date(),
+        timestamp: new Date()
       });
 
       throw error;
@@ -234,7 +276,7 @@ export class SceneManager {
         path: filePath,
         name: data.metadata.name,
         data,
-        lastModified: new Date(),
+        lastModified: new Date()
       });
 
       return scene;
@@ -245,7 +287,7 @@ export class SceneManager {
         type: SceneManagerEvent.SCENE_LOADED,
         filePath,
         error: errorMessage,
-        timestamp: new Date(),
+        timestamp: new Date()
       });
 
       throw error;
@@ -269,7 +311,7 @@ export class SceneManager {
       this.emitEvent({
         type: SceneManagerEvent.SCENE_SAVED,
         scene: this._currentScene,
-        timestamp: new Date(),
+        timestamp: new Date()
       });
 
       return json;
@@ -280,7 +322,7 @@ export class SceneManager {
         type: SceneManagerEvent.SCENE_SAVED,
         scene: this._currentScene,
         error: errorMessage,
-        timestamp: new Date(),
+        timestamp: new Date()
       });
 
       return null;
@@ -310,14 +352,14 @@ export class SceneManager {
         path: filePath,
         name: this._currentScene.metadata.name,
         data: this._currentScene.serialize(),
-        lastModified: new Date(),
+        lastModified: new Date()
       });
 
       this.emitEvent({
         type: SceneManagerEvent.SCENE_SAVED,
         scene: this._currentScene,
         filePath,
-        timestamp: new Date(),
+        timestamp: new Date()
       });
 
       return true;
@@ -329,7 +371,7 @@ export class SceneManager {
         scene: this._currentScene,
         filePath,
         error: errorMessage,
-        timestamp: new Date(),
+        timestamp: new Date()
       });
 
       return false;
@@ -358,7 +400,7 @@ export class SceneManager {
     this.emitEvent({
       type: SceneManagerEvent.SCENE_CLOSED,
       scene,
-      timestamp: new Date(),
+      timestamp: new Date()
     });
 
     return true;
@@ -380,7 +422,7 @@ export class SceneManager {
    */
   protected addToRecentScenes(sceneFile: SceneFile): void {
     // Remove existing entry for same path
-    this._recentScenes = this._recentScenes.filter(scene => scene.path !== sceneFile.path);
+    this._recentScenes = this._recentScenes.filter((scene) => scene.path !== sceneFile.path);
 
     // Add to beginning
     this._recentScenes.unshift(sceneFile);
@@ -409,10 +451,10 @@ export class SceneManager {
    */
   protected saveRecentScenes(): void {
     try {
-      const data = this._recentScenes.map(scene => ({
+      const data = this._recentScenes.map((scene) => ({
         path: scene.path,
         name: scene.name,
-        lastModified: scene.lastModified.toISOString(),
+        lastModified: scene.lastModified.toISOString()
       }));
 
       localStorage.setItem('worldedit-recent-scenes', JSON.stringify(data));
@@ -436,7 +478,7 @@ export class SceneManager {
         path: item.path,
         name: item.name,
         data: {} as SceneSerialData, // Will be loaded when needed
-        lastModified: new Date(item.lastModified),
+        lastModified: new Date(item.lastModified)
       }));
     } catch (error) {
       console.warn('[SCENE_MANAGER] Failed to load recent scenes:', error);

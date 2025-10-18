@@ -8,7 +8,7 @@
 
          basic.test.ts
            ---
-           basic smoke test suite for WORLDC Alpha Phase 20.
+           basic smoke test suite for WORLDC production system.
 
            provides fundamental tests to verify package
            structure and basic functionality without

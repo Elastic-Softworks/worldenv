@@ -22,3 +22,15 @@ export type { RenderStats2D } from './ViewportRenderer2D';
 
 export { ViewportManager } from './ViewportManager';
 export type { ViewportMode, ViewportStats, ViewportSettings } from './ViewportManager';
+
+export { ObjectSelectionSystem } from './ObjectSelectionSystem';
+export type { SelectionEvent, SelectionOptions } from './ObjectSelectionSystem';
+
+export { CameraControlsIntegration } from './CameraControlsIntegration';
+export type { CameraControlsEvent, CameraControlsSettings } from './CameraControlsIntegration';
+
+export { EntityRenderingSystem } from './EntityRenderingSystem';
+export type { RenderableEntity, EntityRenderingSettings } from './EntityRenderingSystem';
+
+export { TransformGizmoIntegration } from './TransformGizmoIntegration';
+export { RenderComponentIntegration } from './RenderComponentIntegration';
