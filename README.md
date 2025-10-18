@@ -1,5 +1,3 @@
-# WORLDENV
-
 ![WORLDENV Logo](https://github.com/Elastic-Softworks/worldenv/blob/master/gh/b-logo-fit-trans.png)
 
 
