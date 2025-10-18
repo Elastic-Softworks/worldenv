@@ -4,66 +4,150 @@
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Application Menu
- *
- * Defines application menu structure for native menu bar.
- * Includes File, Edit, View, Window, and Help menus.
- */
+/*
+	====================================================================
+             MENU MANAGER - WORLDENV EDITOR
+	====================================================================
+*/
 
-import { Menu, BrowserWindow, app, shell } from 'electron';
-import { logger } from './logger';
+/*
+
+	native application menu system for cross-platform menu bar support
+	in worldenv editor with full keyboard shortcut integration.
+
+	this module manages the complete application menu structure including
+	File, Edit, Build, View, Window, and Help menus. handles platform-
+	specific differences between macOS and Windows/Linux menu conventions.
+
+	menu features:
+	- platform-aware menu construction (macOS app menu handling)
+	- comprehensive keyboard shortcuts with cross-platform support
+	- dynamic menu state updates based on application context
+	- handler-based callback system for menu actions
+	- proper separator placement for logical grouping
+
+	the system automatically adapts menu structure and shortcuts
+	to match platform conventions while maintaining consistent
+	functionality across all supported operating systems.
+
+*/
+
+/*
+	====================================================================
+             --- SETUP ---
+	====================================================================
+*/
+
+import { Menu, BrowserWindow, app, shell } from 'electron'; /* ELECTRON MENU API */
+import { logger } from './logger'; /* LOGGING SYSTEM */
+
+/*
+	====================================================================
+             --- TYPES ---
+	====================================================================
+*/
+
+/*
+
+         MenuHandlers
+	       ---
+	       callback interface for menu action handling.
+
+	       provides optional handler functions for all menu actions
+	       allowing the menu system to delegate operations to
+	       appropriate application components. uses optional
+	       properties to allow partial handler registration.
+
+*/
 
 interface MenuHandlers {
-  onNewProject?: () => void;
-  onOpenProject?: () => void;
-  onSaveProject?: () => void;
-  onSaveProjectAs?: () => void;
-  onCloseProject?: () => void;
-  onExit?: () => void;
-  onUndo?: () => void;
-  onRedo?: () => void;
-  onCut?: () => void;
-  onCopy?: () => void;
-  onPaste?: () => void;
-  onDelete?: () => void;
-  onSelectAll?: () => void;
-  onBuildProject?: () => void;
-  onBuildConfiguration?: () => void;
-  onOpenBuildLocation?: () => void;
-  onToggleDevTools?: () => void;
-  onReload?: () => void;
-  onToggleFullScreen?: () => void;
-  onResetZoom?: () => void;
-  onZoomIn?: () => void;
-  onZoomOut?: () => void;
-  onShowDocumentation?: () => void;
-  onShowAbout?: () => void;
+  onNewProject?: () => void /* CREATE NEW PROJECT */;
+  onOpenProject?: () => void /* OPEN EXISTING PROJECT */;
+  onSaveProject?: () => void /* SAVE CURRENT PROJECT */;
+  onSaveProjectAs?: () => void /* SAVE PROJECT WITH NEW NAME */;
+  onCloseProject?: () => void /* CLOSE CURRENT PROJECT */;
+  onExit?: () => void /* EXIT APPLICATION */;
+  onUndo?: () => void /* UNDO LAST ACTION */;
+  onRedo?: () => void /* REDO LAST UNDONE ACTION */;
+  onCut?: () => void /* CUT SELECTION TO CLIPBOARD */;
+  onCopy?: () => void /* COPY SELECTION TO CLIPBOARD */;
+  onPaste?: () => void /* PASTE FROM CLIPBOARD */;
+  onDelete?: () => void /* DELETE SELECTION */;
+  onSelectAll?: () => void /* SELECT ALL ITEMS */;
+  onBuildProject?: () => void /* BUILD CURRENT PROJECT */;
+  onBuildConfiguration?: () => void /* CONFIGURE BUILD SETTINGS */;
+  onOpenBuildLocation?: () => void /* OPEN BUILD OUTPUT FOLDER */;
+  onToggleDevTools?: () => void /* TOGGLE DEVELOPER TOOLS */;
+  onReload?: () => void /* RELOAD APPLICATION */;
+  onToggleFullScreen?: () => void /* TOGGLE FULLSCREEN MODE */;
+  onResetZoom?: () => void /* RESET ZOOM TO 100% */;
+  onZoomIn?: () => void /* INCREASE ZOOM LEVEL */;
+  onZoomOut?: () => void /* DECREASE ZOOM LEVEL */;
+  onShowDocumentation?: () => void /* SHOW HELP DOCUMENTATION */;
+  onShowAbout?: () => void /* SHOW ABOUT DIALOG */;
 }
 
+/*
+	====================================================================
+             --- FUNCS ---
+	====================================================================
+*/
+
+/*
+
+         MenuManager
+	       ---
+	       native application menu construction and management.
+
+	       builds platform-appropriate menu structures with proper
+	       keyboard shortcuts and separator placement. handles
+	       differences between macOS (with app menu) and Windows/Linux
+	       menu conventions.
+
+	       supports dynamic menu updates based on application state
+	       such as project availability, undo/redo capability, and
+	       selection status. provides comprehensive callback system
+	       for menu action delegation.
+
+*/
+
 class MenuManager {
-  private handlers: MenuHandlers;
-  private current_menu: Menu | null;
+  private handlers: MenuHandlers; /* MENU ACTION CALLBACKS */
+  private current_menu: Menu | null; /* ACTIVE MENU INSTANCE */
 
   constructor() {
     this.handlers = {};
     this.current_menu = null;
   }
 
-  /**
-   * setHandlers()
-   *
-   * Sets menu action handlers.
-   */
+  /*
+
+           setHandlers()
+	         ---
+	         registers callback functions for menu actions.
+
+	         allows application components to provide handlers
+	         for menu operations. uses spread operator to merge
+	         new handlers with existing ones.
+
+  */
+
   public setHandlers(handlers: MenuHandlers): void {
     this.handlers = { ...this.handlers, ...handlers };
   }
 
-  /**
-   * buildMenu()
-   *
-   * Builds and sets application menu.
-   */
+  /*
+
+           buildMenu()
+	         ---
+	         constructs and activates application menu structure.
+
+	         builds platform-appropriate menu with all standard
+	         menus and shortcuts. automatically includes macOS
+	         app menu when running on Darwin platform.
+
+  */
+
   public buildMenu(_window: BrowserWindow | null): void {
     const is_mac = process.platform === 'darwin';
 
@@ -85,11 +169,18 @@ class MenuManager {
     logger.debug('MENU', 'Application menu built');
   }
 
-  /**
-   * buildMacAppMenu()
-   *
-   * Builds macOS-specific app menu.
-   */
+  /*
+
+           buildMacAppMenu()
+	         ---
+	         constructs macOS-specific application menu.
+
+	         creates standard macOS app menu with About, Services,
+	         Hide/Show actions, and Quit option. follows Apple
+	         Human Interface Guidelines for menu structure.
+
+  */
+
   private buildMacAppMenu(): Electron.MenuItemConstructorOptions {
     return {
       label: app.name,
@@ -132,11 +223,18 @@ class MenuManager {
     };
   }
 
-  /**
-   * buildFileMenu()
-   *
-   * Builds File menu.
-   */
+  /*
+
+           buildFileMenu()
+	         ---
+	         constructs File menu with project operations.
+
+	         includes standard file operations (New, Open, Save)
+	         with proper keyboard shortcuts. adapts Exit placement
+	         based on platform conventions.
+
+  */
+
   private buildFileMenu(): Electron.MenuItemConstructorOptions {
     const is_mac = process.platform === 'darwin';
 
@@ -181,6 +279,8 @@ class MenuManager {
           }
         },
         { type: 'separator' },
+        /* exit menu item only appears on Windows/Linux
+           since macOS uses app menu for Quit */
         ...(is_mac
           ? []
           : [
@@ -196,11 +296,18 @@ class MenuManager {
     };
   }
 
-  /**
-   * buildEditMenu()
-   *
-   * Builds Edit menu.
-   */
+  /*
+
+           buildEditMenu()
+	         ---
+	         constructs Edit menu with standard editing operations.
+
+	         provides undo/redo, clipboard operations, and selection
+	         commands with appropriate keyboard shortcuts for all
+	         platforms.
+
+  */
+
   private buildEditMenu(): Electron.MenuItemConstructorOptions {
     return {
       label: 'Edit',
@@ -214,6 +321,7 @@ class MenuManager {
         },
         {
           label: 'Redo',
+          /* macOS uses Shift+Command+Z while Windows/Linux uses Ctrl+Y */
           accelerator: process.platform === 'darwin' ? 'Shift+Command+Z' : 'CmdOrCtrl+Y',
           click: () => {
             this.handlers.onRedo?.();
@@ -260,11 +368,17 @@ class MenuManager {
     };
   }
 
-  /**
-   * buildBuildMenu()
-   *
-   * Builds Build menu.
-   */
+  /*
+
+           buildBuildMenu()
+	         ---
+	         constructs Build menu for project compilation operations.
+
+	         provides build commands and configuration access
+	         with keyboard shortcuts for common build operations.
+
+  */
+
   private buildBuildMenu(): Electron.MenuItemConstructorOptions {
     return {
       label: 'Build',
@@ -294,11 +408,17 @@ class MenuManager {
     };
   }
 
-  /**
-   * buildViewMenu()
-   *
-   * Builds View menu.
-   */
+  /*
+
+           buildViewMenu()
+	         ---
+	         constructs View menu with display and zoom controls.
+
+	         includes developer tools access, zoom controls, and
+	         fullscreen toggle with platform-appropriate shortcuts.
+
+  */
+
   private buildViewMenu(): Electron.MenuItemConstructorOptions {
     return {
       label: 'View',
@@ -312,6 +432,7 @@ class MenuManager {
         },
         {
           label: 'Toggle Developer Tools',
+          /* platform-specific developer tools shortcuts */
           accelerator: process.platform === 'darwin' ? 'Alt+Command+I' : 'Ctrl+Shift+I',
           click: () => {
             this.handlers.onToggleDevTools?.();
@@ -342,6 +463,7 @@ class MenuManager {
         { type: 'separator' },
         {
           label: 'Toggle Full Screen',
+          /* platform-specific fullscreen shortcuts */
           accelerator: process.platform === 'darwin' ? 'Ctrl+Command+F' : 'F11',
           click: () => {
             this.handlers.onToggleFullScreen?.();
@@ -351,11 +473,18 @@ class MenuManager {
     };
   }
 
-  /**
-   * buildWindowMenu()
-   *
-   * Builds Window menu.
-   */
+  /*
+
+           buildWindowMenu()
+	         ---
+	         constructs Window menu with platform-specific window controls.
+
+	         adapts menu structure based on platform conventions.
+	         macOS includes Zoom and Bring All to Front while
+	         Windows/Linux includes Close window action.
+
+  */
+
   private buildWindowMenu(): Electron.MenuItemConstructorOptions {
     const is_mac = process.platform === 'darwin';
 
@@ -367,6 +496,7 @@ class MenuManager {
           accelerator: 'CmdOrCtrl+M',
           role: 'minimize'
         },
+        /* platform-specific window menu items */
         ...(is_mac
           ? [
               {
@@ -390,11 +520,17 @@ class MenuManager {
     };
   }
 
-  /**
-   * buildHelpMenu()
-   *
-   * Builds Help menu.
-   */
+  /*
+
+           buildHelpMenu()
+	         ---
+	         constructs Help menu with documentation and about information.
+
+	         provides access to help documentation, project repository,
+	         and application about dialog.
+
+  */
+
   private buildHelpMenu(): Electron.MenuItemConstructorOptions {
     return {
       label: 'Help',
@@ -409,6 +545,7 @@ class MenuManager {
         {
           label: 'GitHub Repository',
           click: async () => {
+            /* open external repository link in default browser */
             await shell.openExternal('https://github.com/elasticsoftworks/worldenv');
           }
         },
@@ -423,23 +560,40 @@ class MenuManager {
     };
   }
 
-  /**
-   * updateMenu()
-   *
-   * Updates menu state based on application state.
-   */
+  /*
+
+           updateMenu()
+	         ---
+	         updates menu state based on application context.
+
+	         allows dynamic enabling/disabling of menu items
+	         based on current application state such as
+	         project availability and selection status.
+
+  */
+
   public updateMenu(state: {
-    has_project?: boolean;
-    can_undo?: boolean;
-    can_redo?: boolean;
-    has_selection?: boolean;
+    has_project?: boolean /* PROJECT IS LOADED */;
+    can_undo?: boolean /* UNDO OPERATION AVAILABLE */;
+    can_redo?: boolean /* REDO OPERATION AVAILABLE */;
+    has_selection?: boolean /* ITEMS ARE SELECTED */;
   }): void {
     if (!this.current_menu) {
       return;
     }
 
+    /* future implementation: dynamically enable/disable
+       menu items based on application state */
+
     logger.debug('MENU', 'Menu updated', state);
   }
 }
 
+/* singleton instance for application-wide menu management */
 export const menuManager = new MenuManager();
+
+/*
+	====================================================================
+             --- EOF ---
+	====================================================================
+*/

@@ -1,6 +1,6 @@
 # WORLDENV
 
-![WORLDENV Logo](https://github.com/elastic-softworks/worldenv/raw/main/gh/b-logo-fit-trans.png)
+![WORLDENV Logo](https://github.com/Elastic-Softworks/worldenv/blob/master/gh/b-logo-fit-trans.png)
 
 
 WORLDENV is a game development ecosystem consisting of **WORLDEDIT** (a visual editor) and **WORLDC** (a programming language). This monorepo contains both components organized for standalone use and integrated development.
