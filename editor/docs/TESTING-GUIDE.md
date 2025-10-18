@@ -2,6 +2,25 @@
 
 **Complete testing manual for WORLDEDIT and WORLDC systems**
 
+> **⚠️ TESTING STATUS NOTICE**
+> 
+> Testing is currently blocked by critical build failures. This guide describes the intended testing procedures once build issues are resolved.
+> 
+> **Current Blockers:**
+> - Application cannot build due to 33+ TypeScript compilation errors
+> - Main process builds successfully but renderer process fails
+> - No testing can be performed until build succeeds
+> 
+> **Testing Readiness Status:**
+> - **Manual Testing:** ❌ BLOCKED - Application cannot launch
+> - **Automated Testing:** ❌ BLOCKED - Build failures prevent test execution  
+> - **Integration Testing:** ❌ BLOCKED - Core systems not accessible
+> - **Performance Testing:** ❌ BLOCKED - No running application to test
+> 
+> **For Developers:** Fix critical TypeScript errors in AssetBrowserPanel.tsx, InspectorPanel.tsx, and Entity module imports before attempting any testing procedures described below.
+> 
+> See [TROUBLESHOOTING.md](TROUBLESHOOTING.md#current-build-failures-priority-critical) for immediate resolution steps.
+
 ## Table of Contents
 
 - [Overview](#overview)

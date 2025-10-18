@@ -370,3 +370,101 @@ export interface OptimizationLevel {
   name: string;
   description: string;
 }
+
+/**
+ * Asset type enumeration
+ */
+export type AssetType =
+  | 'folder'
+  | 'image'
+  | 'audio'
+  | 'model'
+  | 'script'
+  | 'scene'
+  | 'material'
+  | 'font'
+  | 'data'
+  | 'shader'
+  | 'unknown';
+
+/**
+ * Image metadata
+ */
+export interface ImageMetadata {
+  width: number;
+  height: number;
+  channels: number;
+  format: string;
+  compressed: boolean;
+}
+
+/**
+ * Audio metadata
+ */
+export interface AudioMetadata {
+  duration: number;
+  channels: number;
+  sampleRate: number;
+  bitrate?: number;
+  format: string;
+}
+
+/**
+ * Model metadata
+ */
+export interface ModelMetadata {
+  vertices: number;
+  faces: number;
+  materials: string[];
+  animations?: string[];
+  format: string;
+}
+
+/**
+ * WorldC metadata
+ */
+export interface WorldCMetadata {
+  version: string;
+  target: 'typescript' | 'assemblyscript';
+  exports: string[];
+  dependencies: string[];
+  compiled: Date;
+  compiledPath?: string;
+  lastCompiled?: Date;
+  hasErrors: boolean;
+  errorCount: number;
+  warningCount: number;
+  animations: string[];
+  format: string;
+}
+
+/**
+ * Asset metadata interface
+ */
+export interface AssetMetadata {
+  id: string;
+  imported: Date;
+  tags: string[];
+  description?: string;
+  thumbnail?: string;
+  imageInfo?: ImageMetadata;
+  audioInfo?: AudioMetadata;
+  modelInfo?: ModelMetadata;
+  worldcInfo?: WorldCMetadata;
+}
+
+/**
+ * Asset item interface
+ */
+export interface AssetItem {
+  name: string;
+  type: AssetType;
+  path: string;
+  relativePath: string;
+  size: number;
+  modified: Date;
+  created: Date;
+  extension: string;
+  metadata: AssetMetadata;
+  children?: AssetItem[];
+}

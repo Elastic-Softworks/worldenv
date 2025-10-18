@@ -1,20 +1,52 @@
 /*
+   ===============================================================
+   WORLDEDIT SPLASH SCREEN
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Splash Screen Module
- *
- * Displays splash screen during application initialization.
- * Shows loading progress and version information.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { BrowserWindow, screen, nativeTheme, app } from 'electron';
-import { logger } from './logger';
-import * as path from 'path';
-import * as fs from 'fs';
+import {
+  BrowserWindow,
+  screen,
+  nativeTheme,
+  app
+} from 'electron'; /* ELECTRON WINDOW AND SYSTEM APIS */
+import { logger } from './logger'; /* CENTRALIZED LOGGING SYSTEM */
+import * as path from 'path'; /* NODE.JS PATH UTILITIES */
+import * as fs from 'fs'; /* NODE.JS FILE SYSTEM */
+
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         SplashScreen
+	       ---
+	       creates and manages the application splash screen that
+	       displays during startup. shows company branding, loading
+	       progress, and version information with smooth animations
+	       and theme-aware styling.
+
+	       the splash screen uses an embedded html page with
+	       inline css to avoid external dependencies and ensure
+	       fast loading during application initialization.
+
+*/
 
 class SplashScreen {
   private window: BrowserWindow | null;
@@ -390,3 +422,9 @@ class SplashScreen {
 }
 
 export const splashScreen = new SplashScreen();
+
+/*
+	===============================================================
+             --- EOF ---
+	===============================================================
+*/

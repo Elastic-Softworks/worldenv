@@ -14,6 +14,7 @@
 import * as PIXI from 'pixi.js';
 import { EditorCamera } from './EditorCamera';
 import { Entity } from '../core/scene/Entity';
+import { SpriteComponent } from '../core/components/core/SpriteComponent';
 
 export interface RenderStats2D {
   drawCalls: number;
@@ -48,7 +49,7 @@ export class ViewportRenderer2D {
 
   /* SELECTION SYSTEM */
   private selectedObjects: PIXI.DisplayObject[];
-  private selectionGraphics!: PIXI.Graphics;
+  private selectionGraphics: PIXI.Graphics | null;
   private selectionEnabled: boolean;
   private multiSelectEnabled: boolean;
 
@@ -737,12 +738,14 @@ export class ViewportRenderer2D {
     }
 
     /* UPDATE SPRITE PROPERTIES */
-    const spriteComponent = entity.getComponent('Sprite');
+    const spriteComponent = entity.getComponent<SpriteComponent>('Sprite');
     if (spriteComponent && visual instanceof PIXI.Container) {
       const sprite = visual.children.find((child) => child instanceof PIXI.Sprite) as PIXI.Sprite;
       if (sprite) {
-        sprite.tint = spriteComponent.color || 0xffffff;
-        sprite.alpha = spriteComponent.alpha || 1.0;
+        const color = spriteComponent.getProperty<number>('color') || 0xffffff;
+        const alpha = spriteComponent.getProperty<number>('alpha') || 1.0;
+        sprite.tint = color;
+        sprite.alpha = alpha;
         sprite.visible = spriteComponent.enabled !== false;
       }
     }
@@ -783,6 +786,30 @@ export class ViewportRenderer2D {
   selectObject(object: PIXI.DisplayObject): void {
     this.selectedObjects = [object];
     this.updateSelectionGraphics();
+  }
+
+  /**
+   * updateSelectionGraphics()
+   *
+   * Updates the visual selection indicators for selected objects.
+   */
+  private updateSelectionGraphics(): void {
+    if (!this.selectionGraphics) {
+      return;
+    }
+
+    this.selectionGraphics.clear();
+
+    if (this.selectedObjects.length === 0) {
+      return;
+    }
+
+    this.selectionGraphics.lineStyle(2, 0x00ff00, 1);
+
+    for (const obj of this.selectedObjects) {
+      const bounds = obj.getBounds();
+      this.selectionGraphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    }
   }
 
   /**

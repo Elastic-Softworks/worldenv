@@ -1,36 +1,68 @@
 /*
+   ===============================================================
+   WORLDEDIT WC HOT RELOAD MANAGER
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WC Hot Reload Manager
- *
- * Manages hot-reload functionality for WC code changes.
- * Watches files, detects changes, recompiles, and triggers
- * engine updates in real-time.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { EventEmitter } from 'events';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as chokidar from 'chokidar';
+import { EventEmitter } from 'events'; /* NODE EVENT SYSTEM */
+import * as fs from 'fs/promises'; /* ASYNC FILE SYSTEM */
+import * as path from 'path'; /* PATH MANIPULATION */
+import * as chokidar from 'chokidar'; /* FILE WATCHING */
 import {
   WCCompilerIntegration,
   CompilationResult,
   CompilationTarget,
   CompilerEvent
-} from './WCCompilerIntegration';
+} from './WCCompilerIntegration'; /* WC COMPILER INTEGRATION */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         HotReloadConfig
+	       ---
+	       configuration interface for hot-reload behavior
+	       controlling watch paths, ignore patterns, debounce
+	       timing, and compilation settings for development
+	       workflow optimization.
+
+*/
 
 export interface HotReloadConfig {
-  watchPaths: string[];
-  ignorePatterns: string[];
-  debounceDelay: number;
-  compilationTargets: CompilationTarget[];
-  enableSourceMaps: boolean;
-  enableTypeDeclarations: boolean;
+  watchPaths: string[] /* directories to monitor for changes */;
+  ignorePatterns: string[] /* file patterns to exclude from watching */;
+  debounceDelay: number /* milliseconds to wait before recompiling */;
+  compilationTargets: CompilationTarget[] /* targets for compilation */;
+  enableSourceMaps: boolean /* generate source maps during reload */;
+  enableTypeDeclarations: boolean /* generate type declarations */;
 }
+
+/*
+
+         HotReloadEvent
+	       ---
+	       event data structure for hot-reload notifications
+	       including event types, file information, and
+	       compilation results for development feedback.
+
+*/
 
 export interface HotReloadEvent {
   type:
@@ -38,35 +70,69 @@ export interface HotReloadEvent {
     | 'compilation-started'
     | 'compilation-complete'
     | 'compilation-error'
-    | 'reload-triggered';
-  filename?: string;
-  result?: CompilationResult;
-  error?: Error;
-  timestamp: number;
+    | 'reload-triggered' /* event type classification */;
+  filename?: string /* source file that triggered event */;
+  result?: CompilationResult /* compilation result data */;
+  error?: Error /* error information if applicable */;
+  timestamp: number /* event occurrence timestamp */;
 }
+
+/*
+
+         WatchedFile
+	       ---
+	       tracked file data structure maintaining file metadata,
+	       content cache, and compilation results for efficient
+	       change detection and hot-reload operations.
+
+*/
 
 export interface WatchedFile {
-  path: string;
-  lastModified: number;
-  content: string;
-  compilationResult?: CompilationResult;
+  path: string /* absolute file path */;
+  lastModified: number /* last modification timestamp */;
+  content: string /* cached file content */;
+  compilationResult?: CompilationResult /* last compilation result */;
 }
+
+/*
+
+         HotReloadState
+	       ---
+	       enumeration of hot-reload manager states for tracking
+	       current operation mode and preventing conflicting
+	       operations during file watching and compilation.
+
+*/
 
 export enum HotReloadState {
-  IDLE = 'idle',
-  WATCHING = 'watching',
-  COMPILING = 'compiling',
-  RELOADING = 'reloading',
-  ERROR = 'error'
+  IDLE = 'idle' /* manager inactive, not watching */,
+  WATCHING = 'watching' /* actively monitoring files */,
+  COMPILING = 'compiling' /* compilation in progress */,
+  RELOADING = 'reloading' /* engine reload in progress */,
+  ERROR = 'error' /* error state requiring intervention */
 }
 
-/**
- * WCHotReloadManager
- *
- * Main hot-reload management class. Orchestrates file watching,
- * compilation, and engine reload operations for seamless
- * development experience.
- */
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         WCHotReloadManager
+	       ---
+	       comprehensive hot-reload management system that
+	       orchestrates file watching, change detection, automatic
+	       compilation, and engine reload operations for seamless
+	       real-time development workflows.
+
+	       the manager coordinates file system monitoring with
+	       compiler integration to provide immediate feedback
+	       and updates when WorldC source files are modified
+	       during development sessions.
+
+*/
 export class WCHotReloadManager extends EventEmitter {
   private compiler: WCCompilerIntegration;
   private config: HotReloadConfig;
@@ -106,9 +172,17 @@ export class WCHotReloadManager extends EventEmitter {
    *
    * Start watching WC files for changes.
    */
-  async startWatching(): Promise<void> {
+  async startWatching(watchPaths?: string[], options?: any): Promise<void> {
     if (this.state === HotReloadState.WATCHING) {
       return;
+    }
+
+    /* UPDATE CONFIG IF PARAMETERS PROVIDED */
+    if (watchPaths) {
+      this.config.watchPaths = watchPaths;
+    }
+    if (options) {
+      Object.assign(this.config, options);
     }
 
     try {
@@ -599,6 +673,16 @@ export class WCHotReloadManager extends EventEmitter {
  */
 export class HotReloadManagerFactory {
   /**
+   * create()
+   *
+   * Create hot-reload manager with configuration.
+   */
+  public static create(config: any): WCHotReloadManager {
+    const compiler = config.compiler || new WCCompilerIntegration();
+    return new WCHotReloadManager(compiler, config);
+  }
+
+  /**
    * createDefault()
    *
    * Create default hot-reload manager.
@@ -624,4 +708,10 @@ export class HotReloadManagerFactory {
     ====================================
              --- EOF ---
     ====================================
+*/
+
+/*
+	===============================================================
+             --- EOF ---
+	===============================================================
 */

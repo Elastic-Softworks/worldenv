@@ -260,6 +260,34 @@ class BuildManager {
     config: BuildConfiguration,
     onProgress?: BuildCallback
   ): Promise<BuildResult> {
+    /* ASSERTION: config parameter validation */
+    console.assert(
+      config !== null && typeof config === 'object',
+      'buildProject: config must be valid BuildConfiguration object'
+    );
+    console.assert(
+      typeof config.outputDirectory === 'string',
+      'buildProject: config.outputDirectory must be string'
+    );
+    console.assert(
+      typeof config.buildTarget === 'string',
+      'buildProject: config.buildTarget must be string'
+    );
+
+    if (!config || typeof config !== 'object') {
+      throw new Error('buildProject: Invalid configuration object provided');
+    }
+
+    /* ASSERTION: onProgress callback validation if provided */
+    console.assert(
+      onProgress === undefined || typeof onProgress === 'function',
+      'buildProject: onProgress must be function if provided'
+    );
+
+    if (onProgress !== undefined && typeof onProgress !== 'function') {
+      throw new Error('buildProject: onProgress must be a function');
+    }
+
     const startTime = Date.now();
     const result: BuildResult = {
       success: false,
@@ -272,6 +300,13 @@ class BuildManager {
     try {
       /* VALIDATE CONFIGURATION */
       const validationErrors = this.validateConfiguration(config);
+
+      /* ASSERTION: validation must return array */
+      console.assert(
+        Array.isArray(validationErrors),
+        'buildProject: validateConfiguration must return array'
+      );
+
       if (validationErrors.length > 0) {
         result.errors = validationErrors;
         return result;

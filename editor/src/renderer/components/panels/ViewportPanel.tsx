@@ -21,6 +21,8 @@ import React, { useRef, useEffect, useState, useCallback } from 'react'; /* REAC
 import { useEditorState } from '../../context/EditorStateContext'; /* EDITOR STATE */
 import { useTheme } from '../../context/ThemeContext'; /* THEMING */
 import { useUndoRedo } from '../../hooks/useUndoRedo'; /* UNDO/REDO */
+import { Entity } from '../../core/scene/Entity'; /* ENTITY CLASS */
+import type { EntityData } from '../../../shared/types'; /* ENTITY DATA TYPE */
 import {
   ViewportManager,
   ViewportMode,
@@ -716,8 +718,19 @@ export function ViewportPanel(): JSX.Element {
    * Handle entity additions from editor state.
    */
   const handleEntityAdded = useCallback(
-    (entity: { id: string; name: string; [key: string]: any }) => {
+    (entityData: { id: string; name: string; [key: string]: any }) => {
       if (viewportManagerRef.current) {
+        // Convert plain object to Entity instance
+        const entityDataComplete: EntityData = {
+          parent: null,
+          children: [],
+          components: [],
+          enabled: true,
+          ...entityData,
+          id: entityData.id,
+          name: entityData.name
+        };
+        const entity = new Entity(entityDataComplete);
         viewportManagerRef.current.addEntity(entity);
       }
     },

@@ -65,7 +65,7 @@ export interface SelectionOptions {
 
 */
 
-export class ObjectSelectionSystem extends THREE.EventDispatcher {
+export class ObjectSelectionSystem {
   /* core rendering components for selection operations */
   private scene: THREE.Scene;
   private camera: THREE.Camera;
@@ -103,8 +103,6 @@ export class ObjectSelectionSystem extends THREE.EventDispatcher {
   private static readonly OUTLINE_COLOR = 0xffffff;
 
   constructor(scene: THREE.Scene, camera: THREE.Camera, domElement: HTMLElement) {
-    super();
-
     this.scene = scene;
     this.camera = camera;
     this.domElement = domElement;
@@ -652,9 +650,10 @@ export class ObjectSelectionSystem extends THREE.EventDispatcher {
     }
 
     const toDelete = Array.from(this.selectedObjects);
-    this.dispatchEvent({
-      type: 'delete',
-      objects: toDelete
+    this.notifyListeners('delete', {
+      selected: [],
+      deselected: toDelete,
+      primary: null
     });
   }
 
@@ -714,6 +713,18 @@ export class ObjectSelectionSystem extends THREE.EventDispatcher {
   }
 
   /**
+   * notifyListeners()
+   *
+   * Notify all registered listeners of selection events.
+   */
+  private notifyListeners(type: string, event: SelectionEvent): void {
+    const listener = this.eventListeners.get(type);
+    if (listener) {
+      listener(event);
+    }
+  }
+
+  /**
    * removeEventListener()
    *
    * Remove selection event listener.
@@ -740,10 +751,7 @@ export class ObjectSelectionSystem extends THREE.EventDispatcher {
     }
 
     /* ALSO DISPATCH VIA THREE.js EVENT SYSTEM */
-    this.dispatchEvent({
-      type: 'selectionchange',
-      ...event
-    });
+    // No longer needed - handled by notifyListeners
   }
 
   /**

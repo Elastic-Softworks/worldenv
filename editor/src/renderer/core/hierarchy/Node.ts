@@ -1,33 +1,52 @@
 /*
+   ===============================================================
+   WORLDEDIT NODE DATA STRUCTURE
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Node Data Structure
- *
- * Core node/entity system for scene hierarchy management.
- * Provides hierarchical tree structure with parent/child relationships.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { generateId } from '../../utils/IdGenerator';
-import { componentSystem, ComponentSerialData } from '../components';
-import type { IComponent } from '../components/Component';
+import { generateId } from '../../utils/IdGenerator'; /* UNIQUE ID GENERATION */
+import { componentSystem, ComponentSerialData } from '../components'; /* COMPONENT SYSTEM */
+import type { IComponent } from '../components/Component'; /* COMPONENT INTERFACE */
 
-/**
- * Node type enumeration
- */
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         NodeType
+	       ---
+	       enumeration of supported node types in the scene
+	       hierarchy system. defines entity classifications for
+	       proper component attachment and rendering behavior.
+
+*/
+
 export enum NodeType {
-  SCENE = 'scene',
-  ENTITY_2D = 'entity2d',
-  ENTITY_3D = 'entity3d',
-  CAMERA = 'camera',
-  LIGHT = 'light',
-  SPRITE = 'sprite',
-  MESH = 'mesh',
-  AUDIO_SOURCE = 'audio_source',
-  SCRIPT = 'script',
+  SCENE = 'scene' /* root scene container node */,
+  ENTITY_2D = 'entity2d' /* 2D entity for sprites and UI */,
+  ENTITY_3D = 'entity3d' /* 3D entity for meshes and models */,
+  CAMERA = 'camera' /* camera for scene rendering */,
+  LIGHT = 'light' /* light source for illumination */,
+  SPRITE = 'sprite' /* 2D sprite entity */,
+  MESH = 'mesh' /* 3D mesh entity */,
+  AUDIO_SOURCE = 'audio_source' /* audio playback entity */,
+  SCRIPT = 'script' /* script-controlled entity */,
   GROUP = 'group'
 }
 
@@ -634,3 +653,9 @@ export class Node {
     this._components.clear();
   }
 }
+
+/*
+	===============================================================
+             --- EOF ---
+	===============================================================
+*/

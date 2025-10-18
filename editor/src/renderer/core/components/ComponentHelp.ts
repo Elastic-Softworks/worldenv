@@ -1,29 +1,56 @@
 /*
+   ===============================================================
+   WORLDEDIT COMPONENT HELP SYSTEM
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Component Help System
- *
- * Comprehensive help documentation and tooltip system for components.
- * Provides contextual help, property descriptions, usage examples,
- * and interactive tooltips for the component system.
- */
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         PropertyHelpInfo
+	       ---
+	       comprehensive help information structure for component
+	       properties including type definitions, descriptions,
+	       usage examples, validation ranges, and contextual
+	       assistance for property configuration and usage.
+
+*/
 
 export interface PropertyHelpInfo {
-  name: string;
-  type: string;
-  description: string;
-  defaultValue?: any;
-  range?: { min?: number; max?: number };
-  units?: string;
-  examples?: string[];
-  tips?: string[];
-  warnings?: string[];
-  relatedProperties?: string[];
+  name: string /* property identifier name */;
+  type: string /* property data type */;
+  description: string /* detailed property description */;
+  defaultValue?: any /* default value if not specified */;
+  range?: { min?: number; max?: number } /* valid value range */;
+  units?: string /* measurement units for numeric values */;
+  examples?: string[] /* usage example values */;
+  tips?: string[] /* helpful usage tips */;
+  warnings?: string[] /* important usage warnings */;
+  relatedProperties?: string[] /* related property names */;
 }
+
+/*
+
+         ComponentHelpInfo
+	       ---
+	       comprehensive help documentation structure for
+	       component types including descriptions, categories,
+	       property information, and usage examples for
+	       effective component utilization in the editor.
+
+*/
 
 export interface ComponentHelpInfo {
   type: string;
@@ -91,7 +118,8 @@ export class ComponentHelpRegistry {
       displayName: 'Transform',
       category: 'Core',
       description: 'Controls the position, rotation, and scale of an entity in 3D space',
-      longDescription: 'The Transform component is the fundamental component that defines where an entity exists in the world. It provides position (translation), rotation, and scale properties that work together to place and orient objects in both 2D and 3D scenes.',
+      longDescription:
+        'The Transform component is the fundamental component that defines where an entity exists in the world. It provides position (translation), rotation, and scale properties that work together to place and orient objects in both 2D and 3D scenes.',
       useCases: [
         'Position objects in the scene',
         'Rotate objects to face different directions',
@@ -205,7 +233,8 @@ export class ComponentHelpRegistry {
       displayName: 'Light',
       category: 'Rendering',
       description: 'Provides illumination for 3D scenes with various light types',
-      longDescription: 'The Light component adds realistic lighting to your 3D scenes. It supports different light types including directional lights (like the sun), point lights (like light bulbs), and spot lights (like flashlights). Proper lighting is essential for creating visually appealing 3D environments.',
+      longDescription:
+        'The Light component adds realistic lighting to your 3D scenes. It supports different light types including directional lights (like the sun), point lights (like light bulbs), and spot lights (like flashlights). Proper lighting is essential for creating visually appealing 3D environments.',
       useCases: [
         'Illuminate 3D scenes for realistic rendering',
         'Create mood and atmosphere with colored lighting',
@@ -296,7 +325,8 @@ export class ComponentHelpRegistry {
       displayName: 'Mesh Renderer',
       category: 'Rendering',
       description: 'Renders a 3D mesh with materials and lighting',
-      longDescription: 'The MeshRenderer component displays 3D geometry in the scene. It works with mesh assets and materials to create visible 3D objects that respond to lighting and can cast shadows.',
+      longDescription:
+        'The MeshRenderer component displays 3D geometry in the scene. It works with mesh assets and materials to create visible 3D objects that respond to lighting and can cast shadows.',
       useCases: [
         'Display 3D models and geometry',
         'Create visible objects in 3D scenes',
@@ -342,7 +372,8 @@ export class ComponentHelpRegistry {
       displayName: 'Sprite',
       category: 'Rendering',
       description: 'Renders a 2D texture or sprite image',
-      longDescription: 'The Sprite component displays 2D images in both 2D and 3D scenes. It is ideal for UI elements, 2D game objects, billboards, and particle effects.',
+      longDescription:
+        'The Sprite component displays 2D images in both 2D and 3D scenes. It is ideal for UI elements, 2D game objects, billboards, and particle effects.',
       useCases: [
         'Display 2D images and textures',
         'Create 2D game objects',
@@ -395,7 +426,8 @@ export class ComponentHelpRegistry {
       displayName: 'Rigid Body',
       category: 'Physics',
       description: 'Handles physics simulation with mass, velocity, and forces',
-      longDescription: 'The RigidBody component enables physics simulation for entities. It handles mass, velocity, forces, and responds to collisions. Essential for creating realistic physical interactions.',
+      longDescription:
+        'The RigidBody component enables physics simulation for entities. It handles mass, velocity, forces, and responds to collisions. Essential for creating realistic physical interactions.',
       useCases: [
         'Create objects affected by gravity',
         'Enable collision responses',
@@ -448,7 +480,8 @@ export class ComponentHelpRegistry {
       displayName: 'Collider',
       category: 'Physics',
       description: 'Defines collision shape and physics material properties',
-      longDescription: 'The Collider component defines the shape used for collision detection and physics interactions. It works with RigidBody components to create realistic physical behavior.',
+      longDescription:
+        'The Collider component defines the shape used for collision detection and physics interactions. It works with RigidBody components to create realistic physical behavior.',
       useCases: [
         'Define collision boundaries for objects',
         'Trigger events when objects touch',
@@ -456,9 +489,9 @@ export class ComponentHelpRegistry {
         'Optimize collision detection with simple shapes'
       ],
       commonIssues: [
-        'Collider shape doesn\'t match visual mesh',
+        "Collider shape doesn't match visual mesh",
         'Complex mesh colliders impact performance',
-        'Trigger colliders don\'t stop physical movement',
+        "Trigger colliders don't stop physical movement",
         'Scaled colliders may behave unexpectedly'
       ],
       bestPractices: [
@@ -506,7 +539,8 @@ export class ComponentHelpRegistry {
       displayName: 'Audio Source',
       category: 'Audio',
       description: 'Plays audio clips with 2D and 3D spatial audio support',
-      longDescription: 'The AudioSource component plays sound effects and music. It supports both 2D audio (UI sounds, music) and 3D spatial audio (positional sounds in the world).',
+      longDescription:
+        'The AudioSource component plays sound effects and music. It supports both 2D audio (UI sounds, music) and 3D spatial audio (positional sounds in the world).',
       useCases: [
         'Play sound effects and music',
         'Create positional 3D audio',
@@ -565,8 +599,9 @@ export class ComponentHelpRegistry {
       type: 'Camera',
       displayName: 'Camera',
       category: 'Core',
-      description: 'Renders the scene from this entity\'s position and orientation',
-      longDescription: 'The Camera component defines a viewpoint for rendering the scene. It determines what the player sees and can be moved, rotated, and configured for different rendering styles.',
+      description: "Renders the scene from this entity's position and orientation",
+      longDescription:
+        'The Camera component defines a viewpoint for rendering the scene. It determines what the player sees and can be moved, rotated, and configured for different rendering styles.',
       useCases: [
         'Define player viewpoint in 3D scenes',
         'Create multiple camera angles',
@@ -628,7 +663,8 @@ export class ComponentHelpRegistry {
       displayName: 'Script',
       category: 'Scripting',
       description: 'Attaches a script file to an entity for custom behavior',
-      longDescription: 'The Script component allows you to attach WORLDC code to entities for custom behavior, game logic, and interactions. Scripts can access other components and respond to events.',
+      longDescription:
+        'The Script component allows you to attach WORLDC code to entities for custom behavior, game logic, and interactions. Scripts can access other components and respond to events.',
       useCases: [
         'Implement custom game logic',
         'Handle user input and interactions',
@@ -761,7 +797,9 @@ export class ComponentHelpRegistry {
         helpInfo.longDescription || '',
         ...helpInfo.useCases,
         ...Object.keys(helpInfo.properties)
-      ].join(' ').toLowerCase();
+      ]
+        .join(' ')
+        .toLowerCase();
 
       for (const term of searchTerms) {
         const matches = (searchText.match(new RegExp(term, 'g')) || []).length;
@@ -817,3 +855,9 @@ export function getPropertyTooltip(componentType: string, propertyKey: string): 
 export function getComponentTooltip(componentType: string): string {
   return componentHelpRegistry.generateTooltip(componentType);
 }
+
+/*
+	===============================================================
+             --- EOF ---
+	===============================================================
+*/

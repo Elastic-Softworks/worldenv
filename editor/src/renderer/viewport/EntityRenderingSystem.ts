@@ -750,8 +750,10 @@ export class EntityRenderingSystem {
     }
 
     const helper = new THREE.Mesh(geometry, material);
-    helper.position.set(transform.position.x, transform.position.y, transform.position.z);
-    helper.rotation.set(transform.rotation.x, transform.rotation.y, transform.rotation.z);
+    const position = transform.getPosition();
+    const rotation = transform.getRotation();
+    helper.position.set(position.x, position.y, position.z);
+    helper.rotation.set(rotation.x, rotation.y, rotation.z);
 
     return helper;
   }

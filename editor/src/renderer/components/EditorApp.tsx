@@ -1,21 +1,32 @@
 /*
+   ===============================================================
+   WORLDEDIT MAIN EDITOR APPLICATION COMPONENT
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Main Editor Application Component
- *
- * Root component that provides the main editor shell.
- * Always renders the full editor layout with panels.
- * Panels handle their own empty states when no project is open.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import React from 'react';
-import { useEditorState } from '../context/EditorStateContext';
-import { useTheme } from '../context/ThemeContext';
-import { EditorShell } from './EditorShell';
+import React from 'react'; /* REACT FRAMEWORK */
+import { useEditorState } from '../context/EditorStateContext'; /* EDITOR STATE MANAGEMENT */
+import { useTheme } from '../context/ThemeContext'; /* THEME MANAGEMENT */
+import { EditorShell } from './EditorShell'; /* EDITOR SHELL COMPONENT */
+
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
 
 /**
  * EditorApp component
@@ -87,3 +98,9 @@ export function EditorApp(): JSX.Element {
   console.log('[EDITOR APP] Rendering EditorShell');
   return <EditorShell />;
 }
+
+/*
+	===============================================================
+             --- EOF ---
+	===============================================================
+*/

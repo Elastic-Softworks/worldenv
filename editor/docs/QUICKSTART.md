@@ -1,6 +1,17 @@
 # WORLDEDIT QUICKSTART GUIDE
 **Get up and running with WORLDEDIT in 15 minutes**
 
+> **⚠️ DEVELOPMENT STATUS NOTICE**
+> 
+> WORLDEDIT is currently under active development. The application has build issues that prevent it from running. This guide describes the intended workflow once build issues are resolved.
+> 
+> **Current Status:**
+> - Main process: ✅ Builds successfully
+> - Renderer process: ❌ TypeScript compilation errors
+> - Application launch: ❌ Blocked by build failures
+> 
+> See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for current critical issues and [DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md) for development status details.
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
@@ -30,7 +41,9 @@ git --version     # Any recent version
 
 ## Installation
 
-### Option 1: Pre-built Releases (Recommended)
+> **Note:** Pre-built releases are not currently available due to build issues. Use source build method below.
+
+### Option 1: Pre-built Releases (Not Currently Available)
 
 1. **Download WORLDEDIT**
    - Visit [Releases Page](https://github.com/elastic-softworks/worldenv/releases)
@@ -43,7 +56,7 @@ git --version     # Any recent version
    worldc --version  # Verify installation
    ```
 
-### Option 2: Build from Source
+### Option 2: Build from Source (Current Method)
 
 1. **Clone Repository**
    ```bash
@@ -56,20 +69,22 @@ git --version     # Any recent version
    npm install
    ```
 
-3. **Build Application**
+3. **Attempt Build (Currently Failing)**
    ```bash
-   npm run build
-   npm run start
+   npm run build  # Will fail with TypeScript errors
+   # See TROUBLESHOOTING.md for resolution steps
    ```
+
+   **Build Status:** Application cannot currently be built due to renderer process TypeScript errors. See [DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md) for current issues and resolution priority.
 
 ## First Launch
 
-1. **Start WORLDEDIT**
+1. **Start WORLDEDIT (After Build Issues Are Resolved)**
    ```bash
-   # Pre-built version
+   # Pre-built version (when available)
    ./worldedit
 
-   # From source
+   # From source (after successful build)
    npm run start
    ```
 

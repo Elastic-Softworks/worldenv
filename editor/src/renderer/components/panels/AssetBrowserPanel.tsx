@@ -19,47 +19,12 @@ import { ContextMenu, useContextMenu, CommonMenuItems, createSeparator } from '.
 import { AssetPropertiesDialog } from '../dialogs/AssetPropertiesDialog';
 
 /**
- * Asset item interface
+ * Asset browser panel component interfaces
  */
-interface AssetItem {
-  name: string;
-  type:
-    | 'folder'
-    | 'image'
-    | 'audio'
-    | 'model'
-    | 'script'
-    | 'scene'
-    | 'material'
-    | 'font'
-    | 'data'
-    | 'shader'
-    | 'unknown';
-  path: string;
-  relativePath: string;
-  size: number;
-  modified: Date;
-  created: Date;
-  extension: string;
-  metadata: {
-    id: string;
-    imported: Date;
-    tags: string[];
-    description?: string;
-    thumbnail?: string;
-    imageInfo?: {
-      width: number;
-      height: number;
-      format: string;
-    };
-    audioInfo?: {
-      duration: number;
-      channels: number;
-      sampleRate: number;
-    };
-  };
-  children?: AssetItem[];
-}
+
+import { AssetItem, AssetMetadata } from '../../../shared/types';
+
+/* AssetItem is now imported from shared/types.ts */
 
 /**
  * Asset import options
@@ -193,6 +158,47 @@ export function AssetBrowserPanel(): JSX.Element {
   });
 
   /**
+   * loadAssets()
+   *
+   * Loads assets from the file system using IPC.
+   */
+  const loadAssets = useCallback(async (path: string): Promise<void> => {
+    setLoading(true);
+    try {
+      const assetList = (await window.electronAPI.invoke('asset:list', path)) as AssetItem[];
+
+      // Add parent directory navigation if not at root
+      const finalAssets: AssetItem[] = [];
+      if (path !== '' && path !== 'assets') {
+        const parentPath = path.split('/').slice(0, -1).join('/');
+        finalAssets.push({
+          name: '..',
+          type: 'folder',
+          path: parentPath,
+          relativePath: parentPath,
+          size: 0,
+          modified: new Date(),
+          created: new Date(),
+          extension: '',
+          metadata: {
+            id: 'parent',
+            imported: new Date(),
+            tags: []
+          }
+        });
+      }
+
+      finalAssets.push(...assetList);
+      setAssets(finalAssets);
+    } catch (error) {
+      console.error('[ASSETS PANEL] Failed to load assets:', error);
+      setAssets([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
    * Handle keyboard shortcuts
    */
   useEffect(() => {
@@ -274,47 +280,6 @@ export function AssetBrowserPanel(): JSX.Element {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [selectedAssets, assets, currentPath, state.project.isOpen, loadAssets]);
-
-  /**
-   * loadAssets()
-   *
-   * Loads assets from the file system using IPC.
-   */
-  const loadAssets = useCallback(async (path: string): Promise<void> => {
-    setLoading(true);
-    try {
-      const assetList = (await window.electronAPI.invoke('asset:list', path)) as AssetItem[];
-
-      // Add parent directory navigation if not at root
-      const finalAssets: AssetItem[] = [];
-      if (path !== '' && path !== 'assets') {
-        const parentPath = path.split('/').slice(0, -1).join('/');
-        finalAssets.push({
-          name: '..',
-          type: 'folder',
-          path: parentPath,
-          relativePath: parentPath,
-          size: 0,
-          modified: new Date(),
-          created: new Date(),
-          extension: '',
-          metadata: {
-            id: 'parent',
-            imported: new Date(),
-            tags: []
-          }
-        });
-      }
-
-      finalAssets.push(...assetList);
-      setAssets(finalAssets);
-    } catch (error) {
-      console.error('[ASSETS PANEL] Failed to load assets:', error);
-      setAssets([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   /**
    * handleAssetImport()
@@ -402,28 +367,36 @@ export function AssetBrowserPanel(): JSX.Element {
       if (asset) {
         if (asset.type === 'folder') {
           menuItems.push(
-            { label: 'Open', onClick: () => setCurrentPath(asset.relativePath) },
-            createSeparator(),
-            { label: 'New Folder', onClick: () => handleCreateFolder() },
-            createSeparator(),
-            { label: 'Rename', onClick: () => handleRename(asset) },
-            { label: 'Delete', onClick: () => handleDelete(asset) }
+            { id: 'open', label: 'Open', onClick: () => setCurrentPath(asset.relativePath) },
+            createSeparator('sep1'),
+            { id: 'new-folder', label: 'New Folder', onClick: () => void handleCreateFolder() },
+            createSeparator('sep2'),
+            { id: 'rename', label: 'Rename', onClick: () => handleRename(asset) },
+            { id: 'delete', label: 'Delete', onClick: () => handleDelete(asset) }
           );
         } else {
           menuItems.push(
-            { label: 'Import to Viewport', onClick: () => handleImportToViewport(asset) },
-            { label: 'Show Properties', onClick: () => handleShowProperties(asset) },
-            createSeparator(),
-            { label: 'Rename', onClick: () => handleRename(asset) },
-            { label: 'Delete', onClick: () => handleDelete(asset) }
+            {
+              id: 'import',
+              label: 'Import to Viewport',
+              onClick: () => handleImportToViewport(asset)
+            },
+            {
+              id: 'properties',
+              label: 'Show Properties',
+              onClick: () => handleShowProperties(asset)
+            },
+            createSeparator('sep3'),
+            { id: 'rename', label: 'Rename', onClick: () => handleRename(asset) },
+            { id: 'delete', label: 'Delete', onClick: () => handleDelete(asset) }
           );
         }
       } else {
         menuItems.push(
-          { label: 'Import Files...', onClick: () => triggerFileImport() },
-          { label: 'New Folder', onClick: () => handleCreateFolder() },
-          createSeparator(),
-          { label: 'Refresh', onClick: () => loadAssets(currentPath) }
+          { id: 'import-files', label: 'Import Files...', onClick: () => triggerFileImport() },
+          { id: 'new-folder', label: 'New Folder', onClick: () => void handleCreateFolder() },
+          createSeparator('sep4'),
+          { id: 'refresh', label: 'Refresh', onClick: () => loadAssets(currentPath) }
         );
       }
 
@@ -439,21 +412,6 @@ export function AssetBrowserPanel(): JSX.Element {
     fileInputRef.current?.click();
   };
 
-  const handleCreateFolder = async () => {
-    const name = prompt('Enter folder name:');
-    if (name) {
-      try {
-        await window.electronAPI.invoke('asset:create-folder', {
-          relativePath: currentPath,
-          name
-        });
-        await loadAssets(currentPath);
-      } catch (error) {
-        console.error('[ASSETS PANEL] Failed to create folder:', error);
-      }
-    }
-  };
-
   const handleRename = async (asset: AssetItem) => {
     const newName = prompt('Enter new name:', asset.name);
     if (newName && newName !== asset.name) {
@@ -462,7 +420,7 @@ export function AssetBrowserPanel(): JSX.Element {
           oldPath: asset.relativePath,
           newName
         });
-        await loadAssets(currentPath);
+        loadAssets(currentPath);
       } catch (error) {
         console.error('[ASSETS PANEL] Failed to rename asset:', error);
       }
@@ -473,7 +431,7 @@ export function AssetBrowserPanel(): JSX.Element {
     if (confirm(`Delete "${asset.name}"? This action cannot be undone.`)) {
       try {
         await window.electronAPI.invoke('asset:delete', asset.relativePath);
-        await loadAssets(currentPath);
+        loadAssets(currentPath);
       } catch (error) {
         console.error('[ASSETS PANEL] Failed to delete asset:', error);
       }
@@ -496,16 +454,17 @@ export function AssetBrowserPanel(): JSX.Element {
    * Save updated asset metadata.
    */
   const handleSaveAssetProperties = useCallback(
-    async (asset: AssetItem, updatedMetadata: Partial<AssetItem['metadata']>) => {
+    async (asset: AssetItem, updatedMetadata: Partial<AssetMetadata>) => {
       try {
         await window.electronAPI.invoke('asset:update-metadata', {
           relativePath: asset.relativePath,
           metadata: updatedMetadata
         });
         // Reload assets to reflect changes
-        await loadAssets(currentPath);
+        loadAssets(currentPath);
       } catch (error) {
         console.error('[ASSETS PANEL] Failed to save asset properties:', error);
+        // TODO: Show error notification
       }
     },
     [currentPath, loadAssets]
@@ -579,7 +538,7 @@ export function AssetBrowserPanel(): JSX.Element {
       });
 
       // Reload assets after import
-      await loadAssets(currentPath);
+      loadAssets(currentPath);
     } catch (error) {
       console.error('[ASSETS] Failed to import dropped files:', error);
     }

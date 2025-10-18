@@ -1,19 +1,31 @@
 /*
+   ===============================================================
+   WORLDEDIT SCENE MANAGEMENT
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Scene Management
- *
- * Scene class for managing scene hierarchy and operations.
- * Handles scene creation, loading, saving, and node management.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { Node, NodeType, NodeSerialData } from './Node';
-import { generateId } from '../../utils/IdGenerator';
-import { createDefaultNodeComponents } from '../components';
+import { Node, NodeType, NodeSerialData } from './Node'; /* NODE HIERARCHY SYSTEM */
+import { generateId } from '../../utils/IdGenerator'; /* UNIQUE ID GENERATION */
+import { createDefaultNodeComponents } from '../components'; /* COMPONENT CREATION */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
 
 /**
  * Scene metadata interface
@@ -542,3 +554,9 @@ export class Scene {
     this._changeListeners.clear();
   }
 }
+
+/*
+	===============================================================
+             --- EOF ---
+	===============================================================
+*/

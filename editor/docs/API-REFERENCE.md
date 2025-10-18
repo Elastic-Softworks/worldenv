@@ -4,6 +4,20 @@
 
 **Technical reference for WORLDEDIT APIs and interfaces**
 
+> **⚠️ API IMPLEMENTATION STATUS**
+> 
+> This API reference describes the intended interface design. Current implementation status:
+> 
+> **Main Process APIs:** ✅ Implemented and functional
+> - Project management, file system, IPC, dialogs working
+> - Asset management, build system, engine integration in place
+> 
+> **Renderer Process APIs:** ❌ Build failures preventing full testing
+> - Component system, viewport rendering blocked by TypeScript errors
+> - UI components, event system partially implemented
+> 
+> See [DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md) for current development status and [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for known build issues.
+
 ## Table of Contents
 
 - [IPC API](#ipc-api)

@@ -24,7 +24,7 @@ import { logger } from './logger'; /* LOGGING SYSTEM */
 import { fileSystem } from './file-system'; /* FILE SYSTEM ABSTRACTION */
 import { dialogManager } from './dialogs'; /* DIALOG MANAGEMENT */
 import { projectManager } from './project'; /* PROJECT SYSTEM */
-import { assetManager, AssetType } from './asset-manager'; /* ASSET MANAGEMENT */
+import { assetManager } from './asset-manager'; /* ASSET MANAGEMENT */
 import { fileWatcher } from './watcher'; /* FILE WATCHING */
 import { autoSave } from './auto-save'; /* AUTO SAVE SYSTEM */
 import { recentProjectsManager } from './recent-projects'; /* RECENT PROJECTS */
@@ -63,14 +63,9 @@ interface AssetSearchOptions {
   recursive: boolean;
 }
 
-interface AssetMetadata {
-  name?: string;
-  description?: string;
-  tags?: string[];
-  [key: string]: unknown;
-}
+/* AssetMetadata is now imported from shared/types.ts */
 
-import { DialogOptions, MessageDialogOptions } from '../shared/types';
+import { DialogOptions, MessageDialogOptions, AssetMetadata, AssetType } from '../shared/types';
 
 interface WorldCCompilationEvent {
   type: 'start' | 'progress' | 'complete' | 'error';

@@ -13,52 +13,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { Button } from '../ui/Button';
+import { AssetItem, AssetMetadata } from '../../../shared/types';
 
-/**
- * Asset metadata interface
- */
-interface AssetMetadata {
-  id: string;
-  imported: Date;
-  tags: string[];
-  description?: string;
-  thumbnail?: string;
-  imageInfo?: {
-    width: number;
-    height: number;
-    format: string;
-    channels: number;
-    compressed: boolean;
-  };
-  audioInfo?: {
-    duration: number;
-    channels: number;
-    sampleRate: number;
-    bitRate: number;
-    format: string;
-  };
-  modelInfo?: {
-    vertices: number;
-    faces: number;
-    animations: string[];
-    materials: string[];
-  };
-}
-
-/**
- * Asset item interface
- */
-interface AssetItem {
-  name: string;
-  type: string;
-  path: string;
-  relativePath: string;
-  size: number;
-  modified: Date;
-  created: Date;
-  extension: string;
-  metadata: AssetMetadata;
-}
+/* AssetItem and AssetMetadata are now imported from shared/types.ts */
 
 /**
  * Asset Properties Dialog props
@@ -367,7 +324,7 @@ export function AssetPropertiesDialog({
                   <strong>Channels:</strong> {asset.metadata.audioInfo.channels}
                 </div>
                 <div>
-                  <strong>Bit Rate:</strong> {asset.metadata.audioInfo.bitRate} kbps
+                  <strong>Bit Rate:</strong> {asset.metadata.audioInfo.bitrate} kbps
                 </div>
               </div>
             </div>
@@ -384,7 +341,7 @@ export function AssetPropertiesDialog({
                   <strong>Faces:</strong> {asset.metadata.modelInfo.faces.toLocaleString()}
                 </div>
                 <div>
-                  <strong>Animations:</strong> {asset.metadata.modelInfo.animations.length}
+                  <strong>Animations:</strong> {asset.metadata.modelInfo.animations?.length || 0}
                 </div>
                 <div>
                   <strong>Materials:</strong> {asset.metadata.modelInfo.materials.length}

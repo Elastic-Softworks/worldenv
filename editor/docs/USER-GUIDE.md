@@ -4,6 +4,19 @@
 
 **Comprehensive guide for using WORLDEDIT game development editor**
 
+> **⚠️ USER STATUS NOTICE**
+> 
+> WORLDEDIT is currently in active development with build issues preventing application launch. This user guide describes the intended functionality once development is complete.
+> 
+> **Current Status:**
+> - Application cannot be built or launched due to TypeScript compilation errors
+> - Core systems are implemented but not accessible to end users
+> - Features described in this guide are designed but not currently testable
+> 
+> **For Developers:** See [DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md) and [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for technical details and resolution steps.
+> 
+> **For Users:** This software is not yet ready for end-user installation. Please check back after build issues are resolved.
+
 ## Table of Contents
 
 - [Introduction](#introduction)

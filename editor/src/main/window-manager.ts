@@ -1,20 +1,31 @@
 /*
+   ===============================================================
+   WORLDEDIT WINDOW MANAGER
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Window Manager
- *
- * Manages editor window state persistence and lifecycle.
- * Saves and restores window position, size, and display state.
- * Supports multiple editor windows with unique identifiers.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { BrowserWindow, screen } from 'electron';
-import Store from 'electron-store';
-import { logger } from './logger';
+import { BrowserWindow, screen } from 'electron'; /* ELECTRON WINDOW AND DISPLAY APIS */
+import Store from 'electron-store'; /* PERSISTENT STORAGE FOR WINDOW STATE */
+import { logger } from './logger'; /* CENTRALIZED LOGGING SYSTEM */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
 
 interface WindowBounds {
   x: number;
@@ -35,6 +46,27 @@ interface StoreSchema {
     [key: string]: WindowStateData;
   };
 }
+
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         WindowManager
+	       ---
+	       manages window state persistence and lifecycle for
+	       all editor windows. saves and restores window position,
+	       size, maximized state, and display assignments across
+	       application sessions.
+
+	       implements intelligent bounds validation to ensure
+	       windows remain visible when displays are disconnected
+	       or screen configurations change between sessions.
+
+*/
 
 class WindowManager {
   private store: Store<StoreSchema>;
@@ -320,3 +352,9 @@ class WindowManager {
 }
 
 export const windowManager = new WindowManager();
+
+/*
+	===============================================================
+             --- EOF ---
+	===============================================================
+*/

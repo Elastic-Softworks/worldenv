@@ -480,9 +480,13 @@ class ProjectManager {
 
            createDefaultProjectData()
 	         ---
-	         *
-   * Creates default project data structure.
-   */
+	         generates default project configuration.
+
+	         creates baseline project data structure
+	         with sensible defaults for new project
+	         initialization.
+
+  */
   private createDefaultProjectData(project_name: string): ProjectData {
     const now = Date.now();
 
@@ -533,11 +537,17 @@ class ProjectManager {
     };
   }
 
-  /**
-   * validateProjectData()
-   *
-   * Validates project data structure.
-   */
+  /*
+
+           validateProjectData()
+	         ---
+	         validates project data structure and content.
+
+	         performs comprehensive validation of project
+	         configuration including version compatibility
+	         and required field presence.
+
+  */
   private validateProjectData(data: ProjectData): void {
     if (!data.version) {
       throw new ProjectError('Project data missing version');
@@ -565,11 +575,16 @@ class ProjectManager {
     }
   }
 
-  /**
-   * validateProjectStructure()
-   *
-   * Validates project directory structure.
-   */
+  /*
+
+           validateProjectStructure()
+	         ---
+	         validates project directory structure.
+
+	         ensures all required directories and files
+	         exist with proper organization and permissions.
+
+  */
   private async validateProjectStructure(project_path: string): Promise<void> {
     const required_dirs = ['assets', 'scenes', 'scripts', 'prefabs'];
 
@@ -588,4 +603,11 @@ class ProjectManager {
   }
 }
 
+/* singleton instance for application-wide project management */
 export const projectManager = new ProjectManager();
+
+/*
+	====================================================================
+             --- EOF ---
+	====================================================================
+*/

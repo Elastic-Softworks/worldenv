@@ -1,25 +1,38 @@
 /*
+   ===============================================================
+   WORLDEDIT ENGINE WRAPPER
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Engine Wrapper
- *
- * Wraps WORLDENV runtime for editor integration.
- * Provides controlled access to engine functionality.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-// Type-only import to avoid rootDir issues
+import { SceneData } from '../../shared/types/SceneTypes'; /* SCENE DATA TYPE DEFINITIONS */
+import { EventEmitter } from 'events'; /* NODE.JS EVENT SYSTEM */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/* TYPE-ONLY INTERFACE TO AVOID ROOTDIR ISSUES */
 interface Game {
   init(): Promise<void>;
   run(): void;
   stop(): void;
   canvas?: HTMLCanvasElement;
 }
-import { SceneData } from '../../shared/types/SceneTypes';
-import { EventEmitter } from 'events';
 
 export interface EngineConfig {
   canvas: HTMLCanvasElement;
@@ -57,12 +70,27 @@ export enum EngineEvent {
   STATS_UPDATED = 'statsUpdated'
 }
 
-/**
- * EngineWrapper class
- *
- * Manages WORLDENV engine instance within editor context.
- * Handles initialization, scene loading, and play mode.
- */
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         EngineWrapper
+	       ---
+	       provides a controlled interface to the worldenv runtime
+	       engine within the editor environment. manages engine
+	       initialization, scene loading, play mode transitions,
+	       and performance monitoring.
+
+	       acts as a bridge between the editor ui and the actual
+	       game engine, handling state synchronization and providing
+	       safety mechanisms for development workflow.
+
+*/
+
 export class EngineWrapper extends EventEmitter {
   private game: Game | null = null;
   private config: EngineConfig;
@@ -446,3 +474,9 @@ export class EngineWrapper extends EventEmitter {
     console.log('[ENGINE] Restoring editor state:', snapshot);
   }
 }
+
+/*
+	===============================================================
+             --- EOF ---
+	===============================================================
+*/

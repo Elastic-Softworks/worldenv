@@ -67,7 +67,7 @@ export class EditorCamera {
     /* INITIALIZE 3D CAMERA */
     this.camera3D = new THREE.PerspectiveCamera(
       EditorCamera.FOV,
-      1.0, /* ASPECT RATIO UPDATED IN resize() */
+      1.0 /* ASPECT RATIO UPDATED IN resize() */,
       EditorCamera.NEAR_PLANE,
       EditorCamera.FAR_PLANE
     );
@@ -109,7 +109,8 @@ export class EditorCamera {
    * Handle mouse press for camera interaction.
    */
   private onMouseDown(event: MouseEvent): void {
-    if (event.button === 1 || event.button === 2) { /* MIDDLE OR RIGHT CLICK */
+    if (event.button === 1 || event.button === 2) {
+      /* MIDDLE OR RIGHT CLICK */
       this.isDragging = true;
       this.lastMousePosition = { x: event.clientX, y: event.clientY };
       event.preventDefault();
@@ -406,3 +407,9 @@ export class EditorCamera {
     }
   }
 }
+
+/*
+	===============================================================
+             --- EOF ---
+	===============================================================
+*/

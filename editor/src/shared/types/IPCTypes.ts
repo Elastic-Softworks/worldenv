@@ -65,6 +65,7 @@ export interface IPCError {
   message: string;
   details?: unknown;
   stack?: string;
+  timestamp?: number;
 }
 
 /**
@@ -275,11 +276,17 @@ export const IPCChannels = {
   ENGINE_COMPILE_SCRIPT: 'engine:compile-script',
   ENGINE_VALIDATE_SCRIPT: 'engine:validate-script',
   ENGINE_SCRIPT_COMPILED: 'engine:script-compiled',
+  ENGINE_COMPILATION_STARTED: 'engine:compilation-started',
+  ENGINE_COMPILATION_COMPLETED: 'engine:compilation-completed',
+  ENGINE_COMPILATION_FAILED: 'engine:compilation-failed',
 
   // Hot-reload
   ENGINE_START_HOT_RELOAD: 'engine:start-hot-reload',
   ENGINE_STOP_HOT_RELOAD: 'engine:stop-hot-reload',
   ENGINE_HOT_RELOAD: 'engine:hot-reload',
+  ENGINE_SCRIPT_CHANGED: 'engine:script-changed',
+  ENGINE_HOT_RELOAD_COMPLETED: 'engine:hot-reload-completed',
+  ENGINE_HOT_RELOAD_FAILED: 'engine:hot-reload-failed',
 
   // Events
   ENGINE_STATUS_CHANGED: 'engine:status-changed',

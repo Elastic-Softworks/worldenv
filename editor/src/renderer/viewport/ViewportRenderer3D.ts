@@ -33,7 +33,7 @@ import {
   ManipulatorMode,
   TransformSpace
 } from './manipulators/ManipulatorManager'; /* TRANSFORM MANIPULATORS */
-import { Entity } from '../core/scene/Entity'; /* ENTITY SYSTEM */
+import { Entity } from '@renderer/core/scene/Entity'; /* ENTITY SYSTEM */
 
 /*
 	===============================================================
@@ -576,7 +576,7 @@ export class ViewportRenderer3D {
    */
   addEntity(entity: Entity): void {
     if (this.entityRenderingSystem) {
-      this.entityRenderingSystem.addEntity(entity);
+      this.entityRenderingSystem.addEntity(entity as any);
     }
   }
 

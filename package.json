@@ -1,0 +1,56 @@
+{
+  "name": "worldenv",
+  "version": "0.1.0",
+  "description": "Game development ecosystem with WORLDEDIT visual editor and WORLDC programming language",
+  "private": true,
+  "workspaces": [
+    "editor",
+    "worldc"
+  ],
+  "scripts": {
+    "install-all": "npm install && npm run install:editor && npm run install:worldc",
+    "install:editor": "cd editor && npm install",
+    "install:worldc": "cd worldc && npm install",
+    "build": "npm run build:worldc && npm run build:editor",
+    "build:editor": "cd editor && npm run build",
+    "build:worldc": "cd worldc && npm run build",
+    "dev": "npm run dev:editor",
+    "dev:editor": "cd editor && npm run dev",
+    "dev:worldc": "cd worldc && npm run dev",
+    "test": "npm run test:editor && npm run test:worldc",
+    "test:editor": "cd editor && npm test",
+    "test:worldc": "cd worldc && npm test",
+    "lint": "npm run lint:editor && npm run lint:worldc",
+    "lint:editor": "cd editor && npm run lint",
+    "lint:worldc": "cd worldc && npm run lint",
+    "clean": "npm run clean:editor && npm run clean:worldc",
+    "clean:editor": "cd editor && rm -rf dist node_modules",
+    "clean:worldc": "cd worldc && rm -rf dist node_modules",
+    "start": "cd editor && npm start",
+    "package": "npm run build && cd editor && npm run package"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/elastic-softworks/worldenv.git"
+  },
+  "keywords": [
+    "game-engine",
+    "game-development",
+    "visual-editor",
+    "programming-language",
+    "typescript",
+    "electron",
+    "webgl",
+    "3d-graphics"
+  ],
+  "author": "Elastic Softworks",
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "cross-env": "^7.0.3"
+  }
+}

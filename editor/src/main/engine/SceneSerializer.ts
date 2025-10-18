@@ -1,15 +1,21 @@
 /*
+   ===============================================================
+   WORLDEDIT SCENE SERIALIZER
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Scene Serializer
- *
- * Serializes editor scene data to WORLDENV runtime format.
- * Handles conversion between editor and engine data structures.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
 import {
   SceneData,
@@ -22,41 +28,92 @@ import {
   Vector3,
   AssetReference,
   SceneSettings
-} from '../../shared/types/SceneTypes';
-import { Node, NodeType } from '../../renderer/core/hierarchy/Node';
-import { Scene } from '../../renderer/core/hierarchy/Scene';
+} from '../../shared/types/SceneTypes'; /* SCENE TYPE DEFINITIONS */
+import { Node, NodeType } from '../../renderer/core/hierarchy/Node'; /* HIERARCHY NODE SYSTEM */
+import { Scene } from '../../renderer/core/hierarchy/Scene'; /* SCENE CONTAINER */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         SerializationOptions
+	       ---
+	       configuration interface for scene serialization behavior
+	       controlling asset inclusion, compression, runtime optimization,
+	       validation, and editor metadata handling during export.
+
+*/
 
 export interface SerializationOptions {
-  includeAssets: boolean;
-  compressAssets: boolean;
-  optimizeForRuntime: boolean;
-  validateBeforeExport: boolean;
-  includeEditorData: boolean;
+  includeAssets: boolean /* include referenced assets in export */;
+  compressAssets: boolean /* compress asset data for smaller files */;
+  optimizeForRuntime: boolean /* optimize scene data for runtime performance */;
+  validateBeforeExport: boolean /* validate scene before serialization */;
+  includeEditorData: boolean /* include editor-specific metadata */;
 }
+
+/*
+
+         SerializationContext
+	       ---
+	       context object that tracks serialization state including
+	       asset references, node mappings, component data, and
+	       validation results during the conversion process.
+
+*/
 
 export interface SerializationContext {
-  assetMap: Map<string, AssetReference>;
-  nodeMap: Map<string, NodeData>;
-  componentMap: Map<string, ComponentData>;
-  errors: SceneValidationError[];
-  warnings: SceneValidationError[];
+  assetMap: Map<string, AssetReference> /* asset reference mapping */;
+  nodeMap: Map<string, NodeData> /* node data lookup table */;
+  componentMap: Map<string, ComponentData> /* component data cache */;
+  errors: SceneValidationError[] /* critical validation errors */;
+  warnings: SceneValidationError[] /* non-critical validation warnings */;
 }
 
-/**
- * SceneSerializer class
- *
- * Converts editor scene data to engine-compatible format.
- * Provides validation and optimization for runtime performance.
- */
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         SceneSerializer
+	       ---
+	       comprehensive scene serialization system that converts
+	       editor scene data to engine-compatible runtime format.
+	       provides validation, optimization, and asset management
+	       for efficient scene loading and execution.
+
+	       the serializer handles complex scene hierarchies,
+	       component data transformation, asset reference resolution,
+	       and runtime optimization to ensure scenes load correctly
+	       and perform well in the engine environment.
+
+*/
 export class SceneSerializer {
   private static readonly FORMAT_VERSION = '1.0.0';
   private static readonly SUPPORTED_FORMATS = ['worldenv-scene'];
 
-  /**
-   * serialize()
-   *
-   * Serialize scene to WORLDENV format.
-   */
+  /*
+
+           serialize()
+  	       ---
+  	       converts editor scene data to WORLDENV runtime format
+  	       with comprehensive validation, optimization, and asset
+  	       management. handles scene hierarchy transformation and
+  	       component data serialization for engine compatibility.
+
+  	       the method performs validation before serialization
+  	       to catch errors early, optimizes data structures for
+  	       runtime performance, and manages asset references
+  	       for proper loading in the engine environment.
+
+  */
   static serialize(scene: Scene, options: Partial<SerializationOptions> = {}): SceneData {
     const opts: SerializationOptions = {
       includeAssets: true,
@@ -115,11 +172,20 @@ export class SceneSerializer {
     return sceneData;
   }
 
-  /**
-   * export()
-   *
-   * Export scene with full metadata for file storage.
-   */
+  /*
+
+           export()
+  	       ---
+  	       exports scene with comprehensive metadata for file
+  	       storage and distribution. includes serialization data
+  	       along with format information, timestamps, and export
+  	       configuration for proper scene file management.
+
+  	       the method extends basic serialization with additional
+  	       metadata required for file format compatibility and
+  	       version tracking in the WORLDENV ecosystem.
+
+  */
   static export(scene: Scene, options: Partial<SerializationOptions> = {}): SceneExportData {
     const sceneData = this.serialize(scene, options);
 
@@ -136,11 +202,21 @@ export class SceneSerializer {
     };
   }
 
-  /**
-   * validateScene()
-   *
-   * Validate scene data for serialization.
-   */
+  /*
+
+           validateScene()
+  	       ---
+  	       performs comprehensive scene validation to ensure
+  	       data integrity and compatibility before serialization.
+  	       checks scene structure, component validity, asset
+  	       references, and hierarchy consistency.
+
+  	       the method identifies potential issues that could
+  	       cause runtime errors or loading failures, providing
+  	       detailed error and warning information for debugging
+  	       and quality assurance.
+
+  */
   static validateScene(scene: Scene): SceneValidationResult {
     const errors: SceneValidationError[] = [];
     const warnings: SceneValidationError[] = [];
@@ -180,11 +256,21 @@ export class SceneSerializer {
     };
   }
 
-  /**
-   * serializeNode()
-   *
-   * Serialize individual node to engine format.
-   */
+  /*
+
+           serializeNode()
+  	       ---
+  	       converts individual editor nodes to engine-compatible
+  	       format with proper type mapping, component serialization,
+  	       and hierarchy preservation. handles transform data,
+  	       component attachment, and child node recursion.
+
+  	       the method ensures proper node structure conversion
+  	       while maintaining parent-child relationships and
+  	       preserving all node metadata required for runtime
+  	       scene reconstruction and entity management.
+
+  */
   private static serializeNode(
     node: Node,
     context: SerializationContext,
@@ -214,11 +300,20 @@ export class SceneSerializer {
     return nodeData;
   }
 
-  /**
-   * serializeTransform()
-   *
-   * Serialize node transform data.
-   */
+  /*
+
+           serializeTransform()
+  	       ---
+  	       extracts and serializes node transformation data
+  	       including position, rotation, and scale components.
+  	       ensures proper coordinate system conversion and
+  	       default value handling for missing transform data.
+
+  	       the method provides consistent transform representation
+  	       across different node types and maintains compatibility
+  	       with the engine's transform system requirements.
+
+  */
   private static serializeTransform(node: Node): Transform {
     const transform = node.transform || {};
 
@@ -229,11 +324,21 @@ export class SceneSerializer {
     };
   }
 
-  /**
-   * serializeComponents()
-   *
-   * Serialize node components.
-   */
+  /*
+
+           serializeComponents()
+  	       ---
+  	       serializes node components based on node type and
+  	       properties. creates appropriate component data for
+  	       transform, rendering, lighting, and type-specific
+  	       functionality required by the engine system.
+
+  	       the method ensures all nodes have required components
+  	       while adding type-specific components for cameras,
+  	       lights, and renderable entities with proper default
+  	       values and configuration settings.
+
+  */
   private static serializeComponents(
     node: Node,
     context: SerializationContext,
@@ -324,11 +429,21 @@ export class SceneSerializer {
     return components;
   }
 
-  /**
-   * serializeComponent()
-   *
-   * Serialize individual component.
-   */
+  /*
+
+           serializeComponent()
+  	       ---
+  	       serializes individual component data with proper
+  	       property extraction and type validation. handles
+  	       component-specific data transformation and ensures
+  	       compatibility with engine component system.
+
+  	       the method provides consistent component serialization
+  	       across all component types while preserving important
+  	       properties and maintaining data integrity for runtime
+  	       component instantiation and management.
+
+  */
   private static serializeComponent(
     component: unknown,
     context: SerializationContext,
@@ -359,11 +474,20 @@ export class SceneSerializer {
     return componentData;
   }
 
-  /**
-   * serializeSettings()
-   *
-   * Serialize scene settings.
-   */
+  /*
+
+           serializeSettings()
+  	       ---
+  	       extracts and serializes scene-level configuration
+  	       including physics settings, rendering parameters,
+  	       lighting configuration, and global scene properties
+  	       required for proper engine initialization.
+
+  	       the method ensures all scene settings are properly
+  	       formatted and include appropriate default values
+  	       for missing configuration options.
+
+  */
   private static serializeSettings(scene: Scene, _context: SerializationContext): SceneSettings {
     const sceneWithSettings = scene as unknown as { settings?: Record<string, unknown> };
     return {
@@ -376,11 +500,20 @@ export class SceneSerializer {
     };
   }
 
-  /**
-   * processAssetReferences()
-   *
-   * Process and collect asset references from properties.
-   */
+  /*
+
+           processAssetReferences()
+  	       ---
+  	       processes and collects all asset references from
+  	       the scene hierarchy, building a comprehensive asset
+  	       map for dependency tracking and loading optimization.
+
+  	       the method scans all nodes and components for asset
+  	       references, resolves asset paths, and maintains
+  	       reference counts for efficient asset management
+  	       during scene loading and runtime operations.
+
+  */
   private static processAssetReferences(
     properties: Record<string, unknown>,
     context: SerializationContext
@@ -406,11 +539,20 @@ export class SceneSerializer {
     }
   }
 
-  /**
-   * convertNodeType()
-   *
-   * Convert editor node type to engine format.
-   */
+  /*
+
+           convertNodeType()
+  	       ---
+  	       converts editor node types to engine-compatible
+  	       node type identifiers. maps editor-specific node
+  	       classifications to runtime node types for proper
+  	       engine processing and component attachment.
+
+  	       the method ensures type compatibility between
+  	       editor and engine systems while maintaining
+  	       node functionality and behavior consistency.
+
+  */
   private static convertNodeType(type: NodeType): string {
     switch (type) {
       case NodeType.SCENE:
@@ -430,11 +572,18 @@ export class SceneSerializer {
     }
   }
 
-  /**
-   * serializeVector3()
-   *
-   * Serialize Vector3 data.
-   */
+  /*
+
+           serializeVector3()
+  	       ---
+  	       serializes Vector3 data with proper numeric validation
+  	       and default value handling. ensures consistent vector
+  	       representation across transform and component data.
+
+  	       the method provides safe vector serialization with
+  	       fallback values for invalid or missing components.
+
+  */
   private static serializeVector3(vector: unknown): Vector3 {
     const vec = vector as { x?: number; y?: number; z?: number };
     return {
@@ -444,11 +593,20 @@ export class SceneSerializer {
     };
   }
 
-  /**
-   * validateNode()
-   *
-   * Validate individual node.
-   */
+  /*
+
+           validateNode()
+  	       ---
+  	       validates individual nodes and their hierarchies
+  	       for serialization compatibility. checks node structure,
+  	       component validity, and hierarchy consistency to
+  	       prevent runtime errors and loading failures.
+
+  	       the method recursively validates child nodes and
+  	       accumulates validation errors and warnings for
+  	       comprehensive scene quality assurance.
+
+  */
   private static validateNode(
     node: Node,
     errors: SceneValidationError[],
@@ -476,11 +634,19 @@ export class SceneSerializer {
     }
   }
 
-  /**
-   * isAssetReference()
-   *
-   * Check if value is an asset reference.
-   */
+  /*
+
+           isAssetReference()
+  	       ---
+  	       determines if a string represents an asset reference
+  	       by checking for asset URI patterns and file extensions.
+  	       used during serialization to identify and process
+  	       asset dependencies correctly.
+
+  	       the method provides reliable asset reference detection
+  	       for proper dependency tracking and asset management.
+
+  */
   private static isAssetReference(value: unknown): boolean {
     const obj = value as { path?: unknown };
     return Boolean(
@@ -488,11 +654,20 @@ export class SceneSerializer {
     );
   }
 
-  /**
-   * inferAssetType()
-   *
-   * Infer asset type from file path.
-   */
+  /*
+
+           inferAssetType()
+  	       ---
+  	       infers asset type from file extension patterns to
+  	       enable proper asset categorization and loading
+  	       behavior. maps file extensions to asset types
+  	       for engine processing and component assignment.
+
+  	       the method provides comprehensive asset type
+  	       classification for various media and data formats
+  	       supported by the WORLDENV engine system.
+
+  */
   private static inferAssetType(path: string): string {
     const ext = path.split('.').pop()?.toLowerCase();
 
@@ -525,3 +700,9 @@ export class SceneSerializer {
     }
   }
 }
+
+/*
+	===============================================================
+             --- EOF ---
+	===============================================================
+*/

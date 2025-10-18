@@ -1,73 +1,140 @@
 /*
+   ===============================================================
+   WORLDEDIT COMPONENT REGISTRY
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Component Registry
- *
- * Central registry for component types, factories, and metadata.
- * Manages component discovery, creation, and validation.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { IComponent, ComponentDescriptor, ComponentFactory } from './Component';
+import {
+  IComponent,
+  ComponentDescriptor,
+  ComponentFactory
+} from './Component'; /* COMPONENT SYSTEM */
 
-/**
- * Component registration event types
- */
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
+
+/*
+
+         RegistryEventType
+	       ---
+	       enumeration of component registry events for tracking
+	       component registration, unregistration, and registry
+	       clearing operations during system lifecycle.
+
+*/
+
 export enum RegistryEventType {
-  COMPONENT_REGISTERED = 'component_registered',
-  COMPONENT_UNREGISTERED = 'component_unregistered',
-  REGISTRY_CLEARED = 'registry_cleared'
+  COMPONENT_REGISTERED = 'component_registered' /* component type registered */,
+  COMPONENT_UNREGISTERED = 'component_unregistered' /* component type removed */,
+  REGISTRY_CLEARED = 'registry_cleared' /* entire registry cleared */
 }
 
-/**
- * Registry event interface
- */
+/*
+
+         RegistryEvent
+	       ---
+	       event data structure for component registry notifications
+	       including event type and optional component type
+	       information for registry operation tracking.
+
+*/
+
 export interface RegistryEvent {
-  type: RegistryEventType;
-  componentType?: string;
+  type: RegistryEventType /* event classification */;
+  componentType?: string /* affected component type identifier */;
   descriptor?: ComponentDescriptor;
   timestamp: Date;
 }
 
-/**
- * Registry event listener
- */
+/*
+
+         RegistryEventListener
+	       ---
+	       function type for component registry event handling
+	       callback functions that receive registry event notifications
+	       during component registration lifecycle operations.
+
+*/
+
 export type RegistryEventListener = (event: RegistryEvent) => void;
 
-/**
- * Component category interface
- */
+/*
+
+         ComponentCategory
+	       ---
+	       interface defining component category metadata for
+	       organizing components in the editor interface. includes
+	       display information, icons, and ordering for proper
+	       component grouping and presentation.
+
+*/
+
 export interface ComponentCategory {
-  name: string;
-  displayName: string;
-  description: string;
-  icon?: string;
-  order: number;
+  name: string /* internal category identifier */;
+  displayName: string /* user-visible category name */;
+  description: string /* category description text */;
+  icon?: string /* optional category icon identifier */;
+  order: number /* display order priority */;
 }
 
-/**
- * Component registry class
- *
- * Manages component type registration, factory creation,
- * and component metadata for the editor system.
- */
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         ComponentRegistry
+	       ---
+	       central registry system for component type management,
+	       factory creation, and metadata organization. provides
+	       component discovery, registration, and validation
+	       services for the editor component system.
+
+	       the registry maintains component descriptors, categories,
+	       and event listeners to enable dynamic component loading
+	       and organized component presentation in the editor
+	       interface.
+
+*/
 export class ComponentRegistry {
   private _descriptors: Map<string, ComponentDescriptor> = new Map();
   private _categories: Map<string, ComponentCategory> = new Map();
   private _listeners: Set<RegistryEventListener> = new Set();
 
-  /**
-   * ComponentRegistry constructor
-   */
+  /*
+
+           constructor()
+  	       ---
+  	       initializes the component registry with default
+  	       categories and prepares the registration system
+  	       for component type management and organization.
+
+  */
   constructor() {
     this.initializeDefaultCategories();
   }
 
-  /**
-   * initializeDefaultCategories()
+  /*
+
+           initializeDefaultCategories()
    *
    * Sets up default component categories.
    */
@@ -526,3 +593,9 @@ export class ComponentRegistry {
  * Global component registry instance
  */
 export const componentRegistry = new ComponentRegistry();
+
+/*
+	===============================================================
+             --- EOF ---
+	===============================================================
+*/

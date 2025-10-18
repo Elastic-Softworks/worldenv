@@ -1,18 +1,24 @@
 /*
+   ===============================================================
+   WORLDEDIT ENGINE STATUS MANAGER
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Engine Status Manager
- *
- * Manages engine status lifecycle, health monitoring, and
- * communication with renderer process for status updates.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import { EventEmitter } from 'events';
-import { BrowserWindow } from 'electron';
+import { EventEmitter } from 'events'; /* NODE.JS EVENT SYSTEM FOR STATUS NOTIFICATIONS */
+import { BrowserWindow } from 'electron'; /* ELECTRON WINDOW FOR IPC COMMUNICATION */
 import {
   EngineStatus,
   EngineState,
@@ -20,22 +26,42 @@ import {
   EngineHealthCheck,
   EngineCapabilities,
   EngineInitializationOptions
-} from '../../shared/types/EngineTypes';
-import { logger } from '../logger';
+} from '../../shared/types/EngineTypes'; /* ENGINE STATUS TYPE DEFINITIONS */
+import { logger } from '../logger'; /* CENTRALIZED LOGGING SYSTEM */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
 
 export interface EngineStatusManagerConfig {
-  healthCheckInterval: number;
-  maxErrorCount: number;
-  statusUpdateDebounce: number;
-  enableDetailedLogging: boolean;
+  healthCheckInterval: number /* MILLISECONDS BETWEEN HEALTH CHECKS */;
+  maxErrorCount: number /* MAXIMUM ERRORS BEFORE CRITICAL STATE */;
+  statusUpdateDebounce: number /* MILLISECONDS TO DEBOUNCE STATUS UPDATES */;
+  enableDetailedLogging: boolean /* WHETHER TO LOG DETAILED STATUS CHANGES */;
 }
 
-/**
- * EngineStatusManager class
- *
- * Centralized management of engine status and health monitoring.
- * Provides status updates to renderer process via IPC.
- */
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         EngineStatusManager
+	       ---
+	       centralized management of engine status and health
+	       monitoring. tracks initialization progress, error
+	       states, and performance metrics while providing
+	       real-time status updates to the renderer process.
+
+	       implements health checking, error counting, and
+	       automatic status reporting to ensure the editor
+	       ui stays synchronized with engine state changes.
+
+*/
 export class EngineStatusManager extends EventEmitter {
   private static instance: EngineStatusManager | null = null;
   private config: EngineStatusManagerConfig;
@@ -121,12 +147,7 @@ export class EngineStatusManager extends EventEmitter {
    *
    * Update engine status and notify renderer.
    */
-  updateStatus(
-    status: EngineStatus,
-    message?: string,
-    progress?: number,
-    error?: Error
-  ): void {
+  updateStatus(status: EngineStatus, message?: string, progress?: number, error?: Error): void {
     const oldStatus = this.currentState.status;
     const timestamp = new Date().toISOString();
 
@@ -184,11 +205,7 @@ export class EngineStatusManager extends EventEmitter {
     this.errorCount = 0;
     this.warningCount = 0;
 
-    this.updateStatus(
-      EngineStatus.INITIALIZING,
-      'Starting engine initialization...',
-      0
-    );
+    this.updateStatus(EngineStatus.INITIALIZING, 'Starting engine initialization...', 0);
 
     /* SIMULATE INITIALIZATION STEPS */
     this.simulateInitializationProgress();
@@ -205,11 +222,7 @@ export class EngineStatusManager extends EventEmitter {
     this.currentState.capabilities = capabilities;
     this.currentState.isInitialized = true;
 
-    this.updateStatus(
-      EngineStatus.READY,
-      `Engine initialized in ${initTime}ms`,
-      100
-    );
+    this.updateStatus(EngineStatus.READY, `Engine initialized in ${initTime}ms`, 100);
 
     if (this.config.enableDetailedLogging) {
       logger.info('ENGINE_STATUS', 'Engine initialization complete', {
@@ -225,12 +238,7 @@ export class EngineStatusManager extends EventEmitter {
    * Report engine error.
    */
   reportError(error: Error, context?: string): void {
-    this.updateStatus(
-      EngineStatus.ERROR,
-      context || 'Engine error occurred',
-      undefined,
-      error
-    );
+    this.updateStatus(EngineStatus.ERROR, context || 'Engine error occurred', undefined, error);
 
     /* CHECK FOR CRITICAL ERROR COUNT */
     if (this.errorCount >= this.config.maxErrorCount) {
@@ -288,7 +296,7 @@ export class EngineStatusManager extends EventEmitter {
     const healthCheck: EngineHealthCheck = {
       timestamp,
       status: this.currentState.status,
-      isResponsive: true, /* TODO: Implement actual responsiveness check */
+      isResponsive: true /* TODO: Implement actual responsiveness check */,
       memoryUsage,
       errorCount: this.errorCount,
       warningCount: this.warningCount,
@@ -464,11 +472,7 @@ export class EngineStatusManager extends EventEmitter {
       }
 
       const step = steps[stepIndex];
-      this.updateStatus(
-        EngineStatus.INITIALIZING,
-        step.message,
-        step.progress
-      );
+      this.updateStatus(EngineStatus.INITIALIZING, step.message, step.progress);
 
       stepIndex++;
       setTimeout(processStep, 200 + Math.random() * 300);
@@ -478,3 +482,9 @@ export class EngineStatusManager extends EventEmitter {
     setTimeout(processStep, 100);
   }
 }
+
+/*
+	===============================================================
+             --- EOF ---
+	===============================================================
+*/

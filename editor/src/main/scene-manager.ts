@@ -1,4 +1,11 @@
 /*
+   ===============================================================
+   WORLDEDIT SCENE MANAGER
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
@@ -21,7 +28,14 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { SceneData, SceneMetadata, SceneSettings, NodeData, Vector3, Color } from '../shared/types/SceneTypes';
+import {
+  SceneData,
+  SceneMetadata,
+  SceneSettings,
+  NodeData,
+  Vector3,
+  Color
+} from '../shared/types/SceneTypes';
 import { logger } from './logger';
 
 /*
@@ -56,7 +70,6 @@ interface SceneValidationResult {
 */
 
 export class SceneManager {
-
   private static _instance: SceneManager | null = null;
 
   /*
@@ -70,15 +83,11 @@ export class SceneManager {
   */
 
   static getInstance(): SceneManager {
-
-    if  (!SceneManager._instance) {
-
+    if (!SceneManager._instance) {
       SceneManager._instance = new SceneManager();
-
     }
 
     return SceneManager._instance;
-
   }
 
   /*
@@ -97,33 +106,25 @@ export class SceneManager {
     fileName: string,
     options: CreateSceneOptions = {}
   ): Promise<string> {
-
     try {
-
       const scenesDir = path.join(projectPath, 'scenes');
 
       /* ensure scenes directory exists */
 
-      if  (!fs.existsSync(scenesDir)) {
-
+      if (!fs.existsSync(scenesDir)) {
         fs.mkdirSync(scenesDir, { recursive: true });
-
       }
 
       /* generate scene file path */
 
-      const sceneFileName = fileName.endsWith('.scene.json')
-        ? fileName
-        : `${fileName}.scene.json`;
+      const sceneFileName = fileName.endsWith('.scene.json') ? fileName : `${fileName}.scene.json`;
 
       const scenePath = path.join(scenesDir, sceneFileName);
 
       /* check if scene already exists */
 
-      if  (fs.existsSync(scenePath)) {
-
+      if (fs.existsSync(scenePath)) {
         throw new Error(`Scene file already exists: ${sceneFileName}`);
-
       }
 
       /* create scene data based on template */
@@ -146,14 +147,10 @@ export class SceneManager {
       logger.info('SCENE_MANAGER', `Created scene: ${scenePath}`);
 
       return scenePath;
-
     } catch (error) {
-
       logger.error('SCENE_MANAGER', 'Failed to create scene:', error);
       throw error;
-
     }
-
   }
 
   /*
@@ -168,15 +165,11 @@ export class SceneManager {
   */
 
   async loadScene(scenePath: string): Promise<SceneData> {
-
     try {
-
       /* check if file exists */
 
-      if  (!fs.existsSync(scenePath)) {
-
+      if (!fs.existsSync(scenePath)) {
         throw new Error(`Scene file not found: ${scenePath}`);
-
       }
 
       /* read and parse scene file */
@@ -186,33 +179,25 @@ export class SceneManager {
 
       /* validate file format */
 
-      if  (fileData.format !== 'worldenv-scene') {
-
+      if (fileData.format !== 'worldenv-scene') {
         throw new Error(`Invalid scene format: ${fileData.format}`);
-
       }
 
       /* validate scene data structure */
 
       const validation = this.validateSceneData(fileData.scene);
 
-      if  (!validation.isValid) {
-
+      if (!validation.isValid) {
         throw new Error(`Scene validation failed: ${validation.errors.join(', ')}`);
-
       }
 
       logger.info('SCENE_MANAGER', `Loaded scene: ${scenePath}`);
 
       return fileData.scene;
-
     } catch (error) {
-
       logger.error('SCENE_MANAGER', 'Failed to load scene:', error);
       throw error;
-
     }
-
   }
 
   /*
@@ -227,9 +212,7 @@ export class SceneManager {
   */
 
   async saveScene(scenePath: string, sceneData: SceneData): Promise<void> {
-
     try {
-
       /* update scene metadata */
 
       sceneData.metadata.modifiedAt = new Date().toISOString();
@@ -239,10 +222,8 @@ export class SceneManager {
 
       const validation = this.validateSceneData(sceneData);
 
-      if  (!validation.isValid) {
-
+      if (!validation.isValid) {
         throw new Error(`Scene validation failed: ${validation.errors.join(', ')}`);
-
       }
 
       /* create file data structure */
@@ -257,10 +238,8 @@ export class SceneManager {
 
       const sceneDir = path.dirname(scenePath);
 
-      if  (!fs.existsSync(sceneDir)) {
-
+      if (!fs.existsSync(sceneDir)) {
         fs.mkdirSync(sceneDir, { recursive: true });
-
       }
 
       /* write scene file */
@@ -269,14 +248,10 @@ export class SceneManager {
       fs.writeFileSync(scenePath, jsonContent, 'utf8');
 
       logger.info('SCENE_MANAGER', `Saved scene: ${scenePath}`);
-
     } catch (error) {
-
       logger.error('SCENE_MANAGER', 'Failed to save scene:', error);
       throw error;
-
     }
-
   }
 
   /*
@@ -291,26 +266,18 @@ export class SceneManager {
   */
 
   async deleteScene(scenePath: string): Promise<void> {
-
     try {
-
-      if  (!fs.existsSync(scenePath)) {
-
+      if (!fs.existsSync(scenePath)) {
         throw new Error(`Scene file not found: ${scenePath}`);
-
       }
 
       fs.unlinkSync(scenePath);
 
       logger.info('SCENE_MANAGER', `Deleted scene: ${scenePath}`);
-
     } catch (error) {
-
       logger.error('SCENE_MANAGER', 'Failed to delete scene:', error);
       throw error;
-
     }
-
   }
 
   /*
@@ -324,14 +291,14 @@ export class SceneManager {
 
   */
 
-  async listProjectScenes(projectPath: string): Promise<Array<{
-    name: string;
-    path: string;
-    metadata: SceneMetadata;
-  }>> {
-
+  async listProjectScenes(projectPath: string): Promise<
+    Array<{
+      name: string;
+      path: string;
+      metadata: SceneMetadata;
+    }>
+  > {
     try {
-
       const scenesDir = path.join(projectPath, 'scenes');
       const scenes: Array<{
         name: string;
@@ -339,20 +306,15 @@ export class SceneManager {
         metadata: SceneMetadata;
       }> = [];
 
-      if  (!fs.existsSync(scenesDir)) {
-
+      if (!fs.existsSync(scenesDir)) {
         return scenes;
-
       }
 
       const files = fs.readdirSync(scenesDir);
 
-      for  (const file of files) {
-
-        if  (file.endsWith('.scene.json')) {
-
+      for (const file of files) {
+        if (file.endsWith('.scene.json')) {
           try {
-
             const scenePath = path.join(scenesDir, file);
             const sceneData = await this.loadScene(scenePath);
 
@@ -361,26 +323,17 @@ export class SceneManager {
               path: scenePath,
               metadata: sceneData.metadata
             });
-
           } catch (error) {
-
             logger.warn('SCENE_MANAGER', `Failed to load scene metadata: ${file}`, error);
-
           }
-
         }
-
       }
 
       return scenes;
-
     } catch (error) {
-
       logger.error('SCENE_MANAGER', 'Failed to list project scenes:', error);
       throw error;
-
     }
-
   }
 
   /*
@@ -395,7 +348,6 @@ export class SceneManager {
   */
 
   private createSceneTemplate(options: CreateSceneOptions): SceneData {
-
     const now = new Date().toISOString();
     const template = options.template || 'empty';
 
@@ -437,7 +389,6 @@ export class SceneManager {
     };
 
     return sceneData;
-
   }
 
   /*
@@ -452,7 +403,6 @@ export class SceneManager {
   */
 
   private createRootNodeForTemplate(template: string): NodeData {
-
     const rootNode: NodeData = {
       id: this.generateId(),
       name: 'Scene',
@@ -467,8 +417,7 @@ export class SceneManager {
       children: []
     };
 
-    if  (template === '3d') {
-
+    if (template === '3d') {
       /* add 3d camera */
 
       const camera3d: NodeData = {
@@ -488,7 +437,7 @@ export class SceneManager {
             enabled: true,
             properties: {
               fov: 60,
-              aspect: 16/9,
+              aspect: 16 / 9,
               near: 0.1,
               far: 1000,
               orthographic: false
@@ -527,9 +476,7 @@ export class SceneManager {
       };
 
       rootNode.children = [camera3d, light];
-
-    } else if  (template === '2d') {
-
+    } else if (template === '2d') {
       /* add 2d camera */
 
       const camera2d: NodeData = {
@@ -549,7 +496,7 @@ export class SceneManager {
             enabled: true,
             properties: {
               fov: 60,
-              aspect: 16/9,
+              aspect: 16 / 9,
               near: 0.1,
               far: 1000,
               orthographic: true,
@@ -561,13 +508,11 @@ export class SceneManager {
       };
 
       rootNode.children = [camera2d];
-
     }
 
     /* empty template has no default children */
 
     return rootNode;
-
   }
 
   /*
@@ -582,62 +527,45 @@ export class SceneManager {
   */
 
   private validateSceneData(sceneData: SceneData): SceneValidationResult {
-
     const errors: string[] = [];
     const warnings: string[] = [];
 
     /* validate required fields */
 
-    if  (!sceneData.id) {
-
+    if (!sceneData.id) {
       errors.push('Scene ID is required');
-
     }
 
-    if  (!sceneData.name || sceneData.name.trim() === '') {
-
+    if (!sceneData.name || sceneData.name.trim() === '') {
       errors.push('Scene name is required');
-
     }
 
-    if  (!sceneData.rootNode) {
-
+    if (!sceneData.rootNode) {
       errors.push('Root node is required');
-
     }
 
-    if  (!sceneData.metadata) {
-
+    if (!sceneData.metadata) {
       errors.push('Scene metadata is required');
-
     }
 
     /* validate root node structure */
 
-    if  (sceneData.rootNode) {
-
+    if (sceneData.rootNode) {
       const nodeValidation = this.validateNodeData(sceneData.rootNode);
       errors.push(...nodeValidation.errors);
       warnings.push(...nodeValidation.warnings);
-
     }
 
     /* validate metadata fields */
 
-    if  (sceneData.metadata) {
-
-      if  (!sceneData.metadata.version) {
-
+    if (sceneData.metadata) {
+      if (!sceneData.metadata.version) {
         warnings.push('Scene version not specified');
-
       }
 
-      if  (!sceneData.metadata.createdAt) {
-
+      if (!sceneData.metadata.createdAt) {
         warnings.push('Scene creation date not specified');
-
       }
-
     }
 
     return {
@@ -645,7 +573,6 @@ export class SceneManager {
       errors,
       warnings
     };
-
   }
 
   /*
@@ -659,50 +586,37 @@ export class SceneManager {
   */
 
   private validateNodeData(nodeData: NodeData): SceneValidationResult {
-
     const errors: string[] = [];
     const warnings: string[] = [];
 
     /* validate required node fields */
 
-    if  (!nodeData.id) {
-
+    if (!nodeData.id) {
       errors.push(`Node missing ID: ${nodeData.name || 'unknown'}`);
-
     }
 
-    if  (!nodeData.name || nodeData.name.trim() === '') {
-
+    if (!nodeData.name || nodeData.name.trim() === '') {
       errors.push(`Node missing name: ${nodeData.id || 'unknown'}`);
-
     }
 
-    if  (!nodeData.type) {
-
+    if (!nodeData.type) {
       errors.push(`Node missing type: ${nodeData.name || nodeData.id || 'unknown'}`);
-
     }
 
     /* validate transform */
 
-    if  (!nodeData.transform) {
-
+    if (!nodeData.transform) {
       errors.push(`Node missing transform: ${nodeData.name || nodeData.id}`);
-
     }
 
     /* validate children recursively */
 
-    if  (nodeData.children) {
-
-      for  (const child of nodeData.children) {
-
+    if (nodeData.children) {
+      for (const child of nodeData.children) {
         const childValidation = this.validateNodeData(child);
         errors.push(...childValidation.errors);
         warnings.push(...childValidation.warnings);
-
       }
-
     }
 
     return {
@@ -710,7 +624,6 @@ export class SceneManager {
       errors,
       warnings
     };
-
   }
 
   /*
@@ -724,14 +637,11 @@ export class SceneManager {
   */
 
   private generateId(): string {
-
     const timestamp = Date.now().toString(36);
     const random = Math.random().toString(36).substring(2, 8);
 
     return `${timestamp}-${random}`;
-
   }
-
 }
 
 /*

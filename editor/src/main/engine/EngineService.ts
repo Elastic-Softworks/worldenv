@@ -90,10 +90,7 @@ export enum EngineServiceEvent {
 	       for UI updates.
 
 */
- *
- * Manages engine integration and provides editor interface.
- * Handles engine lifecycle, scene synchronization, and play mode.
- */
+
 export class EngineService extends EventEmitter {
   private static instance: EngineService | null = null;
   private engineWrapper: EngineWrapper | null = null;

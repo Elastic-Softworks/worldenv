@@ -18,6 +18,15 @@
 */
 
 import * as fs from 'fs'; /* FILESYSTEM OPERATIONS */
+import {
+  AssetItem,
+  AssetType,
+  AssetMetadata,
+  ImageMetadata,
+  AudioMetadata,
+  ModelMetadata,
+  WorldCMetadata
+} from '../shared/types'; /* SHARED ASSET TYPES */
 import * as path from 'path'; /* PATH UTILITIES */
 import { promisify } from 'util'; /* PROMISE UTILITIES */
 import { logger } from './logger'; /* LOGGING SYSTEM */
@@ -53,97 +62,7 @@ const renameAsync = promisify(fs.rename); /* ASYNC FILE RENAME */
 
 */
 
-export interface AssetItem {
-  name: string /* display name of the asset */;
-  type: AssetType /* categorized asset type */;
-  path: string /* absolute filesystem path */;
-  relativePath: string /* project-relative path */;
-  size: number /* file size in bytes */;
-  modified: Date /* last modification timestamp */;
-  created: Date /* creation timestamp */;
-  extension: string /* file extension */;
-  metadata: AssetMetadata /* detailed asset metadata */;
-  children?: AssetItem[] /* child items for directories */;
-}
-
-/**
- * Asset type enumeration
- */
-export type AssetType =
-  | 'folder'
-  | 'image'
-  | 'audio'
-  | 'model'
-  | 'script'
-  | 'scene'
-  | 'material'
-  | 'font'
-  | 'data'
-  | 'shader'
-  | 'unknown';
-
-/**
- * Asset metadata interface
- */
-export interface AssetMetadata {
-  id: string;
-  imported: Date;
-  tags: string[];
-  description?: string;
-  thumbnail?: string;
-  imageInfo?: ImageMetadata;
-  audioInfo?: AudioMetadata;
-  modelInfo?: ModelMetadata;
-  worldcInfo?: WorldCMetadata;
-}
-
-/**
- * Image metadata
- */
-interface ImageMetadata {
-  width: number;
-  height: number;
-  channels: number;
-  format: string;
-  compressed: boolean;
-}
-
-/**
- * Audio metadata
- */
-interface AudioMetadata {
-  duration: number;
-  channels: number;
-  sampleRate: number;
-  bitRate: number;
-  format: string;
-}
-
-/**
- * Model metadata
- */
-interface ModelMetadata {
-  vertices: number;
-  faces: number;
-  materials: number;
-}
-
-/**
- * WorldC script metadata
- */
-interface WorldCMetadata {
-  version: string;
-  target: 'typescript' | 'assemblyscript';
-  dependencies: string[];
-  exports: string[];
-  compiledPath?: string;
-  lastCompiled?: Date;
-  hasErrors: boolean;
-  errorCount: number;
-  warningCount: number;
-  animations?: string[];
-  format?: string;
-}
+/* Asset types are now imported from shared/types.ts */
 
 /**
  * Asset import options
@@ -179,22 +98,47 @@ class AssetManager {
     this.thumbnailCache = new Map();
   }
 
-  /**
-   * isWorldCFile()
-   *
-   * Check if file is a WorldC script file.
-   */
+  /*
+
+           isWorldCFile()
+	         ---
+	         Check if file is a WorldC script file.
+
+  */
   private isWorldCFile(filePath: string): boolean {
+    /* ASSERTION: filePath parameter validation */
+    console.assert(
+      typeof filePath === 'string' && filePath.length > 0,
+      'isWorldCFile: filePath must be non-empty string'
+    );
+
+    if (!filePath || typeof filePath !== 'string') {
+      logger.error('ASSET', 'Invalid filePath in isWorldCFile', { filePath });
+      return false;
+    }
     const ext = path.extname(filePath).toLowerCase();
     return ext === '.wc' || ext === '.worldc';
   }
 
-  /**
-   * analyzeWorldCFile()
-   *
-   * Analyze WorldC file for metadata and compilation info.
-   */
+  /*
+
+           analyzeWorldCFile()
+	         ---
+	         Analyze WorldC file for metadata and compilation info.
+
+  */
   private async analyzeWorldCFile(filePath: string): Promise<WorldCMetadata> {
+    /* ASSERTION: filePath parameter validation */
+    console.assert(
+      typeof filePath === 'string' && filePath.length > 0,
+      'analyzeWorldCFile: filePath must be non-empty string'
+    );
+    console.assert(this.isWorldCFile(filePath), 'analyzeWorldCFile: filePath must be WorldC file');
+
+    if (!filePath || typeof filePath !== 'string') {
+      logger.error('ASSET', 'Invalid filePath in analyzeWorldCFile', { filePath });
+      throw new Error('Invalid filePath provided to analyzeWorldCFile');
+    }
     try {
       const content = await _readFileAsync(filePath, 'utf8');
       const metadata: WorldCMetadata = {
@@ -202,6 +146,7 @@ class AssetManager {
         target: 'typescript',
         dependencies: [],
         exports: [],
+        compiled: new Date(),
         hasErrors: false,
         errorCount: 0,
         warningCount: 0,
@@ -266,6 +211,7 @@ class AssetManager {
         target: 'typescript',
         dependencies: [],
         exports: [],
+        compiled: new Date(),
         hasErrors: true,
         errorCount: 1,
         warningCount: 0,
@@ -274,13 +220,26 @@ class AssetManager {
       };
     }
   }
+  /*
 
-  /**
-   * triggerWorldCCompilation()
-   *
-   * Trigger compilation of WorldC file when changed.
-   */
+         triggerWorldCCompilation()
+	         ---
+	         Trigger compilation of WorldC file when changed.
+
+*/
   public async triggerWorldCCompilation(filePath: string): Promise<boolean> {
+    /* ASSERTION: filePath must be provided */
+    console.assert(filePath != null, 'triggerWorldCCompilation: filePath cannot be null');
+    console.assert(
+      typeof filePath === 'string',
+      'triggerWorldCCompilation: filePath must be string'
+    );
+
+    if (!filePath || typeof filePath !== 'string') {
+      logger.error('ASSET', 'Invalid filePath provided to triggerWorldCCompilation', { filePath });
+      return false;
+    }
+
     if (!this.isWorldCFile(filePath)) {
       return false;
     }
@@ -313,13 +272,28 @@ class AssetManager {
       return false;
     }
   }
+  /*
 
-  /**
-   * setProjectPath()
-   *
-   * Sets the current project path for asset operations.
-   */
+         setProjectPath()
+	         ---
+	         Sets the current project path for asset operations.
+
+*/
   public setProjectPath(projectPath: string | null): void {
+    /* ASSERTION: if projectPath provided, must be string */
+    console.assert(
+      projectPath === null || typeof projectPath === 'string',
+      'setProjectPath: projectPath must be string or null'
+    );
+
+    if (projectPath !== null && typeof projectPath !== 'string') {
+      logger.error('ASSET', 'Invalid projectPath type provided', {
+        projectPath,
+        type: typeof projectPath
+      });
+      return;
+    }
+
     this.projectPath = projectPath;
     this.clearCaches();
 
@@ -334,11 +308,24 @@ class AssetManager {
    * Returns the assets directory path for the current project.
    */
   public getAssetsPath(): string | null {
+    /* ASSERTION: projectPath validation if present */
+    console.assert(
+      this.projectPath === null || typeof this.projectPath === 'string',
+      'getAssetsPath: projectPath must be string or null'
+    );
+
     if (!this.projectPath) {
       return null;
     }
 
-    return path.join(this.projectPath, 'assets');
+    /* ASSERTION: path.join will return valid string */
+    const assetsPath = path.join(this.projectPath, 'assets');
+    console.assert(
+      typeof assetsPath === 'string' && assetsPath.length > 0,
+      'getAssetsPath: generated path must be non-empty string'
+    );
+
+    return assetsPath;
   }
 
   /**
@@ -347,9 +334,19 @@ class AssetManager {
    * Creates the asset directory structure for a new project.
    */
   public async initializeAssetDirectory(): Promise<void> {
+    /* ASSERTION: this method requires valid project state */
+    console.assert(this.projectPath !== null, 'initializeAssetDirectory: requires project path');
+
     const assetsPath = this.getAssetsPath();
 
+    /* ASSERTION: assetsPath must be valid after project path check */
+    console.assert(
+      assetsPath !== null && typeof assetsPath === 'string',
+      'initializeAssetDirectory: assetsPath must be valid string'
+    );
+
     if (!assetsPath) {
+      logger.error('ASSET', 'Cannot initialize asset directory without project path');
       throw new FileSystemError('No project path set');
     }
 
@@ -387,9 +384,25 @@ class AssetManager {
    * Lists all assets in the specified directory.
    */
   public async listAssets(relativePath: string = ''): Promise<AssetItem[]> {
+    /* ASSERTION: relativePath parameter validation */
+    console.assert(typeof relativePath === 'string', 'listAssets: relativePath must be string');
+    console.assert(
+      !relativePath.includes('..'),
+      'listAssets: relativePath cannot contain parent directory references'
+    );
+
+    if (typeof relativePath !== 'string') {
+      logger.error('ASSET', 'Invalid relativePath type in listAssets', {
+        relativePath,
+        type: typeof relativePath
+      });
+      return [];
+    }
+
     const assetsPath = this.getAssetsPath();
 
     if (!assetsPath) {
+      logger.warn('ASSET', 'Cannot list assets without project path');
       return [];
     }
 
@@ -449,7 +462,34 @@ class AssetManager {
    * Creates an asset item from file system entry.
    */
   private async createAssetItem(fullPath: string, relativePath: string): Promise<AssetItem> {
+    /* ASSERTION: parameter validation */
+    console.assert(
+      typeof fullPath === 'string' && fullPath.length > 0,
+      'createAssetItem: fullPath must be non-empty string'
+    );
+    console.assert(
+      typeof relativePath === 'string',
+      'createAssetItem: relativePath must be string'
+    );
+
+    if (!fullPath || typeof fullPath !== 'string') {
+      logger.error('ASSET', 'Invalid fullPath in createAssetItem', { fullPath });
+      throw new Error('Invalid fullPath provided to createAssetItem');
+    }
+
+    if (typeof relativePath !== 'string') {
+      logger.error('ASSET', 'Invalid relativePath in createAssetItem', { relativePath });
+      throw new Error('Invalid relativePath provided to createAssetItem');
+    }
+
     const stats = await fileSystem.getFileStats(fullPath);
+
+    /* ASSERTION: fileSystem operation must return valid stats */
+    console.assert(
+      stats !== null && typeof stats === 'object',
+      'createAssetItem: stats must be valid object'
+    );
+
     const name = path.basename(fullPath);
     const extension = path.extname(name).toLowerCase();
     const type = this.determineAssetType(fullPath, stats.isDirectory());
@@ -498,6 +538,21 @@ class AssetManager {
    * Determines asset type from file path and metadata.
    */
   private determineAssetType(filePath: string, isDirectory: boolean): AssetType {
+    /* ASSERTION: parameter validation */
+    console.assert(
+      typeof filePath === 'string' && filePath.length > 0,
+      'determineAssetType: filePath must be non-empty string'
+    );
+    console.assert(
+      typeof isDirectory === 'boolean',
+      'determineAssetType: isDirectory must be boolean'
+    );
+
+    if (!filePath || typeof filePath !== 'string') {
+      logger.error('ASSET', 'Invalid filePath in determineAssetType', { filePath });
+      return 'unknown';
+    }
+
     if (isDirectory) {
       return 'folder';
     }
@@ -721,9 +776,26 @@ class AssetManager {
    * Creates a new folder in the assets directory.
    */
   public async createFolder(relativePath: string, name: string): Promise<AssetItem> {
+    /* ASSERTION: parameter validation */
+    console.assert(typeof relativePath === 'string', 'createFolder: relativePath must be string');
+    console.assert(
+      typeof name === 'string' && name.length > 0,
+      'createFolder: name must be non-empty string'
+    );
+    console.assert(
+      !name.includes('/') && !name.includes('\\'),
+      'createFolder: name cannot contain path separators'
+    );
+
+    if (typeof relativePath !== 'string' || typeof name !== 'string' || !name.trim()) {
+      logger.error('ASSET', 'Invalid parameters in createFolder', { relativePath, name });
+      throw new Error('Invalid parameters provided to createFolder');
+    }
+
     const assetsPath = this.getAssetsPath();
 
     if (!assetsPath) {
+      logger.error('ASSET', 'Cannot create folder without project path');
       throw new FileSystemError('No project path set');
     }
 
@@ -755,9 +827,34 @@ class AssetManager {
    * Renames an asset file or folder.
    */
   public async renameAsset(relativePath: string, newName: string): Promise<AssetItem> {
+    /* ASSERTION: parameter validation */
+    console.assert(
+      typeof relativePath === 'string' && relativePath.length > 0,
+      'renameAsset: relativePath must be non-empty string'
+    );
+    console.assert(
+      typeof newName === 'string' && newName.length > 0,
+      'renameAsset: newName must be non-empty string'
+    );
+    console.assert(
+      !newName.includes('/') && !newName.includes('\\'),
+      'renameAsset: newName cannot contain path separators'
+    );
+
+    if (
+      !relativePath ||
+      typeof relativePath !== 'string' ||
+      !newName ||
+      typeof newName !== 'string'
+    ) {
+      logger.error('ASSET', 'Invalid parameters in renameAsset', { relativePath, newName });
+      throw new Error('Invalid parameters provided to renameAsset');
+    }
+
     const assetsPath = this.getAssetsPath();
 
     if (!assetsPath) {
+      logger.error('ASSET', 'Cannot rename asset without project path');
       throw new FileSystemError('No project path set');
     }
 
@@ -793,9 +890,25 @@ class AssetManager {
    * Deletes an asset file or folder.
    */
   public async deleteAsset(relativePath: string): Promise<void> {
+    /* ASSERTION: parameter validation */
+    console.assert(
+      typeof relativePath === 'string' && relativePath.length > 0,
+      'deleteAsset: relativePath must be non-empty string'
+    );
+    console.assert(
+      !relativePath.includes('..'),
+      'deleteAsset: relativePath cannot contain parent directory references'
+    );
+
+    if (!relativePath || typeof relativePath !== 'string') {
+      logger.error('ASSET', 'Invalid relativePath in deleteAsset', { relativePath });
+      throw new Error('Invalid relativePath provided to deleteAsset');
+    }
+
     const assetsPath = this.getAssetsPath();
 
     if (!assetsPath) {
+      logger.error('ASSET', 'Cannot delete asset without project path');
       throw new FileSystemError('No project path set');
     }
 
@@ -815,12 +928,25 @@ class AssetManager {
     });
   }
 
-  /**
-   * searchAssets()
-   *
-   * Searches for assets matching the specified criteria.
-   */
+  /*
+
+           searchAssets()
+	         ---
+	         Searches for assets matching the specified criteria.
+
+  */
   public async searchAssets(options: AssetSearchOptions): Promise<AssetItem[]> {
+    /* ASSERTION: options parameter validation */
+    console.assert(
+      options !== null && typeof options === 'object',
+      'searchAssets: options must be valid object'
+    );
+    console.assert(Array.isArray(options.types), 'searchAssets: options.types must be array');
+
+    if (!options || typeof options !== 'object') {
+      logger.error('ASSET', 'Invalid options in searchAssets', { options });
+      return [];
+    }
     const results: AssetItem[] = [];
     const searchPath = options.folder ?? '';
 
@@ -845,12 +971,28 @@ class AssetManager {
     return results;
   }
 
-  /**
-   * matchesSearch()
-   *
-   * Checks if asset matches search criteria.
-   */
+  /*
+
+           matchesSearch()
+	         ---
+	         Checks if asset matches search criteria.
+
+  */
   private matchesSearch(asset: AssetItem, options: AssetSearchOptions): boolean {
+    /* ASSERTION: parameter validation */
+    console.assert(
+      asset !== null && typeof asset === 'object',
+      'matchesSearch: asset must be valid object'
+    );
+    console.assert(
+      options !== null && typeof options === 'object',
+      'matchesSearch: options must be valid object'
+    );
+
+    if (!asset || !options) {
+      logger.error('ASSET', 'Invalid parameters in matchesSearch', { asset, options });
+      return false;
+    }
     if (options.types.length > 0 && !options.types.includes(asset.type)) {
       return false;
     }
@@ -875,12 +1017,25 @@ class AssetManager {
     return true;
   }
 
-  /**
-   * generateThumbnail()
-   *
-   * Generates thumbnail for image asset.
-   */
+  /*
+
+           generateThumbnail()
+	         ---
+	         Generates thumbnail for image asset.
+
+  */
   private async generateThumbnail(asset: AssetItem): Promise<void> {
+    /* ASSERTION: asset parameter validation */
+    console.assert(
+      asset !== null && typeof asset === 'object',
+      'generateThumbnail: asset must be valid object'
+    );
+    console.assert(typeof asset.type === 'string', 'generateThumbnail: asset.type must be string');
+
+    if (!asset || typeof asset !== 'object') {
+      logger.error('ASSET', 'Invalid asset in generateThumbnail', { asset });
+      return;
+    }
     if (asset.type !== 'image') {
       return;
     }
@@ -903,12 +1058,28 @@ class AssetManager {
     }
   }
 
-  /**
-   * createThumbnailPath()
-   *
-   * Creates thumbnail file path for asset.
-   */
+  /*
+
+           createThumbnailPath()
+	         ---
+	         Creates thumbnail file path for asset.
+
+  */
   private async createThumbnailPath(asset: AssetItem): Promise<string> {
+    /* ASSERTION: asset parameter validation */
+    console.assert(
+      asset !== null && typeof asset === 'object',
+      'createThumbnailPath: asset must be valid object'
+    );
+    console.assert(
+      typeof asset.relativePath === 'string',
+      'createThumbnailPath: asset.relativePath must be string'
+    );
+
+    if (!asset || typeof asset.relativePath !== 'string') {
+      logger.error('ASSET', 'Invalid asset in createThumbnailPath', { asset });
+      throw new Error('Invalid asset provided to createThumbnailPath');
+    }
     const assetsPath = this.getAssetsPath();
 
     if (!assetsPath) {
@@ -925,12 +1096,25 @@ class AssetManager {
     return thumbnailPath;
   }
 
-  /**
-   * generateAssetId()
-   *
-   * Generates unique asset ID from relative path.
-   */
+  /*
+
+           generateAssetId()
+	         ---
+	         Generates unique asset ID from relative path.
+
+  */
   private generateAssetId(relativePath: string): string {
+    /* ASSERTION: relativePath parameter validation */
+    console.assert(
+      typeof relativePath === 'string',
+      'generateAssetId: relativePath must be string'
+    );
+    console.assert(relativePath.length > 0, 'generateAssetId: relativePath must not be empty');
+
+    if (typeof relativePath !== 'string' || relativePath.length === 0) {
+      logger.error('ASSET', 'Invalid relativePath in generateAssetId', { relativePath });
+      return `invalid_${Date.now().toString(36)}`;
+    }
     const normalized = relativePath.replace(/[\\/]/g, '_');
     const timestamp = Date.now().toString(36);
     const random = Math.random().toString(36).substring(2, 8);
@@ -938,23 +1122,41 @@ class AssetManager {
     return `${normalized}_${timestamp}_${random}`;
   }
 
-  /**
-   * cacheAssets()
-   *
-   * Caches asset list for performance.
-   */
+  /*
+
+           cacheAssets()
+	         ---
+	         Caches asset list for performance.
+
+  */
   private cacheAssets(relativePath: string, assets: AssetItem[]): void {
+    /* ASSERTION: parameter validation */
+    console.assert(typeof relativePath === 'string', 'cacheAssets: relativePath must be string');
+    console.assert(Array.isArray(assets), 'cacheAssets: assets must be array');
+
+    if (typeof relativePath !== 'string' || !Array.isArray(assets)) {
+      logger.error('ASSET', 'Invalid parameters in cacheAssets', { relativePath, assets });
+      return;
+    }
     for (const asset of assets) {
       this.assetCache.set(asset.relativePath, asset);
     }
   }
 
-  /**
-   * clearCaches()
-   *
-   * Clears all asset caches.
-   */
+  /*
+
+           clearCaches()
+	         ---
+	         Clears all internal caches.
+
+  */
   private clearCaches(): void {
+    /* ASSERTION: cache objects must exist */
+    console.assert(this.assetCache instanceof Map, 'clearCaches: assetCache must be Map instance');
+    console.assert(
+      this.metadataCache instanceof Map,
+      'clearCaches: metadataCache must be Map instance'
+    );
     this.assetCache.clear();
     this.metadataCache.clear();
     this.thumbnailCache.clear();

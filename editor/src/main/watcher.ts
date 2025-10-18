@@ -1,20 +1,31 @@
 /*
+   ===============================================================
+   WORLDEDIT FILE SYSTEM WATCHER
+   ELASTIC SOFTWORKS 2025
+   ===============================================================
+*/
+
+/*
  * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
  * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - File System Watcher
- *
- * Monitors project directory for file system changes.
- * Notifies renderer process of file additions, modifications, and deletions.
- * Prioritizes WorldC (.wc) files for immediate hot-reload.
- */
+/*
+	===============================================================
+             --- SETUP ---
+	===============================================================
+*/
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { logger } from './logger';
+import * as fs from 'fs'; /* NODE.JS FILE SYSTEM API */
+import * as path from 'path'; /* NODE.JS PATH UTILITIES */
+import { logger } from './logger'; /* CENTRALIZED LOGGING SYSTEM */
+
+/*
+	===============================================================
+             --- TYPES ---
+	===============================================================
+*/
 
 type WatchEventType = 'add' | 'change' | 'unlink' | 'addDir' | 'unlinkDir';
 
@@ -25,6 +36,27 @@ interface WatchEvent {
 }
 
 type WatchListener = (event: WatchEvent) => void;
+
+/*
+	===============================================================
+             --- FUNCS ---
+	===============================================================
+*/
+
+/*
+
+         FileWatcher
+	       ---
+	       monitors project directories for file system changes
+	       and notifies listeners of file additions, modifications,
+	       and deletions. implements intelligent debouncing and
+	       prioritizes worldc files for faster hot-reload.
+
+	       the watcher ignores common build artifacts and system
+	       files while providing rapid detection of source code
+	       changes that require immediate compilation or reload.
+
+*/
 
 class FileWatcher {
   private watchers: Map<string, fs.FSWatcher>;
@@ -300,3 +332,9 @@ class FileWatcher {
 }
 
 export const fileWatcher = new FileWatcher();
+
+/*
+	===============================================================
+             --- EOF ---
+	===============================================================
+*/
