@@ -4,22 +4,74 @@
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Preload Script
- *
- * Context bridge for secure IPC communication between main and renderer.
- * Exposes controlled API surface to renderer process.
- */
+/*
+	====================================================================
+             PRELOAD SCRIPT - WORLDENV EDITOR
+	====================================================================
+*/
 
-import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+/*
 
-/**
- * API exposed to renderer process
- */
+	secure IPC bridge between main and renderer processes in Electron
+	architecture with controlled API surface exposure.
+
+	this preload script runs in a privileged context with access to
+	Node.js APIs while the renderer process runs in a sandboxed
+	environment. the context bridge provides a secure channel for
+	communication without exposing dangerous APIs directly.
+
+	security features:
+	- controlled API surface through contextBridge
+	- no direct Node.js API exposure to renderer
+	- type-safe IPC communication patterns
+	- structured namespace organization
+	- comprehensive operation coverage
+
+	the API is organized into functional domains (app, fs, dialog,
+	project, scene, asset, engine, build, script) with consistent
+	patterns for synchronous and asynchronous operations.
+
+*/
+
+/*
+	====================================================================
+             --- SETUP ---
+	====================================================================
+*/
+
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'; /* ELECTRON IPC BRIDGE */
+
+/*
+	====================================================================
+             --- FUNCS ---
+	====================================================================
+*/
+
+/*
+
+         WorldEdit API Structure
+	       ---
+	       complete API surface exposed to renderer process.
+
+	       provides organized namespaces for different functional
+	       areas with consistent async/await patterns and proper
+	       error handling through IPC communication.
+
+*/
+
 const api = {
-  /**
-   * Application-level operations
-   */
+  /*
+
+           app namespace
+	         ---
+	         application-level operations and metadata.
+
+	         provides access to application version, paths,
+	         locale information, and recent project management.
+	         handles application lifecycle operations.
+
+  */
+
   app: {
     getVersion: (): Promise<string> => {
       return ipcRenderer.invoke('app:get-version') as Promise<string>;
@@ -37,6 +89,7 @@ const api = {
       return ipcRenderer.invoke('app:quit') as Promise<void>;
     },
 
+    /* recent project management for quick access */
     getRecentProjects: (): Promise<unknown[]> => {
       return ipcRenderer.invoke('app:get-recent-projects') as Promise<unknown[]>;
     },
@@ -54,9 +107,18 @@ const api = {
     }
   },
 
-  /**
-   * File system operations
-   */
+  /*
+
+           fs namespace
+	         ---
+	         secure file system operations with validation.
+
+	         provides controlled access to file operations with
+	         built-in security checks and path validation.
+	         supports both text and JSON file operations.
+
+  */
+
   fs: {
     readFile: (path: string): Promise<string> => {
       return ipcRenderer.invoke('fs:read-file', path) as Promise<string>;
@@ -66,6 +128,7 @@ const api = {
       return ipcRenderer.invoke('fs:write-file', { path, content }) as Promise<void>;
     },
 
+    /* JSON operations with automatic serialization */
     readJSON: (path: string): Promise<unknown> => {
       return ipcRenderer.invoke('fs:read-json', path) as Promise<unknown>;
     },
@@ -74,6 +137,7 @@ const api = {
       return ipcRenderer.invoke('fs:write-json', { path, data }) as Promise<void>;
     },
 
+    /* file system querying operations */
     exists: (path: string): Promise<boolean> => {
       return ipcRenderer.invoke('fs:exists', path) as Promise<boolean>;
     },
@@ -90,6 +154,7 @@ const api = {
       return ipcRenderer.invoke('fs:list-directory', path) as Promise<string[]>;
     },
 
+    /* directory management operations */
     ensureDirectory: (path: string): Promise<void> => {
       return ipcRenderer.invoke('fs:ensure-directory', path) as Promise<void>;
     },
@@ -107,10 +172,20 @@ const api = {
     }
   },
 
-  /**
-   * Dialog operations
-   */
+  /*
+
+           dialog namespace
+	         ---
+	         native dialog operations for user interaction.
+
+	         provides access to file dialogs, message boxes,
+	         and confirmation dialogs with proper error handling
+	         and user cancellation support.
+
+  */
+
   dialog: {
+    /* file selection dialogs */
     openFile: (options?: unknown): Promise<string | null> => {
       return ipcRenderer.invoke('dialog:open-file', options) as Promise<string | null>;
     },
@@ -127,6 +202,7 @@ const api = {
       return ipcRenderer.invoke('dialog:open-directory', options) as Promise<string | null>;
     },
 
+    /* message and confirmation dialogs */
     showMessage: (options: unknown): Promise<number> => {
       return ipcRenderer.invoke('dialog:show-message', options) as Promise<number>;
     },
@@ -144,9 +220,18 @@ const api = {
     }
   },
 
-  /**
-   * Project operations
-   */
+  /*
+
+           project namespace
+	         ---
+	         worldenv project lifecycle management.
+
+	         handles project creation, opening, saving, and
+	         modification tracking with proper state management
+	         and settings persistence.
+
+  */
+
   project: {
     create: (path: string, name: string): Promise<unknown> => {
       return ipcRenderer.invoke('project:create', { path, name }) as Promise<unknown>;
@@ -164,6 +249,7 @@ const api = {
       return ipcRenderer.invoke('project:close') as Promise<void>;
     },
 
+    /* project state queries */
     getCurrent: (): Promise<unknown> => {
       return ipcRenderer.invoke('project:get-current') as Promise<unknown>;
     },
@@ -176,6 +262,7 @@ const api = {
       return ipcRenderer.invoke('project:is-modified') as Promise<boolean>;
     },
 
+    /* project modification tracking */
     markModified: (): Promise<void> => {
       return ipcRenderer.invoke('project:mark-modified') as Promise<void>;
     },
@@ -185,9 +272,18 @@ const api = {
     }
   },
 
-  /**
-   * Scene operations
-   */
+  /*
+
+           scene namespace
+	         ---
+	         scene file management and operations.
+
+	         provides comprehensive scene lifecycle management
+	         including creation, loading, saving, and deletion
+	         with proper validation and error handling.
+
+  */
+
   scene: {
     create: (projectPath: string, fileName: string, options?: unknown): Promise<unknown> => {
       return ipcRenderer.invoke('scene:create', {
@@ -214,9 +310,18 @@ const api = {
     }
   },
 
-  /**
-   * Asset operations
-   */
+  /*
+
+           asset namespace
+	         ---
+	         asset management and import operations.
+
+	         handles asset imports, organization, metadata management,
+	         and thumbnail generation with comprehensive search
+	         and filtering capabilities.
+
+  */
+
   asset: {
     list: (relativePath?: string): Promise<unknown[]> => {
       return ipcRenderer.invoke('asset:list', relativePath) as Promise<unknown[]>;
@@ -226,6 +331,7 @@ const api = {
       return ipcRenderer.invoke('asset:import', { filePaths, options }) as Promise<unknown[]>;
     },
 
+    /* asset organization operations */
     createFolder: (relativePath: string, name: string): Promise<unknown> => {
       return ipcRenderer.invoke('asset:create-folder', { relativePath, name }) as Promise<unknown>;
     },
@@ -238,6 +344,7 @@ const api = {
       return ipcRenderer.invoke('asset:delete', relativePath) as Promise<void>;
     },
 
+    /* asset discovery and metadata */
     search: (options: unknown): Promise<unknown[]> => {
       return ipcRenderer.invoke('asset:search', options) as Promise<unknown[]>;
     },
@@ -258,10 +365,20 @@ const api = {
     }
   },
 
-  /**
-   * Engine operations
-   */
+  /*
+
+           engine namespace
+	         ---
+	         worldenv engine integration and communication.
+
+	         provides interface to engine operations including
+	         scene export, validation, entity management, and
+	         runtime status monitoring.
+
+  */
+
   engine: {
+    /* scene operations */
     exportScene: (sceneData: unknown, options?: unknown): Promise<unknown> => {
       return ipcRenderer.invoke('engine:export-scene', { sceneData, options }) as Promise<unknown>;
     },
@@ -278,6 +395,7 @@ const api = {
       return ipcRenderer.invoke('engine:load-scene', command) as Promise<unknown>;
     },
 
+    /* engine status and information */
     getEngineInfo: (): Promise<unknown> => {
       return ipcRenderer.invoke('engine:get-engine-info') as Promise<unknown>;
     },
@@ -290,6 +408,7 @@ const api = {
       return ipcRenderer.invoke('engine:get-health-check') as Promise<unknown>;
     },
 
+    /* engine lifecycle management */
     startInitialization: (options?: unknown): Promise<unknown> => {
       return ipcRenderer.invoke('engine:start-initialization', options) as Promise<unknown>;
     },
@@ -302,6 +421,7 @@ const api = {
       return ipcRenderer.invoke('engine:set-play-mode', command) as Promise<unknown>;
     },
 
+    /* entity and component operations */
     createEntity: (command: unknown): Promise<unknown> => {
       return ipcRenderer.invoke('engine:create-entity', command) as Promise<unknown>;
     },
@@ -315,9 +435,18 @@ const api = {
     }
   },
 
-  /**
-   * Build operations
-   */
+  /*
+
+           build namespace
+	         ---
+	         project build and compilation operations.
+
+	         manages build process execution, configuration,
+	         and output handling with proper progress tracking
+	         and cancellation support.
+
+  */
+
   build: {
     buildProject: (config: unknown): Promise<unknown> => {
       return ipcRenderer.invoke('build:build-project', config) as Promise<unknown>;
@@ -331,6 +460,7 @@ const api = {
       return ipcRenderer.invoke('build:open-build-location', outputPath) as Promise<unknown>;
     },
 
+    /* build configuration queries */
     getAvailableScenes: (): Promise<unknown> => {
       return ipcRenderer.invoke('build:get-available-scenes') as Promise<unknown>;
     },
@@ -340,9 +470,18 @@ const api = {
     }
   },
 
-  /**
-   * Script operations
-   */
+  /*
+
+           script namespace
+	         ---
+	         script file management and editing operations.
+
+	         handles script creation, editing, and organization
+	         for TypeScript, AssemblyScript, and WorldC files
+	         with proper template generation.
+
+  */
+
   script: {
     readFile: (filePath: string): Promise<string> => {
       return ipcRenderer.invoke('script:read-file', filePath) as Promise<string>;
@@ -352,10 +491,12 @@ const api = {
       return ipcRenderer.invoke('script:write-file', { filePath, content }) as Promise<void>;
     },
 
+    /* script creation with templates */
     createNew: (scriptType: 'typescript' | 'assemblyscript' | 'worldc'): Promise<string> => {
       return ipcRenderer.invoke('script:create-new', scriptType) as Promise<string>;
     },
 
+    /* script file management */
     deleteFile: (filePath: string): Promise<void> => {
       return ipcRenderer.invoke('script:delete-file', filePath) as Promise<void>;
     },
@@ -369,16 +510,34 @@ const api = {
     }
   },
 
-  /**
-   * General IPC invoke method
-   */
+  /*
+
+           General IPC operations
+	         ---
+	         low-level IPC communication for extensibility.
+
+	         provides direct access to IPC invoke method and
+	         event handling for custom communication patterns
+	         not covered by the structured namespaces above.
+
+  */
+
   invoke: (channel: string, ...args: unknown[]): Promise<unknown> => {
     return ipcRenderer.invoke(channel, ...args) as Promise<unknown>;
   },
 
-  /**
-   * Event listeners
-   */
+  /*
+
+           Event handling operations
+	         ---
+	         event subscription and management for real-time updates.
+
+	         provides event listener registration and cleanup
+	         for receiving notifications from main process
+	         about system changes and updates.
+
+  */
+
   on: (channel: string, callback: (...args: unknown[]) => void): void => {
     const subscription = (_event: IpcRendererEvent, ...args: unknown[]): void => {
       callback(...args);
@@ -404,20 +563,24 @@ const api = {
   }
 };
 
-/**
- * Expose API to renderer via contextBridge
- */
+/* expose API to renderer process through secure context bridge
+   this creates the global worldedit and electronAPI objects
+   available in the renderer's window object */
 contextBridge.exposeInMainWorld('worldedit', api);
 contextBridge.exposeInMainWorld('electronAPI', api);
 
-/**
- * Type declarations for renderer process
- */
+/* type definitions for TypeScript support in renderer process */
 export type WorldEditAPI = typeof api;
 
 declare global {
   interface Window {
-    worldedit: WorldEditAPI;
-    electronAPI: WorldEditAPI;
+    worldedit: WorldEditAPI /* PRIMARY API NAMESPACE */;
+    electronAPI: WorldEditAPI /* LEGACY COMPATIBILITY NAMESPACE */;
   }
 }
+
+/*
+	====================================================================
+             --- EOF ---
+	====================================================================
+*/

@@ -4,43 +4,125 @@
  * See LICENSE.txt for full license texts
  */
 
-/**
- * WORLDEDIT - Project Manager
- *
- * Manages WORLDENV project lifecycle including creation, loading, and saving.
- * Handles project file format (.worldenv) and directory structure validation.
- */
+/*
+	====================================================================
+             PROJECT MANAGER - WORLDENV EDITOR
+	====================================================================
+*/
 
-import * as path from 'path';
-import { fileSystem } from './file-system';
-import { logger } from './logger';
-import { buildManager } from './build-manager';
-import { ProjectData, ProjectError } from '../shared/types';
+/*
 
+	worldenv project lifecycle management with comprehensive validation
+	and structured project format handling.
+
+	this module manages complete project operations including creation,
+	loading, saving, and validation of worldenv project files. handles
+	the .worldenv project format with proper directory structure
+	enforcement and data validation.
+
+	project features:
+	- structured project directory creation with templates
+	- comprehensive project data validation
+	- modification tracking for auto-save integration
+	- project format versioning and migration support
+	- integration with build system and asset management
+
+	the system ensures project integrity through validation at
+	load time and maintains consistency through structured
+	data management and proper error handling.
+
+*/
+
+/*
+	====================================================================
+             --- SETUP ---
+	====================================================================
+*/
+
+import * as path from 'path'; /* PATH MANIPULATION UTILITIES */
+import { fileSystem } from './file-system'; /* SECURE FILE OPERATIONS */
+import { logger } from './logger'; /* LOGGING SYSTEM */
+import { buildManager } from './build-manager'; /* BUILD INTEGRATION */
+import { ProjectData, ProjectError } from '../shared/types'; /* PROJECT TYPES */
+
+/*
+	====================================================================
+             --- GLOBAL ---
+	====================================================================
+*/
+
+/* project format version for compatibility and migration */
 const PROJECT_VERSION = '0.1.0';
 const ENGINE_VERSION = '0.1.0';
 
+/*
+	====================================================================
+             --- TYPES ---
+	====================================================================
+*/
+
+/*
+
+         ProjectInfo
+	       ---
+	       internal project state container.
+
+	       maintains current project information including
+	       file path, parsed data, and modification status
+	       for proper state management and auto-save support.
+
+*/
+
 interface ProjectInfo {
-  path: string;
-  data: ProjectData;
-  modified: boolean;
+  path: string /* PROJECT DIRECTORY PATH */;
+  data: ProjectData /* PARSED PROJECT DATA */;
+  modified: boolean /* MODIFICATION STATUS */;
 }
 
+/*
+	====================================================================
+             --- FUNCS ---
+	====================================================================
+*/
+
+/*
+
+         ProjectManager
+	       ---
+	       centralized project lifecycle management.
+
+	       handles all aspects of worldenv project management
+	       including creation with proper directory structure,
+	       loading with validation, saving with error handling,
+	       and modification tracking for editor integration.
+
+	       maintains single active project state and provides
+	       comprehensive validation to ensure project integrity
+	       throughout the editing session.
+
+*/
+
 class ProjectManager {
-  private current_project: ProjectInfo | null;
-  private project_file_name: string;
+  private current_project: ProjectInfo | null; /* ACTIVE PROJECT STATE */
+  private project_file_name: string; /* PROJECT FILE NAME */
 
   constructor() {
     this.current_project = null;
     this.project_file_name = 'project.worldenv';
   }
 
-  /**
-   * createProject()
-   *
-   * Creates new project at specified directory.
-   * Initializes project structure and default files.
-   */
+  /*
+
+           createProject()
+	         ---
+	         creates new worldenv project with complete structure.
+
+	         initializes project directory with proper folder
+	         structure, default configuration files, and
+	         project metadata. validates target directory
+	         and ensures proper permissions.
+
+  */
   public async createProject(project_path: string, project_name: string): Promise<ProjectData> {
     try {
       logger.info('PROJECT', 'Creating project', {
@@ -112,12 +194,17 @@ class ProjectManager {
     }
   }
 
-  /**
-   * openProject()
-   *
-   * Opens existing project from directory.
-   * Validates project structure and loads project data.
-   */
+  /*
+
+           openProject()
+	         ---
+	         opens existing worldenv project with validation.
+
+	         loads project from directory with comprehensive
+	         structure validation and data integrity checks.
+	         updates build manager with project path.
+
+  */
   public async openProject(project_path: string): Promise<ProjectData> {
     try {
       logger.info('PROJECT', 'Opening project', { path: project_path });
@@ -178,12 +265,17 @@ class ProjectManager {
     }
   }
 
-  /**
-   * saveProject()
-   *
-   * Saves current project to disk.
-   * Updates modification timestamp.
-   */
+  /*
+
+           saveProject()
+	         ---
+	         saves current project data to disk.
+
+	         writes project configuration to .worldenv file
+	         with proper error handling and validation.
+	         clears modification flag on successful save.
+
+  */
   public async saveProject(): Promise<void> {
     if (!this.current_project) {
       throw new ProjectError('No project is currently open');
@@ -216,12 +308,17 @@ class ProjectManager {
     }
   }
 
-  /**
-   * closeProject()
-   *
-   * Closes current project.
-   * Does not save unless explicitly requested.
-   */
+  /*
+
+           closeProject()
+	         ---
+	         closes current project and clears state.
+
+	         safely closes active project with proper cleanup
+	         and build manager notification. resets internal
+	         state for next project operation.
+
+  */
   public closeProject(): void {
     if (!this.current_project) {
       return;
@@ -237,49 +334,74 @@ class ProjectManager {
     this.current_project = null;
   }
 
-  /**
-   * getCurrentProject()
-   *
-   * Returns current project info or null if no project open.
-   */
+  /*
+
+           getCurrentProject()
+	         ---
+	         returns current project data if available.
+
+	         provides access to active project information
+	         or null if no project is currently loaded.
+
+  */
   public getCurrentProject(): ProjectInfo | null {
     return this.current_project;
   }
 
-  /**
-   * isProjectOpen()
-   *
-   * Returns true if project is currently open.
-   */
+  /*
+
+           isProjectOpen()
+	         ---
+	         checks if project is currently active.
+
+	         returns boolean indicating whether a project
+	         is loaded and available for operations.
+
+  */
   public isProjectOpen(): boolean {
     return this.current_project !== null;
   }
 
-  /**
-   * isProjectModified()
-   *
-   * Returns true if project has unsaved changes.
-   */
+  /*
+
+           isProjectModified()
+	         ---
+	         checks if project has unsaved modifications.
+
+	         returns modification status for auto-save
+	         and user prompting during close operations.
+
+  */
   public isProjectModified(): boolean {
     return this.current_project?.modified || false;
   }
 
-  /**
-   * markModified()
-   *
-   * Marks project as modified.
-   */
+  /*
+
+           markModified()
+	         ---
+	         marks project as having unsaved changes.
+
+	         sets modification flag to trigger auto-save
+	         and enable save prompts during close operations.
+
+  */
   public markModified(): void {
     if (this.current_project) {
       this.current_project.modified = true;
     }
   }
 
-  /**
-   * updateProjectData()
-   *
-   * Updates project data and marks as modified.
-   */
+  /*
+
+           updateProjectData()
+	         ---
+	         updates project data and marks as modified.
+
+	         applies changes to project configuration
+	         and automatically sets modification flag.
+
+  */
   public updateProjectData(updater: (data: ProjectData) => ProjectData): void {
     if (!this.current_project) {
       throw new ProjectError('No project is currently open');
@@ -289,11 +411,17 @@ class ProjectManager {
     this.current_project.modified = true;
   }
 
-  /**
-   * createProjectStructure()
-   *
-   * Creates default project directory structure.
-   */
+  /*
+
+           createProjectStructure()
+	         ---
+	         creates complete project directory structure.
+
+	         initializes all required folders and files
+	         for worldenv project organization with
+	         proper permissions and default content.
+
+  */
   private async createProjectStructure(project_path: string): Promise<void> {
     const directories = [
       'assets',
@@ -348,9 +476,11 @@ class ProjectManager {
     }
   }
 
-  /**
-   * createDefaultProjectData()
-   *
+  /*
+
+           createDefaultProjectData()
+	         ---
+	         *
    * Creates default project data structure.
    */
   private createDefaultProjectData(project_name: string): ProjectData {

@@ -7,9 +7,9 @@ WORLDENV is a game development ecosystem consisting of **WORLDEDIT** (a visual e
 
 ```
 worldenv/
-├── README.md                 # This file - project overview
-├── .gitignore               # Git ignore patterns
-├── editor/                  # WORLDEDIT - Visual game editor
+├── README.md               # This file - project overview
+├── .gitignore              # Git ignore patterns
+├── editor/                 # Visual game editor
 │   ├── README.md           # Editor-specific documentation
 │   ├── package.json        # Editor dependencies and scripts
 │   ├── src/                # Editor source code
