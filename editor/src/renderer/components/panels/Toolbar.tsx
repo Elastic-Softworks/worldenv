@@ -11,13 +11,19 @@
  * Provides quick access to frequently used functions.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useEditorState } from '../../context/EditorStateContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Button } from '../ui/Button';
 import { EngineInterface, EngineState } from '../../engine/EngineInterface';
 import { EngineStatusBadge } from '../ui/EngineStatus';
 import { EngineStatus } from '../../../shared/types/EngineTypes';
+import {
+  TransformManager,
+  TransformMode,
+  TransformSpace
+} from '../../core/transform/TransformManager';
+import { tooltipManager } from '../../core/tooltip';
 
 /**
  * Toolbar component
@@ -27,6 +33,15 @@ import { EngineStatus } from '../../../shared/types/EngineTypes';
 export function Toolbar(): JSX.Element {
   const { state, actions } = useEditorState();
   const { theme } = useTheme();
+
+  /* TRANSFORM MANAGER */
+  const transformManager = TransformManager.getInstance();
+  const [currentTransformMode, setCurrentTransformMode] = useState<TransformMode>(
+    TransformMode.SELECT
+  );
+  const [currentTransformSpace, setCurrentTransformSpace] = useState<TransformSpace>(
+    TransformSpace.WORLD
+  );
 
   /* PLAY MODE STATE */
   const [isPlayMode, setIsPlayMode] = useState(false);
@@ -123,7 +138,38 @@ export function Toolbar(): JSX.Element {
       engineInterface.removeEventListener('playModeResumed', handlePlayModeResumed);
       engineInterface.removeEventListener('error', handleEngineError);
     };
+
+    /* TRANSFORM STATE LISTENER */
+    const handleTransformStateChange = (event: CustomEvent) => {
+      const transformState = event.detail;
+      setCurrentTransformMode(transformState.mode);
+      setCurrentTransformSpace(transformState.space);
+    };
+
+    window.addEventListener('transform-state-changed', handleTransformStateChange as EventListener);
+
+    /* INITIALIZE TRANSFORM MANAGER */
+    transformManager.setSelectedEntities(state.selectedEntities);
+
+    return () => {
+      engineInterface.removeEventListener('ready', handleEngineReady);
+      engineInterface.removeEventListener('stateChanged', handleStateChanged);
+      engineInterface.removeEventListener('playModeStarted', handlePlayModeStarted);
+      engineInterface.removeEventListener('playModeStopped', handlePlayModeStopped);
+      engineInterface.removeEventListener('playModePaused', handlePlayModePaused);
+      engineInterface.removeEventListener('playModeResumed', handlePlayModeResumed);
+      engineInterface.removeEventListener('error', handleEngineError);
+      window.removeEventListener(
+        'transform-state-changed',
+        handleTransformStateChange as EventListener
+      );
+    };
   }, []);
+
+  /* UPDATE TRANSFORM MANAGER WITH SELECTED ENTITIES */
+  useEffect(() => {
+    transformManager.setSelectedEntities(state.selectedEntities);
+  }, [state.selectedEntities]);
 
   /**
    * handlePlayMode()
@@ -164,6 +210,38 @@ export function Toolbar(): JSX.Element {
       }
     } catch (error) {
       console.error('[TOOLBAR] Pause mode error:', error);
+    }
+  };
+
+  /**
+   * handleSetTransformMode()
+   *
+   * Changes the active transform tool mode.
+   */
+  const handleSetTransformMode = (mode: TransformMode): void => {
+    transformManager.setTransformMode(mode);
+  };
+
+  /**
+   * handleToggleTransformSpace()
+   *
+   * Toggles between world and local transform space.
+   */
+  const handleToggleTransformSpace = (): void => {
+    const newSpace =
+      currentTransformSpace === TransformSpace.WORLD ? TransformSpace.LOCAL : TransformSpace.WORLD;
+    transformManager.setTransformSpace(newSpace);
+  };
+
+  /**
+   * handleDuplicateEntities()
+   *
+   * Duplicates selected entities.
+   */
+  const handleDuplicateEntities = (): void => {
+    if (state.selectedEntities.length > 0) {
+      const duplicated = transformManager.duplicateEntities();
+      actions.selectEntities(duplicated);
     }
   };
 
@@ -212,37 +290,60 @@ export function Toolbar(): JSX.Element {
   const IconButton = ({
     icon,
     title,
+    shortcut,
     active = false,
     disabled = false,
     onClick
   }: {
     icon: string;
     title: string;
+    shortcut?: string;
     active?: boolean;
     disabled?: boolean;
     onClick?: () => void;
-  }): JSX.Element => (
-    <button
-      style={active ? activeIconButtonStyle : iconButtonStyle}
-      title={title}
-      disabled={disabled}
-      onClick={onClick}
-      onMouseEnter={(e) => {
-        if (!disabled && !active) {
-          e.currentTarget.style.backgroundColor = theme.colors.background.tertiary;
-          e.currentTarget.style.borderColor = theme.colors.border.secondary;
+  }): JSX.Element => {
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    /* REGISTER TOOLTIP ON MOUNT */
+    useEffect(() => {
+      if (buttonRef.current) {
+        tooltipManager.register(buttonRef.current, {
+          content: title,
+          shortcut: shortcut,
+          delay: 500
+        });
+      }
+
+      return () => {
+        if (buttonRef.current) {
+          tooltipManager.unregister(buttonRef.current);
         }
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled && !active) {
-          e.currentTarget.style.backgroundColor = 'transparent';
-          e.currentTarget.style.borderColor = 'transparent';
-        }
-      }}
-    >
-      <span style={{ fontSize: '16px', opacity: disabled ? 0.5 : 1 }}>{icon}</span>
-    </button>
-  );
+      };
+    }, [title, shortcut]);
+
+    return (
+      <button
+        ref={buttonRef}
+        style={active ? activeIconButtonStyle : iconButtonStyle}
+        disabled={disabled}
+        onClick={onClick}
+        onMouseEnter={(e) => {
+          if (!disabled && !active) {
+            e.currentTarget.style.backgroundColor = theme.colors.background.tertiary;
+            e.currentTarget.style.borderColor = theme.colors.border.secondary;
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!disabled && !active) {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.borderColor = 'transparent';
+          }
+        }}
+      >
+        <span style={{ fontSize: '16px', opacity: disabled ? 0.5 : 1 }}>{icon}</span>
+      </button>
+    );
+  };
 
   return (
     <div style={toolbarStyle}>
@@ -255,7 +356,6 @@ export function Toolbar(): JSX.Element {
           handleSaveProject().catch(console.error);
         }}
         disabled={!state.project.isOpen || !state.project.isModified}
-        title="Save Project (Ctrl+S)"
       >
         Save
       </Button>
@@ -265,7 +365,8 @@ export function Toolbar(): JSX.Element {
       {/* Edit Operations */}
       <IconButton
         icon="↶"
-        title={`Undo (Ctrl+Z)${state.undo.canUndo ? '' : ' - Nothing to undo'}`}
+        title="Undo"
+        shortcut="Ctrl+Z"
         disabled={!state.undo.canUndo}
         onClick={() => {
           console.log('[TOOLBAR] Undo button clicked');
@@ -274,7 +375,8 @@ export function Toolbar(): JSX.Element {
       />
       <IconButton
         icon="↷"
-        title={`Redo (Ctrl+Y)${state.undo.canRedo ? '' : ' - Nothing to redo'}`}
+        title="Redo"
+        shortcut="Ctrl+Y"
         disabled={!state.undo.canRedo}
         onClick={() => {
           console.log('[TOOLBAR] Redo button clicked');
@@ -287,27 +389,51 @@ export function Toolbar(): JSX.Element {
       {/* Transform Tools */}
       <IconButton
         icon="↖"
-        title="Select Tool (Q)"
-        active={true}
-        onClick={() => console.log('[TOOLBAR] Select tool clicked (active)')}
+        title="Select Tool"
+        shortcut="Q"
+        active={currentTransformMode === TransformMode.SELECT}
+        onClick={() => handleSetTransformMode(TransformMode.SELECT)}
       />
       <IconButton
         icon="⌘"
-        title="Move Tool (W)"
-        disabled={true}
-        onClick={() => console.log('[TOOLBAR] Move tool clicked (disabled)')}
+        title="Move Tool"
+        shortcut="W"
+        active={currentTransformMode === TransformMode.TRANSLATE}
+        onClick={() => handleSetTransformMode(TransformMode.TRANSLATE)}
       />
       <IconButton
         icon="↻"
-        title="Rotate Tool (E)"
-        disabled={true}
-        onClick={() => console.log('[TOOLBAR] Rotate tool clicked (disabled)')}
+        title="Rotate Tool"
+        shortcut="E"
+        active={currentTransformMode === TransformMode.ROTATE}
+        onClick={() => handleSetTransformMode(TransformMode.ROTATE)}
       />
       <IconButton
         icon="⤢"
-        title="Scale Tool (R)"
-        disabled={true}
-        onClick={() => console.log('[TOOLBAR] Scale tool clicked (disabled)')}
+        title="Scale Tool"
+        shortcut="R"
+        active={currentTransformMode === TransformMode.SCALE}
+        onClick={() => handleSetTransformMode(TransformMode.SCALE)}
+      />
+
+      <div style={separatorStyle} />
+
+      {/* Transform Space Toggle */}
+      <IconButton
+        icon={currentTransformSpace === TransformSpace.WORLD ? '🌍' : '📍'}
+        title={`Transform Space: ${currentTransformSpace.toUpperCase()}`}
+        active={false}
+        onClick={handleToggleTransformSpace}
+      />
+
+      {/* Duplicate Tool */}
+      {/* Duplicate */}
+      <IconButton
+        icon="⧉"
+        title="Duplicate Selected"
+        shortcut="Ctrl+D"
+        disabled={state.selectedEntities.length === 0}
+        onClick={handleDuplicateEntities}
       />
 
       <div style={separatorStyle} />
@@ -343,7 +469,6 @@ export function Toolbar(): JSX.Element {
           handlePlayMode().catch(console.error);
         }}
         disabled={!state.project.isOpen || !isEngineReady}
-        title={isPlayMode ? 'Stop Play Mode (F5)' : 'Start Play Mode (F5)'}
       >
         {isPlayMode ? 'Stop' : 'Play'}
       </Button>
@@ -351,7 +476,8 @@ export function Toolbar(): JSX.Element {
       {isPlayMode && (
         <IconButton
           icon={isPaused ? 'Resume' : 'Pause'}
-          title={isPaused ? 'Resume (F6)' : 'Pause (F6)'}
+          title={isPaused ? 'Resume' : 'Pause'}
+          shortcut="F6"
           onClick={() => {
             console.log('[TOOLBAR] Pause/Resume button clicked', { isPaused });
             handlePauseMode();
@@ -364,7 +490,8 @@ export function Toolbar(): JSX.Element {
       {/* View Options */}
       <IconButton
         icon="⊞"
-        title="Toggle Grid (Ctrl+G)"
+        title="Toggle Grid"
+        shortcut="Ctrl+G"
         active={state.ui.showGrid}
         onClick={() => {
           console.log('[TOOLBAR] Toggle Grid clicked', { current: state.ui.showGrid });

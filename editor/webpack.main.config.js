@@ -45,7 +45,8 @@ module.exports = {
     }
   },
   externals: {
-    electron: 'commonjs2 electron'
+    electron: 'commonjs2 electron',
+    canvas: 'commonjs2 canvas'
   },
   node: {
     __dirname: false,

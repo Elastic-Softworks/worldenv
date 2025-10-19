@@ -27,21 +27,36 @@ export interface OptimizationLevel {
   description: string;
 }
 
+export interface BuildProfile {
+  id: string;
+  name: string;
+  description: string;
+  defaults: Partial<BuildConfiguration>;
+}
+
 export interface BuildConfiguration {
   outputDirectory: string;
   buildTarget: string;
+  buildProfile: string;
   optimizationLevel: string;
   entryScene: string;
   includeAssets: boolean;
   includeScripts: boolean;
   generateSourceMaps: boolean;
   minifyOutput: boolean;
+  enableHotReload: boolean;
+  generateInstaller: boolean;
+  enablePWA: boolean;
+  compressionLevel: number;
+  bundleAnalysis: boolean;
+  targetPlatforms: string[];
 }
 
 interface BuildConfigDialogProps {
   isOpen: boolean;
   config: BuildConfiguration;
   availableScenes: Array<{ id: string; name: string; path: string }>;
+  buildProfiles: BuildProfile[];
   onClose: () => void;
   onSave: (config: BuildConfiguration) => void;
   onBuild: (config: BuildConfiguration) => void;
@@ -62,6 +77,11 @@ const BUILD_TARGETS: BuildTarget[] = [
     id: 'wasm',
     name: 'WebAssembly',
     description: 'Optimized WASM build for performance-critical applications'
+  },
+  {
+    id: 'mobile',
+    name: 'Mobile',
+    description: 'Mobile application with native integration'
   }
 ];
 
@@ -87,21 +107,42 @@ export const BuildConfigDialog: React.FC<BuildConfigDialogProps> = ({
   isOpen,
   config,
   availableScenes,
+  buildProfiles,
   onClose,
   onSave,
   onBuild
 }) => {
   const [localConfig, setLocalConfig] = useState<BuildConfiguration>(config);
+  const [selectedProfile, setSelectedProfile] = useState<string>(config.buildProfile || 'debug');
 
   useEffect(() => {
     setLocalConfig(config);
   }, [config]);
 
-  const handleInputChange = (field: keyof BuildConfiguration, value: string | boolean) => {
+  const handleInputChange = (
+    field: keyof BuildConfiguration,
+    value: string | boolean | number | string[]
+  ) => {
     setLocalConfig((prev) => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleProfileChange = async (profileId: string) => {
+    setSelectedProfile(profileId);
+
+    try {
+      const testConfig = { ...localConfig, buildProfile: profileId };
+      const result = (await window.worldedit.build.applyBuildProfile(testConfig)) as {
+        config?: BuildConfiguration;
+      };
+      if (result && result.config) {
+        setLocalConfig(result.config);
+      }
+    } catch (error) {
+      console.error('Failed to apply build profile:', error);
+    }
   };
 
   const handleBrowseOutputDirectory = async () => {
@@ -134,8 +175,12 @@ export const BuildConfigDialog: React.FC<BuildConfigDialogProps> = ({
     return (
       localConfig.outputDirectory.trim() !== '' &&
       localConfig.buildTarget !== '' &&
+      localConfig.buildProfile !== '' &&
       localConfig.optimizationLevel !== '' &&
-      localConfig.entryScene !== ''
+      localConfig.entryScene !== '' &&
+      localConfig.compressionLevel >= 0 &&
+      localConfig.compressionLevel <= 9 &&
+      localConfig.targetPlatforms.length > 0
     );
   };
 
@@ -154,6 +199,32 @@ export const BuildConfigDialog: React.FC<BuildConfigDialogProps> = ({
         </div>
 
         <div className="dialog-content">
+          {/* BUILD PROFILE */}
+          <div className="form-section">
+            <h3>Build Profile</h3>
+            <div className="form-group">
+              <label>Profile:</label>
+              <div className="radio-group">
+                {buildProfiles.map((profile) => (
+                  <div key={profile.id} className="radio-item">
+                    <input
+                      type="radio"
+                      id={`profile-${profile.id}`}
+                      name="buildProfile"
+                      value={profile.id}
+                      checked={selectedProfile === profile.id}
+                      onChange={(e) => handleProfileChange(e.target.value)}
+                    />
+                    <label htmlFor={`profile-${profile.id}`}>
+                      <strong>{profile.name}</strong>
+                      <span className="description">{profile.description}</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* OUTPUT DIRECTORY */}
           <div className="form-section">
             <h3>Output Directory</h3>
@@ -291,6 +362,83 @@ export const BuildConfigDialog: React.FC<BuildConfigDialogProps> = ({
                   />
                   <label htmlFor="minify-output">Minify Output</label>
                 </div>
+                <div className="checkbox-item">
+                  <input
+                    type="checkbox"
+                    id="enable-hot-reload"
+                    checked={localConfig.enableHotReload}
+                    onChange={(e) => handleInputChange('enableHotReload', e.target.checked)}
+                  />
+                  <label htmlFor="enable-hot-reload">Enable Hot Reload</label>
+                </div>
+                <div className="checkbox-item">
+                  <input
+                    type="checkbox"
+                    id="generate-installer"
+                    checked={localConfig.generateInstaller}
+                    onChange={(e) => handleInputChange('generateInstaller', e.target.checked)}
+                  />
+                  <label htmlFor="generate-installer">Generate Installer</label>
+                </div>
+                <div className="checkbox-item">
+                  <input
+                    type="checkbox"
+                    id="enable-pwa"
+                    checked={localConfig.enablePWA}
+                    onChange={(e) => handleInputChange('enablePWA', e.target.checked)}
+                  />
+                  <label htmlFor="enable-pwa">Enable PWA Features</label>
+                </div>
+                <div className="checkbox-item">
+                  <input
+                    type="checkbox"
+                    id="bundle-analysis"
+                    checked={localConfig.bundleAnalysis}
+                    onChange={(e) => handleInputChange('bundleAnalysis', e.target.checked)}
+                  />
+                  <label htmlFor="bundle-analysis">Generate Bundle Analysis</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ADVANCED OPTIONS */}
+          <div className="form-section">
+            <h3>Advanced Options</h3>
+            <div className="form-group">
+              <label htmlFor="compression-level">Compression Level (0-9):</label>
+              <input
+                id="compression-level"
+                type="range"
+                min="0"
+                max="9"
+                value={localConfig.compressionLevel}
+                onChange={(e) => handleInputChange('compressionLevel', parseInt(e.target.value))}
+              />
+              <span className="range-value">{localConfig.compressionLevel}</span>
+            </div>
+
+            <div className="form-group">
+              <label>Target Platforms:</label>
+              <div className="checkbox-group">
+                {['web', 'desktop', 'mobile'].map((platform) => (
+                  <div key={platform} className="checkbox-item">
+                    <input
+                      type="checkbox"
+                      id={`platform-${platform}`}
+                      checked={localConfig.targetPlatforms.includes(platform)}
+                      onChange={(e) => {
+                        const platforms = e.target.checked
+                          ? [...localConfig.targetPlatforms, platform]
+                          : localConfig.targetPlatforms.filter((p) => p !== platform);
+                        handleInputChange('targetPlatforms', platforms);
+                      }}
+                    />
+                    <label htmlFor={`platform-${platform}`}>
+                      {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

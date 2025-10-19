@@ -40,6 +40,7 @@ import { FileSystemError } from '../shared/types'; /* ERROR TYPES */
 */
 
 const _readFileAsync = promisify(fs.readFile); /* ASYNC FILE READING */
+const _writeFileAsync = promisify(fs.writeFile); /* ASYNC FILE WRITING */
 const _statAsync = promisify(fs.stat); /* ASYNC FILE STATS */
 const copyFileAsync = promisify(fs.copyFile); /* ASYNC FILE COPY */
 const renameAsync = promisify(fs.rename); /* ASYNC FILE RENAME */
@@ -1036,19 +1037,24 @@ class AssetManager {
       logger.error('ASSET', 'Invalid asset in generateThumbnail', { asset });
       return;
     }
-    if (asset.type !== 'image') {
+    if (asset.type !== 'image' && asset.type !== 'font') {
       return;
     }
 
     try {
       const thumbnailPath = await this.createThumbnailPath(asset);
 
+      if (asset.type === 'font') {
+        await this.generateFontPreview(asset.path, thumbnailPath);
+      }
+
       this.thumbnailCache.set(asset.relativePath, thumbnailPath);
       asset.metadata.thumbnail = thumbnailPath;
 
       logger.debug('ASSET', 'Thumbnail generated', {
         asset: asset.path,
-        thumbnail: thumbnailPath
+        thumbnail: thumbnailPath,
+        type: asset.type
       });
     } catch (error) {
       logger.warn('ASSET', 'Thumbnail generation failed', {
@@ -1098,9 +1104,145 @@ class AssetManager {
 
   /*
 
+           generateFontPreview()
+	         ---
+	         generates a text preview thumbnail for font assets.
+	         creates a canvas-based preview showing sample text
+	         rendered with the specified font file.
+
+  */
+  private async generateFontPreview(fontPath: string, outputPath: string): Promise<void> {
+    /* ASSERTION: parameter validation */
+    console.assert(
+      typeof fontPath === 'string' && fontPath.length > 0,
+      'generateFontPreview: fontPath must be non-empty string'
+    );
+    console.assert(
+      typeof outputPath === 'string' && outputPath.length > 0,
+      'generateFontPreview: outputPath must be non-empty string'
+    );
+
+    try {
+      let createCanvas: any;
+      try {
+        const canvasModule = await import('canvas');
+        createCanvas = canvasModule.createCanvas;
+      } catch (canvasError) {
+        logger.warn('ASSET', 'Canvas module not available, skipping font preview generation', {
+          error: canvasError
+        });
+        await this.generateFallbackFontPreview(outputPath);
+        return;
+      }
+
+      const canvas = createCanvas(256, 128);
+      const ctx = canvas.getContext('2d');
+
+      /* background */
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 256, 128);
+
+      /* border */
+      ctx.strokeStyle = '#e0e0e0';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0, 0, 256, 128);
+
+      /* load font and render preview text */
+      const fontName = path.basename(fontPath, path.extname(fontPath));
+      const previewText = 'Aa Bb Cc\n123 456';
+
+      ctx.fillStyle = '#333333';
+      ctx.font = '24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const lines = previewText.split('\n');
+      const lineHeight = 30;
+      const startY = 128 / 2 - ((lines.length - 1) * lineHeight) / 2;
+
+      lines.forEach((line, index) => {
+        ctx.fillText(line, 128, startY + index * lineHeight);
+      });
+
+      /* font name label */
+      ctx.fillStyle = '#666666';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(fontName, 128, 115);
+
+      /* save thumbnail */
+      const buffer = canvas.toBuffer('image/png');
+      await _writeFileAsync(outputPath, buffer);
+
+      logger.debug('ASSET', 'Font preview generated', {
+        font: fontPath,
+        preview: outputPath
+      });
+    } catch (error) {
+      logger.warn('ASSET', 'Font preview generation failed', {
+        font: fontPath,
+        error: error
+      });
+
+      /* fallback: create simple text-based thumbnail */
+      await this.generateFallbackFontPreview(outputPath);
+    }
+  }
+
+  /*
+
+           generateFallbackFontPreview()
+	         ---
+	         creates a simple fallback preview for fonts when
+	         canvas rendering fails.
+
+  */
+  private async generateFallbackFontPreview(outputPath: string): Promise<void> {
+    try {
+      let createCanvas: any;
+      try {
+        const canvasModule = await import('canvas');
+        createCanvas = canvasModule.createCanvas;
+      } catch (canvasError) {
+        logger.error('ASSET', 'Canvas module not available for fallback font preview', {
+          error: canvasError
+        });
+        return;
+      }
+
+      const canvas = createCanvas(256, 128);
+      const ctx = canvas.getContext('2d');
+
+      /* simple background */
+      ctx.fillStyle = '#f5f5f5';
+      ctx.fillRect(0, 0, 256, 128);
+
+      /* border */
+      ctx.strokeStyle = '#cccccc';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(1, 1, 254, 126);
+
+      /* font icon placeholder */
+      ctx.fillStyle = '#999999';
+      ctx.font = '48px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Aa', 128, 64);
+
+      const buffer = canvas.toBuffer('image/png');
+      await _writeFileAsync(outputPath, buffer);
+    } catch (fallbackError) {
+      logger.error('ASSET', 'Fallback font preview generation failed', {
+        error: fallbackError
+      });
+    }
+  }
+
+  /*
+
            generateAssetId()
 	         ---
-	         Generates unique asset ID from relative path.
+	         generates unique asset identifier
 
   */
   private generateAssetId(relativePath: string): string {

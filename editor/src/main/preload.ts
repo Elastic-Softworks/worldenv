@@ -467,6 +467,15 @@ const api = {
 
     setProjectPath: (projectPath: string): Promise<unknown> => {
       return ipcRenderer.invoke('build:set-project-path', projectPath) as Promise<unknown>;
+    },
+
+    /* build profile management */
+    getBuildProfiles: (): Promise<unknown> => {
+      return ipcRenderer.invoke('build:get-build-profiles') as Promise<unknown>;
+    },
+
+    applyBuildProfile: (config: unknown): Promise<unknown> => {
+      return ipcRenderer.invoke('build:apply-build-profile', config) as Promise<unknown>;
     }
   },
 
@@ -507,6 +516,71 @@ const api = {
 
     listScripts: (): Promise<string[]> => {
       return ipcRenderer.invoke('script:list-scripts') as Promise<string[]>;
+    },
+
+    validateWorldC: (sourceCode: string, filePath: string): Promise<any> => {
+      return ipcRenderer.invoke('script:validate-worldc', { sourceCode, filePath }) as Promise<any>;
+    },
+
+    compileWorldC: (sourceCode: string, filePath: string, target?: string): Promise<any> => {
+      return ipcRenderer.invoke('script:compile-worldc', {
+        sourceCode,
+        filePath,
+        target
+      }) as Promise<any>;
+    },
+
+    attachToEntity: (entityId: string, scriptPath: string, properties?: any): Promise<any> => {
+      return ipcRenderer.invoke('script:attach-to-entity', {
+        entityId,
+        scriptPath,
+        properties
+      }) as Promise<any>;
+    },
+
+    detachFromEntity: (entityId: string): Promise<void> => {
+      return ipcRenderer.invoke('script:detach-from-entity', { entityId }) as Promise<void>;
+    },
+
+    updateComponentProperties: (entityId: string, properties: any): Promise<void> => {
+      return ipcRenderer.invoke('script:update-component-properties', {
+        entityId,
+        properties
+      }) as Promise<void>;
+    },
+
+    getSystemStats: (): Promise<any> => {
+      return ipcRenderer.invoke('script:get-system-stats') as Promise<any>;
+    },
+
+    executeLifecyclePhase: (phase: string, deltaTime?: number): Promise<void> => {
+      return ipcRenderer.invoke('script:execute-lifecycle-phase', {
+        phase,
+        deltaTime
+      }) as Promise<void>;
+    },
+
+    startDebugSession: (filePath: string, breakpoints: any[]): Promise<void> => {
+      return ipcRenderer.invoke('script:start-debug-session', {
+        filePath,
+        breakpoints
+      }) as Promise<void>;
+    },
+
+    stopDebugSession: (): Promise<void> => {
+      return ipcRenderer.invoke('script:stop-debug-session') as Promise<void>;
+    },
+
+    continueDebugSession: (): Promise<void> => {
+      return ipcRenderer.invoke('script:continue-debug-session') as Promise<void>;
+    },
+
+    stepOver: (): Promise<void> => {
+      return ipcRenderer.invoke('script:step-over') as Promise<void>;
+    },
+
+    stepInto: (): Promise<void> => {
+      return ipcRenderer.invoke('script:step-into') as Promise<void>;
     }
   },
 

@@ -1,0 +1,302 @@
+/*
+ * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
+ * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
+ * See LICENSE.txt for full license texts
+ */
+
+/*
+
+         {{MaterialName}} Material
+           ---
+           material definition template for WORLDENV rendering pipeline.
+
+           this template provides a standard material structure
+           with common properties, textures, and shader assignments
+           following modern PBR (Physically Based Rendering) practices.
+
+*/
+
+{
+  "version": "1.0.0",
+  "name": "{{MaterialName}}",
+  "type": "standard",
+  "created": "{{CreatedDate}}",
+  "modified": "{{ModifiedDate}}",
+
+  /*
+	====================================================================
+             --- SHADER CONFIGURATION ---
+	====================================================================
+  */
+
+  "shaders": {
+    "vertex": "shaders/standard.vert",
+    "fragment": "shaders/standard.frag",
+    "geometry": null,
+    "compute": null
+  },
+
+  /*
+	====================================================================
+             --- MATERIAL PROPERTIES ---
+	====================================================================
+  */
+
+  "properties": {
+
+    /* base material properties */
+    "diffuseColor": [1.0, 1.0, 1.0],
+    "specularColor": [1.0, 1.0, 1.0],
+    "emissionColor": [0.0, 0.0, 0.0],
+    "ambientColor": [0.1, 0.1, 0.1],
+
+    /* surface properties */
+    "roughness": 0.5,
+    "metallic": 0.0,
+    "shininess": 32.0,
+    "opacity": 1.0,
+    "refractiveIndex": 1.0,
+
+    /* lighting properties */
+    "receiveShadows": true,
+    "castShadows": true,
+    "unlit": false,
+
+    /* rendering properties */
+    "doubleSided": false,
+    "transparent": false,
+    "alphaTest": 0.0,
+    "depthWrite": true,
+    "depthTest": true,
+
+    /* animation properties */
+    "animated": false,
+    "frameRate": 30.0,
+    "looping": true
+  },
+
+  /*
+	====================================================================
+             --- TEXTURE CONFIGURATION ---
+	====================================================================
+  */
+
+  "textures": {
+
+    /* primary textures */
+    "diffuse": {
+      "path": null,
+      "enabled": true,
+      "scale": [1.0, 1.0],
+      "offset": [0.0, 0.0],
+      "rotation": 0.0,
+      "wrapS": "repeat",
+      "wrapT": "repeat",
+      "filterMin": "linear",
+      "filterMag": "linear",
+      "generateMipmaps": true
+    },
+
+    /* normal mapping */
+    "normal": {
+      "path": null,
+      "enabled": false,
+      "scale": [1.0, 1.0],
+      "offset": [0.0, 0.0],
+      "rotation": 0.0,
+      "wrapS": "repeat",
+      "wrapT": "repeat",
+      "filterMin": "linear",
+      "filterMag": "linear",
+      "generateMipmaps": true,
+      "strength": 1.0
+    },
+
+    /* specular mapping */
+    "specular": {
+      "path": null,
+      "enabled": false,
+      "scale": [1.0, 1.0],
+      "offset": [0.0, 0.0],
+      "rotation": 0.0,
+      "wrapS": "repeat",
+      "wrapT": "repeat",
+      "filterMin": "linear",
+      "filterMag": "linear",
+      "generateMipmaps": true
+    },
+
+    /* emission mapping */
+    "emission": {
+      "path": null,
+      "enabled": false,
+      "scale": [1.0, 1.0],
+      "offset": [0.0, 0.0],
+      "rotation": 0.0,
+      "wrapS": "repeat",
+      "wrapT": "repeat",
+      "filterMin": "linear",
+      "filterMag": "linear",
+      "generateMipmaps": true,
+      "intensity": 1.0
+    },
+
+    /* roughness mapping */
+    "roughness": {
+      "path": null,
+      "enabled": false,
+      "scale": [1.0, 1.0],
+      "offset": [0.0, 0.0],
+      "rotation": 0.0,
+      "wrapS": "repeat",
+      "wrapT": "repeat",
+      "filterMin": "linear",
+      "filterMag": "linear",
+      "generateMipmaps": true
+    },
+
+    /* metallic mapping */
+    "metallic": {
+      "path": null,
+      "enabled": false,
+      "scale": [1.0, 1.0],
+      "offset": [0.0, 0.0],
+      "rotation": 0.0,
+      "wrapS": "repeat",
+      "wrapT": "repeat",
+      "filterMin": "linear",
+      "filterMag": "linear",
+      "generateMipmaps": true
+    },
+
+    /* ambient occlusion */
+    "ao": {
+      "path": null,
+      "enabled": false,
+      "scale": [1.0, 1.0],
+      "offset": [0.0, 0.0],
+      "rotation": 0.0,
+      "wrapS": "repeat",
+      "wrapT": "repeat",
+      "filterMin": "linear",
+      "filterMag": "linear",
+      "generateMipmaps": true,
+      "strength": 1.0
+    },
+
+    /* height/displacement mapping */
+    "height": {
+      "path": null,
+      "enabled": false,
+      "scale": [1.0, 1.0],
+      "offset": [0.0, 0.0],
+      "rotation": 0.0,
+      "wrapS": "repeat",
+      "wrapT": "repeat",
+      "filterMin": "linear",
+      "filterMag": "linear",
+      "generateMipmaps": true,
+      "parallaxScale": 0.02,
+      "parallaxBias": 0.01
+    }
+  },
+
+  /*
+	====================================================================
+             --- RENDER STATE ---
+	====================================================================
+  */
+
+  "renderState": {
+
+    /* blending configuration */
+    "blending": {
+      "enabled": false,
+      "srcFactor": "src_alpha",
+      "dstFactor": "one_minus_src_alpha",
+      "equation": "add",
+      "srcFactorAlpha": "one",
+      "dstFactorAlpha": "one_minus_src_alpha",
+      "equationAlpha": "add"
+    },
+
+    /* depth configuration */
+    "depth": {
+      "test": true,
+      "write": true,
+      "func": "lequal",
+      "near": 0.1,
+      "far": 1000.0
+    },
+
+    /* stencil configuration */
+    "stencil": {
+      "test": false,
+      "func": "always",
+      "ref": 0,
+      "mask": 255,
+      "fail": "keep",
+      "zfail": "keep",
+      "zpass": "keep"
+    },
+
+    /* culling configuration */
+    "culling": {
+      "enabled": true,
+      "face": "back",
+      "winding": "ccw"
+    },
+
+    /* polygon configuration */
+    "polygon": {
+      "mode": "fill",
+      "offsetFactor": 0.0,
+      "offsetUnits": 0.0
+    }
+  },
+
+  /*
+	====================================================================
+             --- CUSTOM UNIFORMS ---
+	====================================================================
+  */
+
+  "uniforms": {
+    /* custom shader uniforms can be defined here */
+    /* example:
+    "customFloat": {
+      "type": "float",
+      "value": 1.0
+    },
+    "customVector": {
+      "type": "vec3",
+      "value": [1.0, 0.0, 0.0]
+    },
+    "customMatrix": {
+      "type": "mat4",
+      "value": [
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0
+      ]
+    }
+    */
+  },
+
+  /*
+	====================================================================
+             --- METADATA ---
+	====================================================================
+  */
+
+  "metadata": {
+    "description": "Standard PBR material template for WORLDENV",
+    "author": "WORLDENV",
+    "category": "Standard",
+    "tags": ["standard", "pbr", "template"],
+    "license": "ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0"
+  }
+}
+
+/* end of {{MaterialName}} material */

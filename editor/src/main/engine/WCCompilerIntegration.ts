@@ -20,6 +20,7 @@
 import { EventEmitter } from 'events'; /* NODE EVENT SYSTEM */
 import * as path from 'path'; /* PATH MANIPULATION */
 import * as fs from 'fs/promises'; /* ASYNC FILE SYSTEM */
+import * as fsSync from 'fs'; /* SYNC FILE SYSTEM ACCESS */
 import { exec } from 'child_process'; /* PROCESS EXECUTION */
 import { promisify } from 'util'; /* PROMISE UTILITIES */
 
@@ -527,8 +528,9 @@ export class WCCompilerIntegration extends EventEmitter {
       try {
         /* FOR NODE.JS FILES, CHECK IF THEY EXIST */
         if (compilerPath.endsWith('.js')) {
-          require.resolve(compilerPath);
-          return `node "${compilerPath}"`;
+          if (fsSync.existsSync(compilerPath)) {
+            return `node "${compilerPath}"`;
+          }
         }
       } catch (error) {
         /* CONTINUE SEARCHING */

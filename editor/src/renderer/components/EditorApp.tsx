@@ -17,10 +17,13 @@
 	===============================================================
 */
 
-import React from 'react'; /* REACT FRAMEWORK */
+import React, { useEffect } from 'react'; /* REACT FRAMEWORK */
 import { useEditorState } from '../context/EditorStateContext'; /* EDITOR STATE MANAGEMENT */
 import { useTheme } from '../context/ThemeContext'; /* THEME MANAGEMENT */
 import { EditorShell } from './EditorShell'; /* EDITOR SHELL COMPONENT */
+import { keyboardShortcutManager } from '../core/keyboard'; /* KEYBOARD SHORTCUTS */
+import { preferencesManager } from '../core/preferences'; /* USER PREFERENCES */
+import { tooltipManager } from '../core/tooltip'; /* TOOLTIP SYSTEM */
 
 /*
 	===============================================================
@@ -37,7 +40,7 @@ import { EditorShell } from './EditorShell'; /* EDITOR SHELL COMPONENT */
  */
 export function EditorApp(): JSX.Element {
   console.log('[EDITOR APP] Component rendering...');
-  const { state } = useEditorState();
+  const { state, actions } = useEditorState();
   const { theme } = useTheme();
 
   console.log('[EDITOR APP] State:', { initialized: state.initialized });
@@ -49,6 +52,22 @@ export function EditorApp(): JSX.Element {
     projectOpen: state.project.isOpen,
     projectPath: state.project.path
   });
+
+  /* INITIALIZE SYSTEMS ON MOUNT */
+  useEffect(() => {
+    /* INITIALIZE KEYBOARD SHORTCUTS */
+    keyboardShortcutManager.initialize(actions);
+
+    /* INITIALIZE PREFERENCES */
+    preferencesManager.addListener((key, newValue) => {
+      console.log('[PREFERENCES] Changed:', key, newValue);
+    });
+
+    /* CLEANUP ON UNMOUNT */
+    return () => {
+      keyboardShortcutManager.detachEventListeners();
+    };
+  }, [actions]);
 
   /* show loading state during initial application setup */
 

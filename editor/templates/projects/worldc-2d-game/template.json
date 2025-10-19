@@ -1,0 +1,288 @@
+{
+  "version": "1.0.0",
+  "name": "WorldC 2D Game",
+  "type": "worldc-2d-game",
+  "description": "Complete 2D game project template with WorldC scripting",
+  "category": "Game Development",
+  "icon": "game-2d.png",
+  "thumbnail": "thumbnail-2d-game.png",
+  "metadata": {
+    "author": "WORLDENV Team",
+    "license": "ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0",
+    "tags": ["2d", "game", "worldc", "platformer", "sprites"],
+    "difficulty": "beginner",
+    "estimatedTime": "2-4 hours",
+    "targetPlatforms": ["web", "desktop"],
+    "engineFeatures": ["2d-rendering", "physics-2d", "audio", "input-system", "worldc-scripting"]
+  },
+  "projectSettings": {
+    "default_scene": "scenes/main.worldscene",
+    "viewport": {
+      "mode": "2d",
+      "grid_visible": true,
+      "grid_size": 32,
+      "snap_enabled": true,
+      "snap_value": 16
+    },
+    "rendering": {
+      "renderer": "webgl",
+      "antialias": true,
+      "vsync": true,
+      "target_fps": 60,
+      "resolution_scale": 1.0,
+      "pixelPerfect": true,
+      "pixelsPerUnit": 100
+    },
+    "physics": {
+      "enabled": true,
+      "gravity": [0, -9.8],
+      "fixed_timestep": 0.016,
+      "collision_layers": ["Default", "Player", "Enemy", "Environment", "Collectible", "UI"]
+    },
+    "audio": {
+      "master_volume": 1.0,
+      "music_volume": 0.7,
+      "sfx_volume": 0.8,
+      "max_audio_sources": 32
+    },
+    "input": {
+      "schemes": ["keyboard", "gamepad"],
+      "deadzone": 0.1,
+      "sensitivity": 1.0
+    }
+  },
+  "directories": [
+    "assets/sprites",
+    "assets/textures",
+    "assets/audio/music",
+    "assets/audio/sfx",
+    "assets/fonts",
+    "assets/data",
+    "assets/materials",
+    "assets/tilemaps",
+    "scenes",
+    "scripts/components",
+    "scripts/systems",
+    "scripts/managers",
+    "scripts/ui",
+    "prefabs/characters",
+    "prefabs/environment",
+    "prefabs/ui",
+    "prefabs/effects"
+  ],
+  "files": [
+    {
+      "source": "scenes/main.worldscene",
+      "destination": "scenes/main.worldscene",
+      "variables": {
+        "ProjectName": "{{ProjectName}}",
+        "SceneName": "Main Scene"
+      }
+    },
+    {
+      "source": "scenes/menu.worldscene",
+      "destination": "scenes/menu.worldscene",
+      "variables": {
+        "ProjectName": "{{ProjectName}}",
+        "SceneName": "Main Menu"
+      }
+    },
+    {
+      "source": "scripts/components/PlayerController.wc",
+      "destination": "scripts/components/PlayerController.wc",
+      "variables": {
+        "ComponentName": "PlayerController"
+      }
+    },
+    {
+      "source": "scripts/components/EnemyController.wc",
+      "destination": "scripts/components/EnemyController.wc",
+      "variables": {
+        "ComponentName": "EnemyController"
+      }
+    },
+    {
+      "source": "scripts/managers/GameManager.wc",
+      "destination": "scripts/managers/GameManager.wc",
+      "variables": {
+        "ManagerName": "GameManager"
+      }
+    },
+    {
+      "source": "scripts/managers/AudioManager.wc",
+      "destination": "scripts/managers/AudioManager.wc",
+      "variables": {
+        "ManagerName": "AudioManager"
+      }
+    },
+    {
+      "source": "scripts/ui/UIManager.wc",
+      "destination": "scripts/ui/UIManager.wc",
+      "variables": {
+        "UIName": "UIManager"
+      }
+    },
+    {
+      "source": "prefabs/Player.prefab",
+      "destination": "prefabs/characters/Player.prefab",
+      "variables": {
+        "PrefabName": "Player",
+        "EntityId": "player-entity",
+        "ChildEntityId": "player-visual"
+      }
+    },
+    {
+      "source": "prefabs/Enemy.prefab",
+      "destination": "prefabs/characters/Enemy.prefab",
+      "variables": {
+        "PrefabName": "Enemy",
+        "EntityId": "enemy-entity",
+        "ChildEntityId": "enemy-visual"
+      }
+    },
+    {
+      "source": "prefabs/Platform.prefab",
+      "destination": "prefabs/environment/Platform.prefab",
+      "variables": {
+        "PrefabName": "Platform",
+        "EntityId": "platform-entity",
+        "ChildEntityId": "platform-visual"
+      }
+    },
+    {
+      "source": "materials/sprite-default.material",
+      "destination": "assets/materials/sprite-default.material",
+      "variables": {
+        "MaterialName": "SpriteDefault"
+      }
+    }
+  ],
+  "sampleAssets": [
+    {
+      "type": "sprite",
+      "name": "player-idle.png",
+      "destination": "assets/sprites/player-idle.png",
+      "description": "Player character idle sprite"
+    },
+    {
+      "type": "sprite",
+      "name": "enemy-walk.png",
+      "destination": "assets/sprites/enemy-walk.png",
+      "description": "Enemy character walking sprite"
+    },
+    {
+      "type": "sprite",
+      "name": "platform.png",
+      "destination": "assets/sprites/platform.png",
+      "description": "Platform sprite for level geometry"
+    },
+    {
+      "type": "audio",
+      "name": "background-music.ogg",
+      "destination": "assets/audio/music/background-music.ogg",
+      "description": "Background music loop"
+    },
+    {
+      "type": "audio",
+      "name": "jump.wav",
+      "destination": "assets/audio/sfx/jump.wav",
+      "description": "Player jump sound effect"
+    },
+    {
+      "type": "audio",
+      "name": "collect.wav",
+      "destination": "assets/audio/sfx/collect.wav",
+      "description": "Item collection sound effect"
+    }
+  ],
+  "buildSettings": {
+    "targets": [
+      {
+        "name": "web",
+        "platform": "web",
+        "output": "build/web",
+        "optimization": "size",
+        "features": ["webgl", "webaudio", "webassembly"]
+      },
+      {
+        "name": "desktop",
+        "platform": "desktop",
+        "output": "build/desktop",
+        "optimization": "speed",
+        "features": ["opengl", "openal", "native"]
+      }
+    ],
+    "compression": {
+      "enabled": true,
+      "textures": "dxt",
+      "audio": "ogg",
+      "scripts": "minify"
+    },
+    "packaging": {
+      "includeDebugInfo": false,
+      "stripUnusedAssets": true,
+      "bundleAssets": true
+    }
+  },
+  "dependencies": {
+    "engine": {
+      "worldenv": "^0.1.0"
+    },
+    "scripts": {
+      "worldc-runtime": "^0.1.0",
+      "physics-2d": "^0.1.0"
+    },
+    "assets": {
+      "default-sprites": "^0.1.0",
+      "ui-theme": "^0.1.0"
+    }
+  },
+  "tutorial": {
+    "enabled": true,
+    "steps": [
+      {
+        "title": "Welcome to 2D Game Development",
+        "description": "Learn the basics of creating 2D games with WorldC",
+        "target": "main-scene",
+        "action": "highlight"
+      },
+      {
+        "title": "Player Movement",
+        "description": "Customize player movement in PlayerController.wc",
+        "target": "scripts/components/PlayerController.wc",
+        "action": "open"
+      },
+      {
+        "title": "Adding Enemies",
+        "description": "Create enemy behavior with EnemyController.wc",
+        "target": "scripts/components/EnemyController.wc",
+        "action": "open"
+      },
+      {
+        "title": "Level Design",
+        "description": "Build your level using platforms and sprites",
+        "target": "prefabs/environment/Platform.prefab",
+        "action": "highlight"
+      },
+      {
+        "title": "Game Management",
+        "description": "Configure game rules in GameManager.wc",
+        "target": "scripts/managers/GameManager.wc",
+        "action": "open"
+      },
+      {
+        "title": "Build and Play",
+        "description": "Test your game with the build system",
+        "target": "build-menu",
+        "action": "highlight"
+      }
+    ]
+  },
+  "documentation": {
+    "readme": "README-2D-GAME.md",
+    "quickStart": "docs/quick-start.md",
+    "api": "docs/api-reference.md",
+    "examples": "docs/examples.md",
+    "troubleshooting": "docs/troubleshooting.md"
+  }
+}

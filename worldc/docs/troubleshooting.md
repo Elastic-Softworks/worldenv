@@ -1,6 +1,6 @@
 # WORLDC Troubleshooting Guide
 
-*WORLDC Language Implementation - Alpha Phase 16*
+*WORLDC Language Implementation - Alpha Development*
 
 ## Overview
 

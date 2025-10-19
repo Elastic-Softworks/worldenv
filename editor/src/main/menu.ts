@@ -67,6 +67,10 @@ interface MenuHandlers {
   onSaveProjectAs?: () => void /* SAVE PROJECT WITH NEW NAME */;
   onCloseProject?: () => void /* CLOSE CURRENT PROJECT */;
   onExit?: () => void /* EXIT APPLICATION */;
+  onNewScript?: () => void /* CREATE NEW SCRIPT */;
+  onNewShader?: () => void /* CREATE NEW SHADER */;
+  onNewMaterial?: () => void /* CREATE NEW MATERIAL */;
+  onNewPrefab?: () => void /* CREATE NEW PREFAB */;
   onUndo?: () => void /* UNDO LAST ACTION */;
   onRedo?: () => void /* REDO LAST UNDONE ACTION */;
   onCut?: () => void /* CUT SELECTION TO CLIPBOARD */;
@@ -268,6 +272,32 @@ class MenuManager {
           accelerator: 'CmdOrCtrl+Shift+S',
           click: () => {
             this.handlers.onSaveProjectAs?.();
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'New Script',
+          accelerator: 'CmdOrCtrl+Shift+N',
+          click: () => {
+            this.handlers.onNewScript?.();
+          }
+        },
+        {
+          label: 'New Shader',
+          click: () => {
+            this.handlers.onNewShader?.();
+          }
+        },
+        {
+          label: 'New Material',
+          click: () => {
+            this.handlers.onNewMaterial?.();
+          }
+        },
+        {
+          label: 'New Prefab',
+          click: () => {
+            this.handlers.onNewPrefab?.();
           }
         },
         { type: 'separator' },

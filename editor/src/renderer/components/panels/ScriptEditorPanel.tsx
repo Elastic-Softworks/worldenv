@@ -4,7 +4,7 @@
  * See LICENSE.txt for full license texts
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Editor, { Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
 import '../../styles/ScriptEditorPanel.css';
@@ -14,6 +14,17 @@ interface ScriptFile {
   content: string;
   language: string;
   isDirty: boolean;
+  hasErrors: boolean;
+  diagnostics: ScriptDiagnostic[];
+}
+
+interface ScriptDiagnostic {
+  severity: 'error' | 'warning' | 'info';
+  message: string;
+  line: number;
+  column: number;
+  endLine?: number;
+  endColumn?: number;
 }
 
 interface ScriptEditorPanelProps {
@@ -24,8 +35,10 @@ export const ScriptEditorPanel: React.FC<ScriptEditorPanelProps> = ({ theme = 'd
   const [openFiles, setOpenFiles] = useState<ScriptFile[]>([]);
   const [activeFileIndex, setActiveFileIndex] = useState<number>(-1);
   const [editorContent, setEditorContent] = useState<string>('');
+  const [isCompiling, setIsCompiling] = useState<boolean>(false);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
+  const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const activeFile = activeFileIndex >= 0 ? openFiles[activeFileIndex] : null;
 
@@ -44,10 +57,8 @@ export const ScriptEditorPanel: React.FC<ScriptEditorPanelProps> = ({ theme = 'd
     editorRef.current = editor;
     monacoRef.current = monacoInstance;
 
-    /* Register WorldC language */
     registerWorldCLanguage(monacoInstance);
 
-    /* Configure editor options */
     editor.updateOptions({
       fontSize: 14,
       lineNumbers: 'on',
@@ -61,7 +72,9 @@ export const ScriptEditorPanel: React.FC<ScriptEditorPanelProps> = ({ theme = 'd
       matchBrackets: 'always',
       autoIndent: 'full',
       formatOnPaste: true,
-      formatOnType: true
+      formatOnType: true,
+      glyphMargin: true,
+      lineNumbersMinChars: 3
     });
   };
 
@@ -75,28 +88,94 @@ export const ScriptEditorPanel: React.FC<ScriptEditorPanelProps> = ({ theme = 'd
       };
       setOpenFiles(updatedFiles);
       setEditorContent(value);
+
+      debouncedValidation(value, activeFileIndex);
+    }
+  };
+
+  const debouncedValidation = useCallback((content: string, fileIndex: number) => {
+    if (validationTimeoutRef.current) {
+      clearTimeout(validationTimeoutRef.current);
+    }
+
+    validationTimeoutRef.current = setTimeout(async () => {
+      await validateScript(content, fileIndex);
+    }, 500);
+  }, []);
+
+  const validateScript = async (content: string, fileIndex: number): Promise<void> => {
+    const file = openFiles[fileIndex];
+    if (!file || file.language !== 'worldc') {
+      return;
+    }
+
+    try {
+      setIsCompiling(true);
+
+      const result = await window.worldedit.script.validateWorldC(content, file.path);
+
+      const diagnostics: ScriptDiagnostic[] = result.diagnostics.map((d: any) => ({
+        severity: d.severity,
+        message: d.message,
+        line: d.line || 1,
+        column: d.column || 1,
+        endLine: d.endLine,
+        endColumn: d.endColumn
+      }));
+
+      const updatedFiles = [...openFiles];
+      updatedFiles[fileIndex] = {
+        ...updatedFiles[fileIndex],
+        hasErrors: diagnostics.some(d => d.severity === 'error'),
+        diagnostics
+      };
+      setOpenFiles(updatedFiles);
+
+      if (monacoRef.current && editorRef.current) {
+        const model = editorRef.current.getModel();
+        if (model) {
+          const markers = diagnostics.map(d => ({
+            severity: d.severity === 'error' ?
+              monacoRef.current!.MarkerSeverity.Error :
+              d.severity === 'warning' ?
+                monacoRef.current!.MarkerSeverity.Warning :
+                monacoRef.current!.MarkerSeverity.Info,
+            message: d.message,
+            startLineNumber: d.line,
+            startColumn: d.column,
+            endLineNumber: d.endLine || d.line,
+            endColumn: d.endColumn || d.column + 1
+          }));
+
+          monacoRef.current.editor.setModelMarkers(model, 'worldc', markers);
+        }
+      }
+
+    } catch (error) {
+      console.error('Script validation failed:', error);
+    } finally {
+      setIsCompiling(false);
     }
   };
 
   const openFile = async (filePath: string) => {
-    /* Check if file is already open */
     const existingIndex = openFiles.findIndex((f) => f.path === filePath);
     if (existingIndex >= 0) {
       setActiveFileIndex(existingIndex);
       return;
     }
 
-    /* Determine language from file extension */
     const language = getLanguageFromPath(filePath);
 
-    /* Request file content from main process */
     try {
       const content = await window.worldedit.script.readFile(filePath);
       const newFile: ScriptFile = {
         path: filePath,
         content,
         language,
-        isDirty: false
+        isDirty: false,
+        hasErrors: false,
+        diagnostics: []
       };
 
       setOpenFiles([...openFiles, newFile]);
@@ -109,7 +188,6 @@ export const ScriptEditorPanel: React.FC<ScriptEditorPanelProps> = ({ theme = 'd
   const closeFile = (index: number) => {
     const file = openFiles[index];
     if (file.isDirty) {
-      /* Prompt to save changes */
       const shouldSave = confirm(`Save changes to ${file.path}?`);
       if (shouldSave) {
         saveFile(index);
@@ -145,158 +223,33 @@ export const ScriptEditorPanel: React.FC<ScriptEditorPanelProps> = ({ theme = 'd
   };
 
   const createNewScript = async (scriptType: 'typescript' | 'assemblyscript' | 'worldc') => {
-    const extension =
-      scriptType === 'typescript' ? '.ts' : scriptType === 'assemblyscript' ? '.as.ts' : '.wc';
-    const template = getScriptTemplate(scriptType);
-
-    /* Request new file creation from main process */
     try {
-      const filePath = await window.worldedit.script.createNew(scriptType);
-      if (filePath) {
-        const newFile: ScriptFile = {
-          path: filePath,
-          content: template,
-          language: 'typescript',
-          isDirty: true
-        };
-
-        setOpenFiles([...openFiles, newFile]);
-        setActiveFileIndex(openFiles.length);
-      }
+      const scriptPath = await window.worldedit.script.createNew(scriptType);
+      await openFile(scriptPath);
     } catch (error) {
       console.error('Failed to create new script:', error);
     }
   };
 
   const getLanguageFromPath = (filePath: string): string => {
-    if (filePath.endsWith('.ts') || filePath.endsWith('.tsx')) {
-      return 'typescript';
-    } else if (filePath.endsWith('.js') || filePath.endsWith('.jsx')) {
-      return 'javascript';
-    } else if (filePath.endsWith('.wc') || filePath.endsWith('.worldc')) {
-      return 'worldc';
-    } else if (filePath.endsWith('.json')) {
-      return 'json';
+    const extension = filePath.split('.').pop()?.toLowerCase();
+
+    switch (extension) {
+      case 'wc':
+        return 'worldc';
+      case 'ts':
+        return 'typescript';
+      case 'js':
+        return 'javascript';
+      case 'as':
+        return 'assemblyscript';
+      case 'json':
+        return 'json';
+      case 'md':
+        return 'markdown';
+      default:
+        return 'plaintext';
     }
-    return 'plaintext';
-  };
-
-  const getScriptTemplate = (scriptType: 'typescript' | 'assemblyscript' | 'worldc'): string => {
-    if (scriptType === 'worldc') {
-      return `#include <worldenv.h>
-
-/*
-
-         PlayerController.wc
-           ---
-           example WorldC component demonstrating the
-           simplified verbiage system and C-like syntax
-           with modern TypeScript integration.
-
-*/
-
-edict float PLAYER_SPEED = 200.0f;
-edict float JUMP_FORCE = 500.0f;
-
-class PlayerController : public Component {
-
-  private:
-
-  vec3   velocity;
-  bool   grounded;
-  float  health;
-
-  public:
-
-  /* initialize component */
-  void start(): void {
-
-    this.velocity = vec3(0, 0, 0);
-    this.grounded = false;
-    this.health = 100.0f;
-
-    invoke this.setupInput();
-
-  }
-
-  /* update every frame */
-  void update(float deltaTime): void {
-
-    if  (Input.isKeyPressed(KeyCode.A)) {
-      this.velocity.x = -PLAYER_SPEED;
-    } else if  (Input.isKeyPressed(KeyCode.D)) {
-      this.velocity.x = PLAYER_SPEED;
-    } else {
-      this.velocity.x = 0;
-    }
-
-    if  (Input.isKeyPressed(KeyCode.SPACE) && this.grounded) {
-      this.velocity.y = JUMP_FORCE;
-      this.grounded = false;
-    }
-
-    /* apply movement */
-    invoke this.applyMovement(deltaTime);
-
-  }
-
-  private void setupInput(): void {
-    pass;  /* input setup would go here */
-  }
-
-  private void applyMovement(float deltaTime): void {
-
-    vec3 position = this.entity.transform.position;
-    position.x += this.velocity.x * deltaTime;
-    position.y += this.velocity.y * deltaTime;
-
-    this.entity.transform.position = position;
-
-  }
-
-}`;
-    } else if (scriptType === 'typescript') {
-      return `import { Component, Entity } from 'worldenv';
-
-export class CustomComponent extends Component {
-
-  onInit(): void {
-    /* Component initialization */
-  }
-
-  onUpdate(deltaTime: number): void {
-    /* Update logic */
-  }
-
-  onDestroy(): void {
-    /* Cleanup */
-  }
-}
-`;
-    } else {
-      return `// AssemblyScript Component
-// Compiled to WebAssembly for performance
-
-export class CustomComponent {
-
-  onInit(): void {
-    // Component initialization
-  }
-
-  onUpdate(deltaTime: f64): void {
-    // Update logic
-  }
-
-  onDestroy(): void {
-    // Cleanup
-  }
-}
-`;
-    }
-  };
-
-  const getFileName = (path: string): string => {
-    return path.split('/').pop() || path;
   };
 
   return (
@@ -308,11 +261,12 @@ export class CustomComponent {
               key={file.path}
               className={`script-tab ${index === activeFileIndex ? 'active' : ''} ${
                 file.isDirty ? 'dirty' : ''
-              }`}
+              } ${file.hasErrors ? 'has-errors' : ''}`}
               onClick={() => setActiveFileIndex(index)}
             >
-              <span className="tab-name">{getFileName(file.path)}</span>
+              <span className="tab-name">{file.path.split('/').pop()}</span>
               {file.isDirty && <span className="dirty-indicator">●</span>}
+              {file.hasErrors && <span className="error-indicator">⚠</span>}
               <button
                 className="tab-close"
                 onClick={(e) => {
@@ -328,17 +282,17 @@ export class CustomComponent {
         <div className="script-actions">
           <button
             className="action-button"
+            onClick={() => createNewScript('worldc')}
+            title="New WorldC Script"
+          >
+            + WC
+          </button>
+          <button
+            className="action-button"
             onClick={() => createNewScript('typescript')}
             title="New TypeScript Script"
           >
             + TS
-          </button>
-          <button
-            className="action-button"
-            onClick={() => createNewScript('assemblyscript')}
-            title="New AssemblyScript Script"
-          >
-            + AS
           </button>
           <button
             className="action-button"
@@ -390,14 +344,9 @@ export class CustomComponent {
   );
 };
 
-/**
- * Register WorldC language with Monaco Editor
- */
 const registerWorldCLanguage = (monaco: Monaco) => {
-  /* Register language */
   monaco.languages.register({ id: 'worldc' });
 
-  /* Set language configuration */
   monaco.languages.setLanguageConfiguration('worldc', {
     comments: {
       lineComment: '//',
@@ -424,136 +373,31 @@ const registerWorldCLanguage = (monaco: Monaco) => {
     ]
   });
 
-  /* Set syntax highlighting */
   monaco.languages.setMonarchTokensProvider('worldc', {
     keywords: [
-      'auto',
-      'break',
-      'case',
-      'char',
-      'const',
-      'continue',
-      'default',
-      'do',
-      'double',
-      'else',
-      'enum',
-      'extern',
-      'float',
-      'for',
-      'goto',
-      'if',
-      'inline',
-      'int',
-      'long',
-      'register',
-      'return',
-      'short',
-      'signed',
-      'sizeof',
-      'static',
-      'struct',
-      'switch',
-      'typedef',
-      'union',
-      'unsigned',
-      'void',
-      'volatile',
-      'while',
-      'class',
-      'private',
-      'protected',
-      'public',
-      'virtual',
-      'friend',
-      'template',
-      'typename',
-      'namespace',
-      'using',
-      'operator',
-      'new',
-      'delete',
-      'this',
-      'throw',
-      'try',
-      'catch',
-      'let',
-      'var',
-      'function',
-      'interface',
-      'type',
-      'import',
-      'export',
-      'async',
-      'await',
-      'yield',
-      'extends',
-      'implements',
-      'declare',
-      'edict',
-      'pass',
-      'invoke'
+      'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do',
+      'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if',
+      'inline', 'int', 'long', 'register', 'return', 'short', 'signed',
+      'sizeof', 'static', 'struct', 'switch', 'typedef', 'union', 'unsigned',
+      'void', 'volatile', 'while', 'class', 'private', 'protected', 'public',
+      'virtual', 'friend', 'template', 'typename', 'namespace', 'using',
+      'operator', 'new', 'delete', 'this', 'throw', 'try', 'catch',
+      'let', 'var', 'function', 'interface', 'type', 'import', 'export',
+      'async', 'await', 'yield', 'extends', 'implements', 'declare',
+      'edict', 'pass', 'invoke'
     ],
 
     typeKeywords: [
-      'bool',
-      'string',
-      'number',
-      'boolean',
-      'any',
-      'unknown',
-      'never',
-      'object',
-      'symbol',
-      'bigint',
-      'vec2',
-      'vec3',
-      'vec4',
-      'ivec2',
-      'ivec3',
-      'ivec4',
-      'quat',
-      'mat3',
-      'mat4'
+      'bool', 'string', 'number', 'boolean', 'any', 'unknown', 'never',
+      'object', 'symbol', 'bigint', 'vec2', 'vec3', 'vec4', 'ivec2',
+      'ivec3', 'ivec4', 'quat', 'mat3', 'mat4'
     ],
 
     operators: [
-      '=',
-      '>',
-      '<',
-      '!',
-      '~',
-      '?',
-      ':',
-      '==',
-      '<=',
-      '>=',
-      '!=',
-      '&&',
-      '||',
-      '++',
-      '--',
-      '+',
-      '-',
-      '*',
-      '/',
-      '&',
-      '|',
-      '^',
-      '%',
-      '<<',
-      '>>',
-      '>>>',
-      '+=',
-      '-=',
-      '*=',
-      '/=',
-      '&=',
-      '|=',
-      '^=',
-      '%=',
-      '<<= ',
-      '>>='
+      '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
+      '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^',
+      '%', '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
+      '^=', '%=', '<<=', '>>='
     ],
 
     symbols: /[=><!~?:&|+\-*\/\^%]+/,
@@ -577,7 +421,6 @@ const registerWorldCLanguage = (monaco: Monaco) => {
         [/"([^"\\]|\\.)*$/, 'string.invalid'],
         [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }],
         [/'[^\\']'/, 'string'],
-        [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
         [/'/, 'string.invalid'],
         [/\/\*/, 'comment', '@comment'],
         [/\/\/.*$/, 'comment'],
@@ -605,14 +448,12 @@ const registerWorldCLanguage = (monaco: Monaco) => {
 
       string: [
         [/[^\\"]+/, 'string'],
-        [/@escapes/, 'string.escape'],
-        [/\\./, 'string.escape.invalid'],
+        [/\\./, 'string.escape'],
         [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
       ]
     }
   });
 
-  /* Register completion provider */
   monaco.languages.registerCompletionItemProvider('worldc', {
     provideCompletionItems: (model, position) => {
       const word = model.getWordUntilPosition(position);
@@ -633,21 +474,6 @@ const registerWorldCLanguage = (monaco: Monaco) => {
           range: range
         },
         {
-          label: 'pass',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'pass;',
-          documentation: 'No-operation statement (WorldC simplified syntax)',
-          range: range
-        },
-        {
-          label: 'invoke',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'invoke ${1:functionName}(${2:args});',
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          documentation: 'Explicit function call (WorldC simplified syntax)',
-          range: range
-        },
-        {
           label: 'component',
           kind: monaco.languages.CompletionItemKind.Snippet,
           insertText: [
@@ -664,6 +490,10 @@ const registerWorldCLanguage = (monaco: Monaco) => {
             '',
             '    void update(float deltaTime): void {',
             '      ${4:// update logic}',
+            '    }',
+            '',
+            '    void destroy(): void {',
+            '      ${5:// cleanup}',
             '    }',
             '',
             '};'

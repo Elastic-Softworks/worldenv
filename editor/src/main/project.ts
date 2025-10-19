@@ -43,6 +43,9 @@ import * as path from 'path'; /* PATH MANIPULATION UTILITIES */
 import { fileSystem } from './file-system'; /* SECURE FILE OPERATIONS */
 import { logger } from './logger'; /* LOGGING SYSTEM */
 import { buildManager } from './build-manager'; /* BUILD INTEGRATION */
+import { projectBackupManager } from './project-backup'; /* PROJECT BACKUP */
+import { projectValidator } from './project-validator'; /* PROJECT VALIDATION */
+import { fileHistoryManager } from './file-history'; /* FILE HISTORY */
 import { ProjectData, ProjectError } from '../shared/types'; /* PROJECT TYPES */
 
 /*
@@ -172,6 +175,9 @@ class ProjectManager {
       /* SET BUILD MANAGER PROJECT PATH */
       buildManager.setProjectPath(project_path);
 
+      /* INITIALIZE INTEGRATED SYSTEMS */
+      await this.initializeProjectSystems(project_path);
+
       logger.info('PROJECT', 'Project created successfully', {
         path: project_path
       });
@@ -241,6 +247,9 @@ class ProjectManager {
 
       /* SET BUILD MANAGER PROJECT PATH */
       buildManager.setProjectPath(project_path);
+
+      /* INITIALIZE INTEGRATED SYSTEMS */
+      await this.initializeProjectSystems(project_path);
 
       logger.info('PROJECT', 'Project opened successfully', {
         path: project_path,
@@ -319,7 +328,7 @@ class ProjectManager {
 	         state for next project operation.
 
   */
-  public closeProject(): void {
+  public async closeProject(): Promise<void> {
     if (!this.current_project) {
       return;
     }
@@ -330,6 +339,9 @@ class ProjectManager {
 
     /* CLEAR BUILD MANAGER PROJECT PATH */
     buildManager.setProjectPath('');
+
+    /* SHUTDOWN INTEGRATED SYSTEMS */
+    await this.shutdownProjectSystems();
 
     this.current_project = null;
   }
@@ -599,6 +611,103 @@ class ProjectManager {
 
         await fileSystem.ensureDirectory(dir_path);
       }
+    }
+  }
+
+  /*
+
+           initializeProjectSystems()
+	         ---
+	         initializes integrated project systems.
+
+	         sets up backup, validation, history, and script
+	         systems for the opened project with proper configuration.
+
+  */
+
+  private async initializeProjectSystems(project_path: string): Promise<void> {
+    try {
+      /* initialize backup system */
+      await projectBackupManager.initialize(project_path);
+
+      /* initialize file history system */
+      await fileHistoryManager.initialize(project_path, {
+        maxVersions: 50,
+        autoTrack: true,
+        trackBinaryFiles: false
+      });
+
+      /* initialize script system */
+      try {
+        const { ScriptSystemManager } = await import('./engine/ScriptSystemManager');
+        const scriptSystem = ScriptSystemManager.getInstance({
+          enableAutoCompilation: true,
+          enableHotReload: true,
+          scriptsDirectory: path.join(project_path, 'scripts'),
+          debugMode: true
+        });
+        await scriptSystem.initialize();
+
+        logger.info('PROJECT', 'Script system initialized', {
+          projectPath: project_path
+        });
+      } catch (error) {
+        logger.warn('PROJECT', 'Failed to initialize script system', {
+          projectPath: project_path,
+          error
+        });
+      }
+
+      await projectBackupManager.startAutoBackup();
+
+      logger.info('PROJECT', 'Project systems initialized', {
+        projectPath: project_path
+      });
+    } catch (error) {
+      logger.error('PROJECT', 'Project systems initialization failed', {
+        projectPath: project_path,
+        error: error
+      });
+      /* non-critical error - don't throw */
+    }
+  }
+
+  /*
+
+           shutdownProjectSystems()
+	         ---
+	         shuts down integrated project systems.
+
+	         properly closes backup, validation, history, and
+	         script systems when project is closed.
+
+  */
+
+  private async shutdownProjectSystems(): Promise<void> {
+    try {
+      /* stop auto-backup */
+      projectBackupManager.stopAutoBackup();
+
+      /* clear validation cache */
+      projectValidator.clearValidationCache();
+
+      /* shutdown script system */
+      try {
+        const { ScriptSystemManager } = await import('./engine/ScriptSystemManager');
+        const scriptSystem = ScriptSystemManager.getInstance();
+        await scriptSystem.shutdown();
+
+        logger.info('PROJECT', 'Script system shutdown completed');
+      } catch (error) {
+        logger.warn('PROJECT', 'Script system shutdown failed', { error });
+      }
+
+      logger.info('PROJECT', 'Project systems shutdown completed');
+    } catch (error) {
+      logger.error('PROJECT', 'Project systems shutdown failed', {
+        error: error
+      });
+      /* non-critical error - don't throw */
     }
   }
 }

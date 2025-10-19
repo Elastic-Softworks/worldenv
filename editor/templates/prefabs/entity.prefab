@@ -1,0 +1,301 @@
+/*
+ * SPDX-License-Identifier: ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0
+ * Multi-licensed under ACSL-1.4, FAFOL-0.1, and Hippocratic-3.0
+ * See LICENSE.txt for full license texts
+ */
+
+/*
+
+         {{PrefabName}} Prefab
+           ---
+           entity prefab template for WORLDENV scene system.
+
+           this template provides a standard prefab structure
+           with common components, properties, and hierarchy
+           organization for reusable game entities.
+
+*/
+
+{
+  "version": "1.0.0",
+  "name": "{{PrefabName}}",
+  "type": "prefab",
+  "created": "{{CreatedDate}}",
+  "modified": "{{ModifiedDate}}",
+
+  /*
+	====================================================================
+             --- PREFAB METADATA ---
+	====================================================================
+  */
+
+  "metadata": {
+    "description": "Entity prefab template for reusable game objects",
+    "author": "WORLDENV",
+    "category": "Template",
+    "tags": ["entity", "prefab", "template"],
+    "license": "ACSL-1.4 OR FAFOL-0.1 OR Hippocratic-3.0",
+    "thumbnail": null,
+    "preview": null
+  },
+
+  /*
+	====================================================================
+             --- ROOT ENTITY ---
+	====================================================================
+  */
+
+  "rootEntity": {
+    "id": "{{EntityId}}",
+    "name": "{{PrefabName}}",
+    "enabled": true,
+    "static": false,
+    "persistent": false,
+
+    /*
+	  ================================================================
+	           --- TRANSFORM COMPONENT ---
+	  ================================================================
+    */
+
+    "transform": {
+      "position": [0.0, 0.0, 0.0],
+      "rotation": [0.0, 0.0, 0.0, 1.0],
+      "scale": [1.0, 1.0, 1.0],
+      "localPosition": [0.0, 0.0, 0.0],
+      "localRotation": [0.0, 0.0, 0.0, 1.0],
+      "localScale": [1.0, 1.0, 1.0]
+    },
+
+    /*
+	  ================================================================
+	           --- COMPONENTS ---
+	  ================================================================
+    */
+
+    "components": [
+      {
+        "type": "SpriteRenderer",
+        "enabled": true,
+        "properties": {
+          "sprite": null,
+          "color": [1.0, 1.0, 1.0, 1.0],
+          "flipX": false,
+          "flipY": false,
+          "sortingLayer": 0,
+          "orderInLayer": 0,
+          "material": null
+        }
+      },
+      {
+        "type": "Collider2D",
+        "enabled": true,
+        "properties": {
+          "shape": "box",
+          "size": [1.0, 1.0],
+          "offset": [0.0, 0.0],
+          "isTrigger": false,
+          "material": null,
+          "density": 1.0,
+          "friction": 0.3,
+          "restitution": 0.0
+        }
+      },
+      {
+        "type": "RigidBody2D",
+        "enabled": true,
+        "properties": {
+          "bodyType": "dynamic",
+          "mass": 1.0,
+          "drag": 0.0,
+          "angularDrag": 0.05,
+          "gravityScale": 1.0,
+          "fixedAngle": false,
+          "interpolate": true,
+          "constraints": {
+            "freezePositionX": false,
+            "freezePositionY": false,
+            "freezeRotation": false
+          }
+        }
+      },
+      {
+        "type": "Script",
+        "enabled": true,
+        "properties": {
+          "scriptPath": "scripts/{{PrefabName}}Behavior.wc",
+          "compiledScript": null,
+          "variables": {}
+        }
+      }
+    ],
+
+    /*
+	  ================================================================
+	           --- CHILD ENTITIES ---
+	  ================================================================
+    */
+
+    "children": [
+      {
+        "id": "{{ChildEntityId}}",
+        "name": "Visual",
+        "enabled": true,
+        "static": false,
+        "persistent": false,
+
+        "transform": {
+          "position": [0.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0],
+          "localPosition": [0.0, 0.0, 0.0],
+          "localRotation": [0.0, 0.0, 0.0, 1.0],
+          "localScale": [1.0, 1.0, 1.0]
+        },
+
+        "components": [
+          {
+            "type": "MeshRenderer",
+            "enabled": true,
+            "properties": {
+              "mesh": "primitives/cube.mesh",
+              "material": "materials/default.material",
+              "castShadows": true,
+              "receiveShadows": true,
+              "lightmapIndex": -1,
+              "lightmapScaleOffset": [1.0, 1.0, 0.0, 0.0]
+            }
+          }
+        ],
+
+        "children": []
+      }
+    ]
+  },
+
+  /*
+	====================================================================
+             --- PREFAB SETTINGS ---
+	====================================================================
+  */
+
+  "settings": {
+    "instantiation": {
+      "mode": "instance",
+      "preserveHierarchy": true,
+      "applyRootTransform": true,
+      "generateUniqueIds": true
+    },
+
+    "serialization": {
+      "includeDisabledComponents": true,
+      "includeInactiveEntities": false,
+      "serializePrivateFields": false,
+      "compressData": false
+    },
+
+    "validation": {
+      "requireComponents": ["Transform"],
+      "allowEmptyPrefab": false,
+      "validateReferences": true,
+      "checkCircularReferences": true
+    }
+  },
+
+  /*
+	====================================================================
+             --- ASSET DEPENDENCIES ---
+	====================================================================
+  */
+
+  "dependencies": {
+    "scripts": [
+      "scripts/{{PrefabName}}Behavior.wc"
+    ],
+    "materials": [
+      "materials/default.material"
+    ],
+    "textures": [],
+    "meshes": [
+      "primitives/cube.mesh"
+    ],
+    "audio": [],
+    "fonts": [],
+    "prefabs": []
+  },
+
+  /*
+	====================================================================
+             --- VARIANT CONFIGURATION ---
+	====================================================================
+  */
+
+  "variants": [
+    {
+      "name": "Default",
+      "description": "Default variant of {{PrefabName}}",
+      "overrides": {},
+      "conditions": {}
+    }
+  ],
+
+  /*
+	====================================================================
+             --- PREFAB VARIABLES ---
+	====================================================================
+  */
+
+  "variables": {
+    "exposed": [
+      {
+        "name": "health",
+        "type": "float",
+        "defaultValue": 100.0,
+        "description": "Entity health points",
+        "path": "rootEntity.components.Script.properties.variables.health"
+      },
+      {
+        "name": "speed",
+        "type": "float",
+        "defaultValue": 5.0,
+        "description": "Movement speed",
+        "path": "rootEntity.components.Script.properties.variables.speed"
+      },
+      {
+        "name": "color",
+        "type": "vec4",
+        "defaultValue": [1.0, 1.0, 1.0, 1.0],
+        "description": "Entity color tint",
+        "path": "rootEntity.components.SpriteRenderer.properties.color"
+      }
+    ],
+
+    "internal": [
+      {
+        "name": "instanceId",
+        "type": "string",
+        "defaultValue": "",
+        "description": "Unique instance identifier"
+      }
+    ]
+  },
+
+  /*
+	====================================================================
+             --- EVENT HANDLERS ---
+	====================================================================
+  */
+
+  "events": {
+    "onInstantiate": [],
+    "onDestroy": [],
+    "onEnable": [],
+    "onDisable": [],
+    "onCollisionEnter": [],
+    "onCollisionExit": [],
+    "onTriggerEnter": [],
+    "onTriggerExit": []
+  }
+}
+
+/* end of {{PrefabName}} prefab */

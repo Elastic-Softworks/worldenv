@@ -1,0 +1,134 @@
+WORLDENV CODEBASE CLEANUP & AUDIT TODO
+=====================================
+
+CRITICAL CLEANUP ITEMS
+======================
+
+1. DISABLED/UNUSED FILES
+   [X] Remove worldc/src/semantic/semantic-analyzer.ts.disabled
+   [ ] Audit worldc/src/semantic/ - consolidate simple-analyzer.ts with main analyzer
+   [ ] Check if semantic analyzer functionality is properly integrated
+
+2. MANAGER CLASS CONSOLIDATION
+   [ ] Review 15+ Manager classes in editor/src/main/ for overlap
+   [ ] Merge similar functionality:
+       - AssetManager + FileHistoryManager (asset tracking overlap)
+       - ProjectManager + ProjectTemplateManager + RecentProjectsManager
+       - Build system: BuildManager + WCCompilerIntegration coordination
+       - Engine coordination: EngineStatusManager + EngineCommunicationManager + ScriptSystemManager
+
+3. NAMING CONSISTENCY
+   [ ] Standardize Manager vs Service vs Integration naming
+   [X] Fix mixed naming patterns in auto-save.ts (snake_case vs camelCase)
+   [ ] Fix remaining naming inconsistencies in other files
+       - file_histories vs fileHistories inconsistencies
+   [ ] Align interface vs class naming conventions
+
+4. ENGINE INTEGRATION CLEANUP
+   [ ] Consolidate engine/ subfolder classes - too many overlapping responsibilities
+   [ ] Merge WCCompilerIntegration + WCHotReloadManager into unified service
+   [ ] Simplify EngineWrapper + EngineService + EngineCommunicationManager chain
+   [ ] Remove redundant script management layers
+
+CODE QUALITY IMPROVEMENTS
+=========================
+
+5. C-FORM COMPLIANCE AUDIT
+   [ ] Convert all editor TypeScript to follow C-FORM principles where applicable
+   [ ] Update worldc C-style code to full C-FORM compliance
+   [ ] Standardize comment formatting across codebase
+   [ ] Fix alignment and spacing issues found in grep audit
+
+6. DEBUG CODE CLEANUP
+   [ ] Remove excessive debug logging calls (found 50+ instances)
+   [ ] Implement proper logging levels instead of scattered debug statements
+   [ ] Clean up TODO/FIXME comments (convert to proper issues or resolve)
+
+7. DUPLICATE FUNCTIONALITY
+   [ ] Asset handling: consolidate thumbnail generation + metadata caching
+   [ ] File operations: merge file-system.ts overlaps with other managers
+   [ ] Dialog management: consolidate DialogManager with dialog components
+   [ ] IPC: simplify IPCManager + EngineCommunicationManager coordination
+
+STRUCTURE OPTIMIZATION
+=====================
+
+8. DIRECTORY REORGANIZATION
+   [ ] Move engine integration classes to single cohesive module
+   [ ] Consolidate utility functions scattered across managers
+   [ ] Group related functionality (asset pipeline, build system, etc.)
+
+9. DEPENDENCY CLEANUP
+   [ ] Remove unused imports across codebase
+   [ ] Audit package.json dependencies for unused packages
+   [ ] Consolidate similar dependencies between editor/ and worldc/
+
+10. CONFIGURATION MANAGEMENT
+    [ ] Unify configuration patterns across managers
+    [ ] Implement centralized config validation
+    [ ] Remove hardcoded paths and magic numbers
+
+DOCUMENTATION SYNCHRONIZATION
+============================
+
+11. UPDATE ALL DOCUMENTATION
+    [ ] Audit editor/docs/ - update for current architecture
+    [ ] Audit worldc/docs/ - ensure API docs match implementation
+    [ ] Update root README.md with current system overview
+    [ ] Sync all docs with implementation from test3-todo.txt
+
+12. REMOVE OUTDATED REFERENCES
+    [ ] Clean any remaining development-specific terminology
+    [ ] Ensure user-facing documentation reflects current state
+    [ ] Update troubleshooting guides for consolidated architecture
+
+INTEGRATION FIXES
+================
+
+13. WORLDC-EDITOR COMMUNICATION
+    [ ] Fix EPIPE errors in compiler integration
+    [ ] Streamline build pipeline integration
+    [ ] Resolve runtime discovery issues for WorldC compiler
+
+14. BUILD SYSTEM CLEANUP
+    [ ] Remove webpack warnings in renderer bundle
+    [ ] Optimize large bundle sizes
+    [X] Fix dynamic require warnings in compiler integration
+
+TESTING CLEANUP
+==============
+
+15. TEST COVERAGE GAPS
+    [ ] Add missing unit tests for consolidated managers
+    [ ] Update integration tests for new architecture
+    [ ] Add error handling tests for engine communication
+
+COMPLETION CRITERIA
+==================
+- Zero disabled/unused files
+- Consistent naming throughout codebase
+- All Manager classes have clear, non-overlapping responsibilities
+- Full C-FORM compliance in applicable code
+- All documentation reflects current implementation
+- No debug logging in production code paths
+- Clean build with zero warnings
+- Successful integration between WorldC and Editor
+
+PROGRESS STATUS
+==============
+COMPLETED:
+- Removed semantic-analyzer.ts.disabled file
+- Fixed dynamic require warning in WCCompilerIntegration.ts
+- Standardized naming in auto-save.ts (snake_case -> camelCase)
+- Live Blueprint system framework implemented
+
+IN PROGRESS:
+- Naming consistency across remaining files
+- Manager class consolidation analysis
+- Debug logging reduction strategy
+
+NEXT PRIORITIES:
+1. Complete naming standardization in file-history.ts and project-*.ts files
+2. Analyze Manager class overlaps for consolidation opportunities
+3. Reduce excessive debug logging calls
+4. Update documentation to reflect cleanup changes

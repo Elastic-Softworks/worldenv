@@ -2,25 +2,6 @@
 
 **Complete testing manual for WORLDEDIT and WORLDC systems**
 
-> **⚠️ TESTING STATUS NOTICE**
-> 
-> Testing is currently blocked by critical build failures. This guide describes the intended testing procedures once build issues are resolved.
-> 
-> **Current Blockers:**
-> - Application cannot build due to 33+ TypeScript compilation errors
-> - Main process builds successfully but renderer process fails
-> - No testing can be performed until build succeeds
-> 
-> **Testing Readiness Status:**
-> - **Manual Testing:** ❌ BLOCKED - Application cannot launch
-> - **Automated Testing:** ❌ BLOCKED - Build failures prevent test execution  
-> - **Integration Testing:** ❌ BLOCKED - Core systems not accessible
-> - **Performance Testing:** ❌ BLOCKED - No running application to test
-> 
-> **For Developers:** Fix critical TypeScript errors in AssetBrowserPanel.tsx, InspectorPanel.tsx, and Entity module imports before attempting any testing procedures described below.
-> 
-> See [TROUBLESHOOTING.md](TROUBLESHOOTING.md#current-build-failures-priority-critical) for immediate resolution steps.
-
 ## Table of Contents
 
 - [Overview](#overview)
@@ -41,10 +22,20 @@
   - [2.2 Compilation Pipeline](#22-compilation-pipeline)
   - [2.3 Runtime Integration](#23-runtime-integration)
   - [2.4 Development Tools](#24-development-tools)
-- [III. Performance & Scalability Testing](#iii-performance--scalability-testing)
-  - [3.1 Editor Performance](#31-editor-performance)
-  - [3.2 Compilation Performance](#32-compilation-performance)
-  - [3.3 Runtime Performance](#33-runtime-performance)
+- [III. Integration Testing Procedures](#iii-integration-testing-procedures)
+  - [3.1 Engine-Editor Integration](#31-engine-editor-integration)
+  - [3.2 Hot-Reload System Testing](#32-hot-reload-system-testing)
+  - [3.3 Component System Integration](#33-component-system-integration)
+  - [3.4 Cross-Platform Build Testing](#34-cross-platform-build-testing)
+- [IV. Performance & Scalability Testing](#iv-performance--scalability-testing)
+  - [4.1 Editor Performance](#41-editor-performance)
+  - [4.2 Compilation Performance](#42-compilation-performance)
+  - [4.3 Runtime Performance](#43-runtime-performance)
+  - [4.4 Memory Usage Analysis](#44-memory-usage-analysis)
+- [V. Automated Testing Setup](#v-automated-testing-setup)
+  - [5.1 Unit Test Configuration](#51-unit-test-configuration)
+  - [5.2 Integration Test Pipeline](#52-integration-test-pipeline)
+  - [5.3 End-to-End Testing](#53-end-to-end-testing)
 - [Testing Tools & Commands](#testing-tools--commands)
 - [Feedback Guidelines](#feedback-guidelines)
 - [Quick Reference](#quick-reference)
@@ -127,33 +118,59 @@ dxdiag                   # Windows
    # Global WORLDC compiler
    npm install -g @worldenv/worldc
    
-   # Memory monitoring (optional)
+   # Memory monitoring
    npm install -g clinic
    
-   # Performance profiling (optional)
+   # Performance profiling
    npm install -g autocannon
+   
+   # End-to-end testing
+   npm install -g playwright
+   
+   # Load testing
+   npm install -g artillery
    ```
 
-3. **Open HITL Testing Interface**
-   - Navigate to `worldenv/hitl/index.html`
-   - Open in web browser
-   - Bookmark for easy access during testing
+3. **Setup Test Environment**
+   ```bash
+   # Create testing workspace
+   mkdir ~/worldenv-testing
+   cd ~/worldenv-testing
+   
+   # Create test projects directory
+   mkdir test-projects
+   
+   # Create asset test files
+   mkdir test-assets
+   
+   # Create performance baseline directory
+   mkdir performance-baselines
+   
+   # Setup automated test results
+   mkdir test-results
+   ```
+
+4. **Configure Testing Database**
+   ```bash
+   # Initialize test tracking
+   cd ~/worldenv-testing
+   echo "# WORLDENV Testing Log" > testing-log.md
+   echo "Started: $(date)" >> testing-log.md
+   ```
 
 ### Testing Environment
 
-Create a dedicated testing workspace:
+**Hardware Requirements for Performance Testing:**
+- Minimum 8GB RAM (16GB recommended)
+- SSD storage for build performance testing
+- Graphics card supporting OpenGL 3.3+ for viewport testing
+- Multiple CPU cores for parallel compilation testing
 
-```bash
-mkdir ~/worldenv-testing
-cd ~/worldenv-testing
-
-# Create test projects directory
-mkdir test-projects
-
-# Create asset test files
-mkdir test-assets
-# (We'll populate this during asset testing)
-```
+**Software Environment:**
+- Clean Node.js installation (no global packages that might interfere)
+- Latest Chrome/Chromium for renderer testing
+- Multiple terminal windows for concurrent testing
+- System monitoring tools enabled
 
 ---
 
@@ -1402,7 +1419,7 @@ top -p $(pgrep electron)
 
 ### 1.5 Scene Hierarchy System
 
-#### Test 63: Create/delete entities ✅ **IMPLEMENTED**
+#### Test 63: Create/delete entities **IMPLEMENTED**
 
 **Objective:** Test basic entity operations
 
@@ -1414,13 +1431,14 @@ top -p $(pgrep electron)
 5. Test entity active/inactive toggles
 
 **Current Behavior:**
-- ✅ Entities create immediately with "Add Entity" context menu
-- ✅ Default naming works ("Entity", "Entity 1", etc.)
-- ✅ Deletion removes from scene with confirmation dialog
-- ✅ Transform component automatically added
-- ⏳ Undo/redo planned for Phase 9
+**Results:**
+- Entities create immediately with "Add Entity" context menu
+- Default naming works ("Entity", "Entity 1", etc.)
+- Deletion removes from scene with confirmation dialog
+- Transform component automatically added
+- Undo/redo planned for future release
 
-#### Test 64: Drag and drop reparenting ✅ **IMPLEMENTED**
+#### Test 64: Drag and drop reparenting **IMPLEMENTED**
 
 **Objective:** Test hierarchy manipulation
 
@@ -1431,13 +1449,14 @@ top -p $(pgrep electron)
 4. Test reparenting operations
 
 **Current Behavior:**
-- ✅ Drag and drop reparenting works
-- ✅ Parent-child relationships established correctly
-- ✅ Visual hierarchy updates immediately
-- ✅ Entity children arrays updated properly
-- ⏳ Transform inheritance planned for Phase 3
+**Results:**
+- Drag and drop reparenting works
+- Parent-child relationships established correctly
+- Visual hierarchy updates immediately
+- Entity children arrays updated properly
+- Transform inheritance planned for future release
 
-#### Test 65: Multi-selection operations ✅ **IMPLEMENTED**
+#### Test 65: Multi-selection operations **IMPLEMENTED**
 
 **Objective:** Test selection system
 
@@ -1448,13 +1467,14 @@ top -p $(pgrep electron)
 4. Test selection visual feedback
 
 **Current Behavior:**
-- ✅ Multi-selection with Ctrl+click works
-- ✅ Shift+click for range selection works
-- ✅ Bulk delete operations work
-- ✅ Clear visual indication with highlighting
-- ⏳ Viewport selection planned for Phase 4
+**Results:**
+- Multi-selection with Ctrl+click works
+- Shift+click for range selection works
+- Bulk delete operations work
+- Clear visual indication with highlighting
+- Viewport selection enhancement planned
 
-#### Test 66: Undo/redo for hierarchy changes ⏳ **PLANNED (Phase 9)**
+#### Test 66: Undo/redo for hierarchy changes **PLANNED**
 
 **Objective:** Test operation history
 
@@ -1465,9 +1485,9 @@ top -p $(pgrep electron)
 4. Test undo stack limits
 
 **Implementation Status:**
-- ⏳ Undo/redo system planned for Phase 9
-- ✅ Current operations work without undo/redo
-- ✅ Scene save/load provides basic recovery
+- Undo/redo system planned for future release
+- Current operations work without undo/redo
+- Scene save/load provides basic recovery
 
 #### Test 67: Copy/paste entities with components
 
@@ -1485,7 +1505,7 @@ top -p $(pgrep electron)
 - Unique IDs generated
 - References handled properly
 
-#### Test 68: Node visibility toggles ✅ **IMPLEMENTED**
+#### Test 68: Node visibility toggles **IMPLEMENTED**
 
 **Objective:** Test visibility system
 
@@ -1496,13 +1516,14 @@ top -p $(pgrep electron)
 4. Test visibility with parent-child relationships
 
 **Current Behavior:**
-- ✅ Eye icon toggles visibility in hierarchy
-- ✅ Visual indicators work (grayed out when hidden)
-- ✅ Visibility state saved with scene
-- ✅ Clear visual feedback in hierarchy panel
-- ⏳ Viewport rendering updates planned for Phase 4
+**Results:**
+- Eye icon toggles visibility in hierarchy
+- Visual indicators work (grayed out when hidden)
+- Visibility state saved with scene
+- Clear visual feedback in hierarchy panel
+- Viewport rendering updates planned
 
-#### Test 69: Node locking functionality ✅ **IMPLEMENTED**
+#### Test 69: Node locking functionality **IMPLEMENTED**
 
 **Objective:** Test entity protection
 
@@ -1513,13 +1534,14 @@ top -p $(pgrep electron)
 4. Verify lock visual indicators
 
 **Current Behavior:**
-- ✅ Lock icon toggles entity lock state
-- ✅ Visual indicators work (lock icon visible when locked)
-- ✅ Lock state saved with scene
-- ✅ Clear visual feedback in hierarchy panel
-- ⏳ Full modification prevention planned for Phase 3
+**Results:**
+- Lock icon toggles entity lock state
+- Visual indicators work (lock icon visible when locked)
+- Lock state saved with scene
+- Clear visual feedback in hierarchy panel
+- Full modification prevention planned for future release
 
-#### Test 70: Node search and filtering ⏳ **PLANNED**
+#### Test 70: Node search and filtering **PLANNED**
 
 **Objective:** Test hierarchy navigation aids
 
@@ -1530,10 +1552,11 @@ top -p $(pgrep electron)
 4. Test search with large hierarchies
 
 **Implementation Status:**
-- ⏳ Search and filtering UI planned for future enhancement
-- ✅ Basic hierarchy navigation works
-- ✅ Manual entity location by scrolling
-- ✅ Entity naming helps with organization
+**Current Behavior:**
+- Search and filtering UI planned for future enhancement
+- Basic hierarchy navigation works
+- Manual entity location by scrolling
+- Entity naming helps with organization
 
 #### Test 71: Bulk operations on selected nodes
 
@@ -1567,7 +1590,7 @@ top -p $(pgrep electron)
 - Repair functionality available
 - Data recovery possible
 
-#### Test 71: Bulk operations on selected nodes ✅ **PARTIALLY IMPLEMENTED**
+#### Test 71: Bulk operations on selected nodes **PARTIALLY IMPLEMENTED**
 
 **Objective:** Test mass operations
 
@@ -1578,12 +1601,13 @@ top -p $(pgrep electron)
 4. Test performance with large selections
 
 **Current Behavior:**
-- ✅ Multi-selection works with Ctrl+click and Shift+click
-- ✅ Bulk delete operations work with confirmation
-- ✅ Performance acceptable with reasonable selections
-- ⏳ Bulk property editing planned for future implementation
+**Results:**
+- Multi-selection works with Ctrl+click and Shift+click
+- Bulk delete operations work with confirmation
+- Performance acceptable with reasonable selections
+- Bulk property editing planned for future implementation
 
-#### Test 72: Hierarchy validation and repair ✅ **IMPLEMENTED**
+#### Test 72: Hierarchy validation and repair **IMPLEMENTED**
 
 **Objective:** Test data integrity
 
@@ -1594,15 +1618,16 @@ top -p $(pgrep electron)
 4. Verify error handling for corrupt data
 
 **Current Behavior:**
-- ✅ Scene validation detects structural issues
-- ✅ Parent-child relationship integrity maintained
-- ✅ Clear error reporting in console
-- ✅ Scene loading fails gracefully with validation errors
-- ✅ Entity ID uniqueness enforced
+**Results:**
+- Scene validation detects structural issues
+- Parent-child relationship integrity maintained
+- Clear error reporting in console
+- Scene loading fails gracefully with validation errors
+- Entity ID uniqueness enforced
 
 ### Scene File Tests (73-77)
 
-#### Test 73: Save/load scene files (.scene.json) ✅ **IMPLEMENTED**
+#### Test 73: Save/load scene files (.scene.json) **IMPLEMENTED**
 
 **Objective:** Test scene persistence
 
@@ -1619,13 +1644,14 @@ cat MyScene.scene.json | jq .
 ```
 
 **Current Behavior:**
-- ✅ Scene saves completely to .scene.json format
-- ✅ Loading restores scene exactly with all entities
-- ✅ JSON format is human-readable and well-structured
-- ✅ Performance acceptable for typical scenes
-- ✅ Scene validation on load prevents corruption
+**Results:**
+- Scene saves completely to .scene.json format
+- Loading restores scene exactly with all entities
+- JSON format is human-readable and well-structured
+- Performance acceptable for typical scenes
+- Scene validation on load prevents corruption
 
-#### Test 74: Scene file versioning ✅ **IMPLEMENTED**
+#### Test 74: Scene file versioning **IMPLEMENTED**
 
 **Objective:** Test format compatibility
 
@@ -1636,13 +1662,14 @@ cat MyScene.scene.json | jq .
 4. Check version compatibility handling
 
 **Current Behavior:**
-- ✅ Version field included in all scene files ("version": "1.0.0")
-- ✅ Format field identifies file type ("format": "worldenv-scene")
-- ✅ Scene validation checks format compatibility
-- ✅ Clear error messages for unsupported versions
-- ⏳ Migration system planned for future version updates
+**Results:**
+- Version field included in all scene files ("version": "1.0.0")
+- Format field identifies file type ("format": "worldenv-scene")
+- Scene validation checks format compatibility
+- Clear error messages for unsupported versions
+- Migration system planned for future version updates
 
-#### Test 75: Scene merging capabilities ⏳ **PLANNED**
+#### Test 75: Scene merging capabilities **PLANNED**
 
 **Objective:** Test scene combination
 
@@ -1653,12 +1680,13 @@ cat MyScene.scene.json | jq .
 4. Verify all data imported
 
 **Implementation Status:**
-- ⏳ Scene merging planned for future implementation
-- ✅ Individual scene save/load works
-- ✅ Scene format supports entity imports
-- ✅ Entity ID system ready for merge conflict resolution
+**Current Behavior:**
+- Scene merging planned for future implementation
+- Individual scene save/load works
+- Scene format supports entity imports
+- Entity ID system ready for merge conflict resolution
 
-#### Test 76: Large scene handling (10,000+ entities) ⏳ **PERFORMANCE TESTING NEEDED**
+#### Test 76: Large scene handling (10,000+ entities) **PERFORMANCE TESTING NEEDED**
 
 **Objective:** Test scalability limits
 
@@ -1669,10 +1697,11 @@ cat MyScene.scene.json | jq .
 4. Monitor memory usage
 
 **Current Status:**
-- ⏳ Large scene testing planned for future implementation
-- ✅ Basic entity creation and management works
-- ✅ JSON format scales well
-- ⏳ Performance optimizations planned for large hierarchies
+**Current Behavior:**
+- Large scene testing planned for future implementation
+- Basic entity creation and management works
+- JSON format scales well
+- Performance optimizations planned for large hierarchies
 
 **Objective:** Test scalability
 
@@ -5115,6 +5144,437 @@ htop  # More detailed monitoring
 - Power-saving modes work
 - Performance/power balance
 - Comparison favorable
+
+---
+
+## III. Integration Testing Procedures
+
+### 3.1 Engine-Editor Integration
+
+**Test: WORLDC Compiler Communication**
+
+1. **Objective**: Verify editor can communicate with WORLDC compiler
+2. **Setup**: 
+   ```bash
+   cd worldenv/editor
+   npm run start
+   # Wait for editor to load
+   ```
+
+3. **Steps**:
+   - Open Tools menu → "Check WORLDC Installation"
+   - Observe status dialog
+   - Create new script file: `test-integration.wc`
+   - Add basic script content:
+     ```worldc
+     export class TestScript {
+         void start() {
+             Debug.log("Integration test working");
+         }
+     }
+     ```
+   - Save file (Ctrl+S)
+   - Observe compilation status
+
+4. **Expected Behavior**: 
+   - WORLDC status shows "Available" and version number
+   - Script compiles without errors
+   - Compilation status shows success
+
+5. **Success Criteria**:
+   - No EPIPE or communication errors
+   - Compilation completes in <5 seconds
+   - Generated bytecode file exists
+
+**Test: Hot-Reload Integration**
+
+1. **Setup**: Editor running with test project loaded
+2. **Steps**:
+   - Enable hot-reload mode in preferences
+   - Attach script to entity in scene
+   - Enter play mode
+   - Modify script while running
+   - Save changes
+   - Verify immediate update in viewport
+
+3. **Expected Behavior**: Script changes apply without restarting play mode
+
+### 3.2 Hot-Reload System Testing
+
+**Test: Real-time Script Updates**
+
+1. **Objective**: Verify hot-reload preserves state during updates
+2. **Setup**: 
+   ```worldc
+   export class CounterScript {
+       private count: number = 0;
+       
+       void update() {
+           this.count++;
+           Debug.log("Count: " + this.count);
+       }
+   }
+   ```
+
+3. **Steps**:
+   - Start play mode
+   - Let counter run for 10 seconds
+   - Note current count value
+   - Modify log message in script
+   - Save file
+   - Observe counter continues from previous value
+
+4. **Success Criteria**: State preservation across hot-reload events
+
+### 3.3 Component System Integration
+
+**Test: Dynamic Component Addition**
+
+1. **Objective**: Verify runtime component management
+2. **Steps**:
+   - Create entity in scene
+   - Add Transform component via inspector
+   - Add custom script component
+   - Verify component appears in hierarchy
+   - Test component property editing
+   - Remove component via context menu
+
+3. **Expected Behavior**: Smooth component lifecycle management
+
+**Test: Component Property Binding**
+
+1. **Setup**: Script with @property decorations
+2. **Steps**:
+   - Create script with various property types:
+     ```worldc
+     export class PropertyTest {
+         @property public speed: number = 5.0;
+         @property public name: string = "Player";
+         @property public enabled: boolean = true;
+         @property public color: Color = Color.white;
+     }
+     ```
+   - Attach to entity
+   - Verify all properties appear in inspector
+   - Modify each property type
+   - Verify changes persist after save/reload
+
+3. **Success Criteria**: All property types editable and persistent
+
+### 3.4 Cross-Platform Build Testing
+
+**Test: Multi-Platform Export**
+
+1. **Objective**: Verify builds work across target platforms
+2. **Setup**: Test project with assets and scripts
+3. **Steps**:
+   - Configure build for Web target
+   - Run build process
+   - Test generated web build in browser
+   - Configure for Desktop target  
+   - Run build process
+   - Test desktop executable
+   - Configure for PWA target
+   - Verify PWA manifest and service worker
+
+4. **Performance Criteria**:
+   - Web build loads in <10 seconds
+   - Desktop build starts in <5 seconds
+   - PWA installs successfully
+
+---
+
+## IV. Performance & Scalability Testing
+
+### 4.1 Editor Performance
+
+**Test: Large Scene Handling**
+
+1. **Objective**: Verify editor performance with complex scenes
+2. **Setup**: Create scene with 1000+ entities
+3. **Steps**:
+   ```bash
+   # Generate large scene
+   node scripts/generate-large-scene.js --entities 1000
+   ```
+   - Load generated scene
+   - Monitor memory usage
+   - Test viewport navigation
+   - Test hierarchy scrolling
+   - Test selection operations
+
+4. **Performance Benchmarks**:
+   - Scene load time: <30 seconds
+   - Memory usage: <2GB
+   - Viewport FPS: >30 FPS during navigation
+   - UI responsiveness: <100ms click response
+
+**Test: Asset Pipeline Performance**
+
+1. **Setup**: Collection of various asset types
+2. **Steps**:
+   - Import 100 image files simultaneously
+   - Monitor import progress and memory
+   - Test thumbnail generation
+   - Verify asset browser responsiveness
+
+3. **Performance Criteria**:
+   - Import rate: >10 assets/second
+   - Thumbnail generation: <500ms per image
+   - Browser remains responsive during import
+
+### 4.2 Compilation Performance
+
+**Test: Large Project Compilation**
+
+1. **Setup**: Project with 50+ WORLDC files
+2. **Steps**:
+   ```bash
+   # Generate large project
+   node scripts/generate-large-project.js --scripts 50
+   ```
+   - Run full project compilation
+   - Monitor compilation time
+   - Test incremental compilation
+   - Verify dependency analysis
+
+3. **Performance Benchmarks**:
+   - Full compilation: <2 minutes
+   - Incremental compilation: <10 seconds
+   - Memory usage during compilation: <4GB
+
+### 4.3 Runtime Performance
+
+**Test: Script Execution Performance**
+
+1. **Setup**: Performance test scripts
+2. **Scripts**:
+   ```worldc
+   export class PerformanceTest {
+       void stressTest() {
+           for (int i = 0; i < 100000; i++) {
+               Vector3 pos = Vector3(i, i, i);
+               pos = pos.normalize();
+           }
+       }
+   }
+   ```
+
+3. **Steps**:
+   - Run stress test in play mode
+   - Monitor frame rate
+   - Check memory allocations
+   - Verify garbage collection performance
+
+4. **Performance Criteria**:
+   - Maintains >60 FPS during stress test
+   - Memory growth <100MB over 1 minute
+   - GC pauses <16ms
+
+### 4.4 Memory Usage Analysis
+
+**Test: Memory Leak Detection**
+
+1. **Objective**: Verify no memory leaks during extended use
+2. **Steps**:
+   - Start editor with clean project
+   - Record baseline memory usage
+   - Perform repetitive operations:
+     - Create/delete entities (100 iterations)
+     - Load/unload scenes (50 iterations)
+     - Import/delete assets (100 iterations)
+   - Monitor memory over 1 hour session
+
+3. **Success Criteria**:
+   - Memory growth <500MB over 1 hour
+   - No unbounded memory increase
+   - Memory releases after operations complete
+
+---
+
+## V. Automated Testing Setup
+
+### 5.1 Unit Test Configuration
+
+**Jest Configuration for Editor:**
+```javascript
+// jest.config.js
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
+  moduleNameMapping: {
+    '^@renderer/(.*)$': '<rootDir>/src/renderer/$1',
+    '^@main/(.*)$': '<rootDir>/src/main/$1',
+    '^@shared/(.*)$': '<rootDir>/src/shared/$1'
+  },
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/__tests__/**/*'
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 80,
+      lines: 80,
+      statements: 80
+    }
+  }
+};
+```
+
+**Test Example:**
+```typescript
+// __tests__/components/ComponentManager.test.ts
+describe('ComponentManager', () => {
+  let componentManager: ComponentManager;
+  let mockEntity: Entity;
+
+  beforeEach(() => {
+    componentManager = new ComponentManager();
+    mockEntity = createMockEntity();
+  });
+
+  test('should add component to entity', () => {
+    const component = componentManager.addComponent(
+      mockEntity, 
+      TransformComponent
+    );
+    
+    expect(component).toBeInstanceOf(TransformComponent);
+    expect(mockEntity.hasComponent(TransformComponent)).toBe(true);
+  });
+
+  test('should remove component from entity', () => {
+    componentManager.addComponent(mockEntity, TransformComponent);
+    componentManager.removeComponent(mockEntity, TransformComponent);
+    
+    expect(mockEntity.hasComponent(TransformComponent)).toBe(false);
+  });
+});
+```
+
+### 5.2 Integration Test Pipeline
+
+**Playwright E2E Configuration:**
+```typescript
+// playwright.config.ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  timeout: 30000,
+  use: {
+    baseURL: 'http://localhost:3000',
+    browserName: 'chromium',
+    headless: process.env.CI === 'true',
+    video: 'retain-on-failure',
+    screenshot: 'only-on-failure'
+  },
+  projects: [
+    {
+      name: 'Editor Tests',
+      testMatch: /editor\.spec\.ts/
+    },
+    {
+      name: 'Viewport Tests', 
+      testMatch: /viewport\.spec\.ts/
+    }
+  ]
+});
+```
+
+**E2E Test Example:**
+```typescript
+// e2e/editor-workflow.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('complete editor workflow', async ({ page }) => {
+  await page.goto('/');
+  
+  // Test project creation
+  await page.click('[data-testid="new-project"]');
+  await page.fill('[data-testid="project-name"]', 'Test Project');
+  await page.click('[data-testid="create-project"]');
+  
+  // Test entity creation
+  await page.click('[data-testid="create-entity"]');
+  await expect(page.locator('[data-testid="hierarchy"]')).toContainText('Entity');
+  
+  // Test component addition
+  await page.click('[data-testid="add-component"]');
+  await page.click('[data-testid="transform-component"]');
+  await expect(page.locator('[data-testid="inspector"]')).toContainText('Transform');
+  
+  // Test scene save
+  await page.keyboard.press('Control+S');
+  await expect(page.locator('[data-testid="status"]')).toContainText('Saved');
+});
+```
+
+### 5.3 End-to-End Testing
+
+**Continuous Integration Pipeline:**
+```yaml
+# .github/workflows/test.yml
+name: Test Suite
+
+on: [push, pull_request]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: |
+          cd editor && npm ci
+          cd ../worldc && npm ci
+      
+      - name: Run unit tests
+        run: |
+          cd editor && npm test -- --coverage
+          cd ../worldc && npm test
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Run integration tests
+        run: npm run test:integration
+      
+      - name: Run E2E tests
+        run: npx playwright test
+
+  performance-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Build and benchmark
+        run: |
+          npm run build
+          npm run benchmark
+      
+      - name: Compare performance
+        run: node scripts/compare-benchmarks.js
+```
 
 ---
 

@@ -14,21 +14,7 @@
 
 import React, { useState, useEffect } from 'react';
 import './BuildProgressDialog.css';
-
-interface BuildProgress {
-  stage: string;
-  progress: number;
-  message: string;
-  error?: string;
-}
-
-interface BuildResult {
-  success: boolean;
-  outputPath: string;
-  errors: string[];
-  warnings: string[];
-  buildTime: number;
-}
+import { BuildProgress, BuildResult } from '../../../shared/types';
 
 interface BuildProgressDialogProps {
   isOpen: boolean;

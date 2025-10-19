@@ -7,8 +7,8 @@
 /**
  * WORLDEDIT - Script Component
  *
- * Script component for attaching script files to entities.
- * Handles script references, execution parameters, and script lifecycle.
+ * Enhanced script component for attaching WORLDC script files to entities.
+ * Integrates with WORLDC compiler and script system for hot-reload and execution.
  */
 
 import { Component, AssetReference, PropertyMetadata } from '../Component';
@@ -107,6 +107,26 @@ export class ScriptComponent extends Component {
         description: 'Variables exposed from the script for editor configuration'
       }
     );
+
+    this.defineProperty<string[]>('enabledPhases', ['start', 'update', 'destroy'], {
+      type: 'object',
+      displayName: 'Enabled Phases',
+      description: 'Lifecycle phases that this script will execute'
+    });
+
+    this.defineProperty<string>('compilationStatus', 'Not Compiled', {
+      type: 'string',
+      displayName: 'Compilation Status',
+      description: 'Current compilation status of the script',
+      readonly: true
+    });
+
+    this.defineProperty<any[]>('compilationErrors', [], {
+      type: 'object',
+      displayName: 'Compilation Errors',
+      description: 'Script compilation and runtime errors',
+      readonly: true
+    });
 
     this.defineProperty<string[]>('dependencies', [], {
       type: 'object',
@@ -443,6 +463,87 @@ export class ScriptComponent extends Component {
   }
 
   /**
+   * getEnabledPhases()
+   *
+   * Gets enabled lifecycle phases.
+   */
+  getEnabledPhases(): string[] {
+    return this.getProperty<string[]>('enabledPhases') || ['start', 'update', 'destroy'];
+  }
+
+  /**
+   * setEnabledPhases()
+   *
+   * Sets enabled lifecycle phases.
+   */
+  setEnabledPhases(phases: string[]): void {
+    this.setProperty('enabledPhases', phases);
+  }
+
+  /**
+   * getCompilationStatus()
+   *
+   * Gets compilation status.
+   */
+  getCompilationStatus(): string {
+    return this.getProperty<string>('compilationStatus') || 'Not Compiled';
+  }
+
+  /**
+   * setCompilationStatus()
+   *
+   * Sets compilation status.
+   */
+  setCompilationStatus(status: string): void {
+    this.setProperty('compilationStatus', status);
+  }
+
+  /**
+   * getCompilationErrors()
+   *
+   * Gets compilation errors.
+   */
+  getCompilationErrors(): any[] {
+    return this.getProperty<any[]>('compilationErrors') || [];
+  }
+
+  /**
+   * setCompilationErrors()
+   *
+   * Sets compilation errors.
+   */
+  setCompilationErrors(errors: any[]): void {
+    this.setProperty('compilationErrors', errors);
+  }
+
+  /**
+   * clearCompilationErrors()
+   *
+   * Clears compilation errors.
+   */
+  clearCompilationErrors(): void {
+    this.setCompilationErrors([]);
+  }
+
+  /**
+   * hasCompilationErrors()
+   *
+   * Checks if there are compilation errors.
+   */
+  hasCompilationErrors(): boolean {
+    return this.getCompilationErrors().length > 0;
+  }
+
+  /**
+   * isWorldCScript()
+   *
+   * Checks if this is a WORLDC script.
+   */
+  isWorldCScript(): boolean {
+    return this.getLanguage() === ScriptLanguage.WORLDC;
+  }
+
+  /**
    * validate()
    *
    * Validates script properties.
@@ -471,6 +572,11 @@ export class ScriptComponent extends Component {
     const versionRegex = /^\d+\.\d+\.\d+$/;
     if (!versionRegex.test(version)) {
       errors.push('Version must be in format "major.minor.patch" (e.g., "1.0.0")');
+    }
+
+    const phases = this.getEnabledPhases();
+    if (phases.length === 0) {
+      errors.push('At least one lifecycle phase must be enabled');
     }
 
     return errors;

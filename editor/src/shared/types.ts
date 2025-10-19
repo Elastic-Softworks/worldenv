@@ -324,12 +324,19 @@ export class ValidationError extends EditorError {
 export interface BuildConfiguration {
   outputDirectory: string;
   buildTarget: string;
+  buildProfile: string;
   optimizationLevel: string;
   entryScene: string;
   includeAssets: boolean;
   includeScripts: boolean;
   generateSourceMaps: boolean;
   minifyOutput: boolean;
+  enableHotReload: boolean;
+  generateInstaller: boolean;
+  enablePWA: boolean;
+  compressionLevel: number;
+  bundleAnalysis: boolean;
+  targetPlatforms: string[];
 }
 
 /**
@@ -351,6 +358,12 @@ export interface BuildResult {
   errors: string[];
   warnings: string[];
   buildTime: number;
+  buildProfile: string;
+  outputSize: number;
+  assets: { [key: string]: string };
+  installerPath?: string;
+  webPath?: string;
+  desktopPath?: string;
 }
 
 /**
@@ -369,6 +382,16 @@ export interface OptimizationLevel {
   id: string;
   name: string;
   description: string;
+}
+
+/**
+ * Build profile
+ */
+export interface BuildProfile {
+  id: string;
+  name: string;
+  description: string;
+  defaults: Partial<BuildConfiguration>;
 }
 
 /**

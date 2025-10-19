@@ -50,6 +50,7 @@ interface UIState {
     script: PanelState;
   };
   activeViewportMode: '2d' | '3d';
+  activeRenderMode: 'shaded' | 'wireframe';
   showGrid: boolean;
   showGizmos: boolean;
   snapToGrid: boolean;
@@ -102,6 +103,7 @@ const initialState: EditorState = {
       script: { visible: false, collapsed: false, size: 400 }
     },
     activeViewportMode: '3d',
+    activeRenderMode: 'shaded',
     showGrid: true,
     showGizmos: true,
     snapToGrid: false
@@ -134,6 +136,7 @@ type EditorAction =
   | { type: 'PANEL_COLLAPSE'; payload: { panel: keyof UIState['panels']; collapsed: boolean } }
   | { type: 'PANEL_RESIZE'; payload: { panel: keyof UIState['panels']; size: number } }
   | { type: 'VIEWPORT_MODE_CHANGE'; payload: { mode: '2d' | '3d' } }
+  | { type: 'RENDER_MODE_CHANGE'; payload: { mode: 'shaded' | 'wireframe' } }
   | { type: 'TOGGLE_GRID'; payload: { show: boolean } }
   | { type: 'TOGGLE_GIZMOS'; payload: { show: boolean } }
   | { type: 'TOGGLE_SNAP_TO_GRID'; payload: { enabled: boolean } }
@@ -250,6 +253,15 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
         }
       };
 
+    case 'RENDER_MODE_CHANGE':
+      return {
+        ...state,
+        ui: {
+          ...state.ui,
+          activeRenderMode: action.payload.mode
+        }
+      };
+
     case 'TOGGLE_GRID':
       return {
         ...state,
@@ -334,9 +346,10 @@ interface EditorStateContextType {
     collapsePanel: (panel: keyof UIState['panels'], collapsed: boolean) => void;
     resizePanel: (panel: keyof UIState['panels'], size: number) => void;
     setViewportMode: (mode: '2d' | '3d') => void;
+    setRenderMode: (mode: 'shaded' | 'wireframe') => void;
     toggleGrid: (show: boolean) => void;
     toggleGizmos: (show: boolean) => void;
-    toggleSnapToGrid: (enabled: boolean) => void;
+    toggleSnapToGrid: (snap: boolean) => void;
     selectEntities: (entityIds: string[]) => void;
     clearSelection: () => void;
     copyToClipboard: (data: any[]) => void;
@@ -500,6 +513,7 @@ export function EditorStateProvider({ children }: EditorStateProviderProps): JSX
       const uiState = {
         panels: state.ui.panels,
         activeViewportMode: state.ui.activeViewportMode,
+        activeRenderMode: state.ui.activeRenderMode,
         showGrid: state.ui.showGrid,
         showGizmos: state.ui.showGizmos,
         snapToGrid: state.ui.snapToGrid
@@ -546,6 +560,10 @@ export function EditorStateProvider({ children }: EditorStateProviderProps): JSX
 
     setViewportMode: (mode: '2d' | '3d') => {
       dispatch({ type: 'VIEWPORT_MODE_CHANGE', payload: { mode } });
+    },
+
+    setRenderMode: (mode: 'shaded' | 'wireframe') => {
+      dispatch({ type: 'RENDER_MODE_CHANGE', payload: { mode } });
     },
 
     toggleGrid: (show: boolean) => {

@@ -40,12 +40,19 @@ interface BuildContextValue {
 const defaultConfiguration: BuildConfiguration = {
   outputDirectory: '',
   buildTarget: 'web',
+  buildProfile: 'debug',
   optimizationLevel: 'basic',
   entryScene: '',
   includeAssets: true,
   includeScripts: true,
   generateSourceMaps: true,
-  minifyOutput: false
+  minifyOutput: false,
+  enableHotReload: true,
+  generateInstaller: false,
+  enablePWA: false,
+  compressionLevel: 6,
+  bundleAnalysis: false,
+  targetPlatforms: ['web']
 };
 
 const defaultState: BuildState = {
@@ -119,7 +126,10 @@ export const BuildProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           outputPath: '',
           errors: [errorMessage],
           warnings: [],
-          buildTime: 0
+          buildTime: 0,
+          buildProfile: buildConfig.buildProfile,
+          outputSize: 0,
+          assets: {}
         };
 
         setState((prev) => ({

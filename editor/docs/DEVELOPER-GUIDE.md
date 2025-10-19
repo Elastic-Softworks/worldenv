@@ -9,7 +9,10 @@
 - [Development Environment](#development-environment)
 - [Build System](#build-system)
 - [Project Architecture](#project-architecture)
+- [Engine Integration Architecture](#engine-integration-architecture)
+- [Component System Architecture](#component-system-architecture)
 - [Viewport System Architecture](#viewport-system-architecture)
+- [WORLDC Language Integration](#worldc-language-integration)
 - [Development Workflow](#development-workflow)
 - [Code Standards](#code-standards)
 - [Testing](#testing)
@@ -197,6 +200,353 @@ module.exports = {
   }
 };
 ```
+
+## Current Architecture Status
+
+### Recent System Cleanup & Optimization
+
+**Completed Improvements:**
+- Removed legacy semantic analyzer (disabled file cleanup)
+- Fixed dynamic require warnings in compiler integration
+- Standardized naming conventions (snake_case → camelCase)
+- Implemented live blueprint analysis system for debugging
+
+**Current Build Status:**
+- Main process: Clean build (zero warnings)
+- Renderer process: Builds successfully with performance warnings
+- Bundle size: 1.94 MiB (optimization target identified)
+- All tests passing: WorldC (8/8), Integration tests functional
+
+**Active Architecture Concerns:**
+- Manager class proliferation (15+ classes with overlapping responsibilities)
+- Large renderer bundle requiring code splitting optimization
+- IPC communication patterns could be streamlined
+- Debug logging needs production-level filtering
+
+## Project Architecture
+
+### High-Level System Overview
+
+```
+WORLDEDIT Architecture
+├── Main Process (Electron/Node.js)
+│   ├── Application Controller
+│   ├── File System Manager
+│   ├── Project Manager
+│   ├── Build Pipeline
+│   └── IPC Communication
+├── Renderer Process (React/TypeScript)
+│   ├── UI Framework
+│   ├── Viewport Engine
+│   ├── Asset Pipeline
+│   ├── Script Editor
+│   └── Component Inspectors
+├── Engine Integration Layer
+│   ├── WORLDC Compiler Integration
+│   ├── Engine Communication Manager
+│   ├── Command Queue System
+│   └── Hot-Reload Manager
+└── Shared Libraries
+    ├── Type Definitions
+    ├── Utility Functions
+    └── Common Interfaces
+```
+
+### Core Modules
+
+**Main Process Modules:**
+- `ApplicationController` - Manages application lifecycle and menu system
+- `ProjectManager` - Handles project creation, loading, and persistence
+- `AssetManager` - Import/export pipeline with thumbnail generation
+- `BuildManager` - WORLDC compilation and deployment orchestration
+- `AutoSave` - Automatic project backup with configurable intervals
+- `FileHistoryManager` - Version tracking and change management
+- `WindowManager` - Multi-window state persistence
+
+**Renderer Process Modules:**
+- `EditorApp` - Root React component and state management
+- `ViewportEngine` - 3D/2D rendering using Three.js and Pixi.js
+- `ComponentSystem` - Dynamic component registration and management
+- `ScriptEditor` - Monaco-based editor with WORLDC language support
+- `PropertyEditor` - Type-safe component property manipulation
+- `DialogManager` - Modal system for file operations and settings
+
+## Engine Integration Architecture
+
+### WORLDC Compiler Integration
+
+The editor integrates with the WORLDC compiler through a sophisticated pipeline that enables real-time compilation and hot-reload capabilities.
+
+**WCCompilerIntegration Class:**
+```typescript
+class WCCompilerIntegration {
+  private compilerPath: string;
+  private tempDirectory: string;
+  private watchedFiles: Map<string, FileWatcher>;
+  
+  public async compileScript(
+    scriptPath: string, 
+    options: CompileOptions
+  ): Promise<CompilationResult> {
+    // Invoke WORLDC compiler with specified options
+    const result = await this.executeCompiler([
+      '--input', scriptPath,
+      '--output', options.outputPath,
+      '--target', options.target,
+      '--optimization', options.optimizationLevel
+    ]);
+    
+    return this.parseCompilerOutput(result);
+  }
+  
+  public enableHotReload(scriptPaths: string[]): void {
+    // Set up file watchers for automatic recompilation
+    scriptPaths.forEach(path => {
+      const watcher = new FileWatcher(path);
+      watcher.onChanged(() => this.recompileAndReload(path));
+      this.watchedFiles.set(path, watcher);
+    });
+  }
+}
+```
+
+**Engine Communication Manager:**
+```typescript
+class EngineCommunicationManager {
+  private commandQueue: CommandQueue;
+  private engineProcess: ChildProcess;
+  
+  public async sendCommand<T>(command: EngineCommand): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const id = this.generateCommandId();
+      this.commandQueue.enqueue({
+        id,
+        command,
+        resolve,
+        reject,
+        timestamp: Date.now()
+      });
+      
+      this.processQueue();
+    });
+  }
+  
+  public async updateEntityComponent(
+    entityId: string,
+    componentType: string,
+    properties: Record<string, any>
+  ): Promise<void> {
+    await this.sendCommand({
+      type: 'UPDATE_COMPONENT',
+      entityId,
+      componentType,
+      properties
+    });
+  }
+}
+```
+
+### Hot-Reload System
+
+**Real-time Script Updates:**
+```typescript
+class HotReloadManager {
+  private scriptInstances: Map<string, ScriptInstance>;
+  
+  public async reloadScript(scriptPath: string): Promise<void> {
+    // Compile script
+    const compilationResult = await this.compiler.compileScript(scriptPath, {
+      target: 'hot-reload',
+      optimizationLevel: 'debug'
+    });
+    
+    if (compilationResult.success) {
+      // Update running instances
+      const instances = this.scriptInstances.get(scriptPath) || [];
+      for (const instance of instances) {
+        await this.updateScriptInstance(instance, compilationResult.bytecode);
+      }
+      
+      // Notify viewport of changes
+      this.notifyViewportUpdate();
+    }
+  }
+  
+  private async updateScriptInstance(
+    instance: ScriptInstance,
+    newBytecode: Uint8Array
+  ): Promise<void> {
+    // Preserve state during hot-reload
+    const state = await this.extractInstanceState(instance);
+    
+    // Replace script logic
+    await this.engine.replaceScript(instance.id, newBytecode);
+    
+    // Restore preserved state
+    await this.restoreInstanceState(instance.id, state);
+  }
+}
+```
+
+## Component System Architecture
+
+### Entity-Component-System Pattern
+
+WORLDEDIT implements a pure ECS architecture with the following characteristics:
+
+**Entity Management:**
+```typescript
+interface Entity {
+  readonly id: string;
+  readonly name: string;
+  components: Map<ComponentType, Component>;
+  
+  addComponent<T extends Component>(type: ComponentType<T>, data?: Partial<T>): T;
+  removeComponent<T extends Component>(type: ComponentType<T>): void;
+  getComponent<T extends Component>(type: ComponentType<T>): T | null;
+  hasComponent<T extends Component>(type: ComponentType<T>): boolean;
+}
+
+class EntityManager {
+  private entities: Map<string, Entity> = new Map();
+  private entitiesByComponent: Map<ComponentType, Set<string>> = new Map();
+  
+  public createEntity(name?: string): Entity {
+    const entity = new EntityImpl(this.generateId(), name || 'Entity');
+    this.entities.set(entity.id, entity);
+    return entity;
+  }
+  
+  public queryEntities<T extends Component>(
+    ...componentTypes: ComponentType<T>[]
+  ): Entity[] {
+    return this.entities.values().filter(entity =>
+      componentTypes.every(type => entity.hasComponent(type))
+    );
+  }
+}
+```
+
+**Component Definition System:**
+```typescript
+abstract class Component {
+  public readonly entity: Entity;
+  public readonly type: ComponentType;
+  
+  constructor(entity: Entity, type: ComponentType) {
+    this.entity = entity;
+    this.type = type;
+  }
+  
+  // Lifecycle methods
+  public onAttach?(): void;
+  public onDetach?(): void;
+  public onUpdate?(deltaTime: number): void;
+  public onRender?(): void;
+}
+
+// Built-in component types
+class TransformComponent extends Component {
+  @property public position: Vector3 = Vector3.zero;
+  @property public rotation: Quaternion = Quaternion.identity;
+  @property public scale: Vector3 = Vector3.one;
+  
+  public getMatrix(): Matrix4 {
+    return Matrix4.compose(this.position, this.rotation, this.scale);
+  }
+}
+
+class SpriteRendererComponent extends Component {
+  @property public sprite: string = '';
+  @property public color: Color = Color.white;
+  @property public flipX: boolean = false;
+  @property public flipY: boolean = false;
+  @property public sortingOrder: number = 0;
+}
+```
+
+**Component Inspector Generation:**
+```typescript
+class ComponentInspectorFactory {
+  public createInspector(component: Component): React.ComponentType {
+    const componentType = component.type;
+    const properties = this.getComponentProperties(componentType);
+    
+    return (props) => (
+      <div className="component-inspector">
+        <ComponentHeader
+          type={componentType}
+          onRemove={() => props.onRemoveComponent(component)}
+          onToggle={(enabled) => component.setEnabled(enabled)}
+        />
+        
+        {properties.map(property => (
+          <PropertyEditor
+            key={property.name}
+            property={property}
+            value={component[property.name]}
+            onChange={(value) => this.updateProperty(component, property.name, value)}
+          />
+        ))}
+      </div>
+    );
+  }
+  
+  private getComponentProperties(type: ComponentType): PropertyDescriptor[] {
+    // Use reflection to extract @property decorated fields
+    return Reflect.getMetadata('properties', type.prototype) || [];
+  }
+}
+```
+
+### System Architecture
+
+**System Base Class:**
+```typescript
+abstract class System {
+  protected entityManager: EntityManager;
+  protected enabled: boolean = true;
+  
+  constructor(entityManager: EntityManager) {
+    this.entityManager = entityManager;
+  }
+  
+  public abstract update(deltaTime: number): void;
+  
+  protected queryEntities<T extends Component>(
+    ...componentTypes: ComponentType<T>[]
+  ): Entity[] {
+    return this.entityManager.queryEntities(...componentTypes);
+  }
+}
+
+// Example system implementations
+class RenderSystem extends System {
+  public update(deltaTime: number): void {
+    const renderableEntities = this.queryEntities(
+      TransformComponent,
+      SpriteRendererComponent
+    );
+    
+    for (const entity of renderableEntities) {
+      this.renderEntity(entity);
+    }
+  }
+  
+  private renderEntity(entity: Entity): void {
+    const transform = entity.getComponent(TransformComponent);
+    const renderer = entity.getComponent(SpriteRendererComponent);
+    
+    // Render sprite at transform position
+    this.viewportEngine.drawSprite(
+      renderer.sprite,
+      transform.getMatrix(),
+      renderer.color
+    );
+  }
+}
+```
+
 
 ### TypeScript Configuration
 
@@ -395,6 +745,142 @@ window.worldedit.events.on('scene:loaded', (sceneData) => {
   hierarchyPanel.updateHierarchy(sceneData.entities);
 });
 ```
+
+## Asset System Architecture
+
+### Overview
+
+The asset management system provides comprehensive file import, metadata management, thumbnail generation, and seamless integration with the component system. The architecture is designed for performance, extensibility, and professional workflow support.
+
+### Core Architecture
+
+```
+AssetManager (Main Process)
+    ├── Asset Import Pipeline
+    │   ├── File Type Detection
+    │   ├── Metadata Extraction
+    │   ├── Thumbnail Generation
+    │   └── Canvas-based Font Preview
+    ├── Asset Storage & Caching
+    │   ├── File System Operations
+    │   ├── Metadata Cache
+    │   └── Thumbnail Cache
+    └── IPC Asset Services
+
+AssetBrowserPanel (Renderer)
+    ├── Asset Display & Navigation
+    │   ├── Grid/List View Modes
+    │   ├── Search & Filtering
+    │   └── Keyboard Navigation
+    ├── Drag-and-Drop Integration
+    │   ├── File System → Asset Browser
+    │   ├── Asset Browser → Viewport
+    │   └── Asset Browser → Component Properties
+    └── Context Operations
+        ├── Import Management
+        ├── Properties Dialog
+        └── Batch Operations
+
+Component Integration
+    ├── AssetPropertyEditor
+    │   ├── Drag-and-Drop Asset Assignment
+    │   ├── Asset Reference Management
+    │   └── Asset Validation
+    └── Viewport Asset Creation
+        ├── Automatic Entity Creation
+        ├── Component Property Population
+        └── Scene Integration
+```
+
+### AssetManager (Main Process)
+
+The core asset management system runs in the main Electron process for file system access and native module integration.
+
+```typescript
+class AssetManager {
+  private projectPath: string;
+  private assetCache: Map<string, AssetItem>;
+  private metadataCache: Map<string, AssetMetadata>;
+  private thumbnailCache: Map<string, string>;
+
+  // Import pipeline with progress tracking
+  async importAssets(filePaths: string[], options: AssetImportOptions): Promise<AssetItem[]>;
+  
+  // Thumbnail generation for different asset types
+  private async generateThumbnail(asset: AssetItem): Promise<void>;
+  private async generateFontPreview(fontPath: string, outputPath: string): Promise<void>;
+  
+  // Asset organization and management
+  async createFolder(folderPath: string): Promise<void>;
+  async renameAsset(oldPath: string, newPath: string): Promise<void>;
+  async deleteAsset(assetPath: string): Promise<void>;
+}
+```
+
+### BatchImportDialog
+
+Enhanced import workflow with progress tracking and options management.
+
+```typescript
+interface BatchImportOptions {
+  targetFolder: string;
+  preserveStructure: boolean;
+  generateThumbnails: boolean;
+  overwriteExisting: boolean;
+  compressImages: boolean;
+  imageQuality: number;
+  maxImageSize: number;
+}
+
+export function BatchImportDialog({
+  isOpen,
+  files,
+  targetFolder,
+  onClose,
+  onImport
+}: BatchImportDialogProps): JSX.Element;
+```
+
+### AssetPropertyEditor
+
+Component property integration with drag-and-drop asset assignment.
+
+```typescript
+function AssetPropertyEditor({
+  value,
+  onChange,
+  fileFilter,
+  assetTypes,
+  readonly,
+  placeholder
+}: AssetPropertyEditorProps): JSX.Element {
+  // Handles drag-and-drop from asset browser
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    const asset = JSON.parse(e.dataTransfer.getData('application/json')) as AssetItem;
+    const assetRef: AssetReference = {
+      id: asset.metadata.id,
+      path: asset.path,
+      type: asset.type
+    };
+    onChange(assetRef);
+  }, [onChange]);
+}
+```
+
+### Performance Optimizations
+
+- **Lazy Loading**: Thumbnails generated and loaded on-demand
+- **Caching**: Asset metadata and thumbnails cached for rapid access
+- **Background Processing**: Import operations use progress tracking without blocking UI
+- **Canvas Fallback**: Font preview generation with graceful canvas module fallback
+- **External Dependencies**: Canvas module externalized to avoid webpack bundling issues
+
+### Integration Points
+
+- **Inspector Panel**: Asset properties with drag-and-drop assignment
+- **Viewport System**: Direct asset-to-entity creation via drag-and-drop
+- **Component System**: Automatic property population based on asset types
+- **Build System**: Asset optimization and compression pipeline integration
 
 ## Viewport System Architecture
 
@@ -1232,20 +1718,20 @@ electron --remote-debugging-port=9222 .
 
 ### Build Status
 
-**Status: ✅ ALL CRITICAL BUILD ISSUES RESOLVED (December 2024)**
+**Status: ALL CRITICAL BUILD ISSUES RESOLVED (December 2024)**
 
 **Current Build Status:**
-- ✅ Main process builds successfully (1 non-blocking warning about dynamic dependencies)
-- ✅ Renderer process builds successfully (only bundle size performance warnings)
-- ✅ Zero TypeScript compilation errors across entire codebase
-- ✅ Application fully buildable and ready for development/testing
+- Main process builds successfully (1 non-blocking warning about dynamic dependencies)
+- Renderer process builds successfully (only bundle size performance warnings)
+- Zero TypeScript compilation errors across entire codebase
+- Application fully buildable and ready for development/testing
 
 **Recently Resolved Issues:**
-- ✅ Fixed all asset type system conflicts (AssetItem/AssetMetadata unification)
-- ✅ Resolved PropertyValidator export/import naming conflicts
-- ✅ Added missing Entity module and component factory functions
-- ✅ Fixed viewport renderer import path resolution
-- ✅ Unified asset metadata structures across main/renderer processes
+- Fixed all asset type system conflicts (AssetItem/AssetMetadata unification)
+- Resolved PropertyValidator export/import naming conflicts
+- Added missing Entity module and component factory functions
+- Fixed viewport renderer import path resolution
+- Unified asset metadata structures across main/renderer processes
 
 **Build Commands:**
 ```bash
@@ -1258,22 +1744,22 @@ npm run build:renderer # Builds successfully
 ```
 
 **Dependencies Status:**
-- ✅ Electron, TypeScript, React, Three.js, Pixi.js properly configured
-- ✅ Webpack builds both main and renderer processes successfully
-- ✅ All C-Form formatting standards applied to source code
+- Electron, TypeScript, React, Three.js, Pixi.js properly configured
+- Webpack builds both main and renderer processes successfully
+- All C-Form formatting standards applied to source code
 
 ### Current Feature Status
 
 **Implemented and Buildable:**
-- ✅ Main process architecture (project management, IPC, dialogs)
-- ✅ Window management and splash screen
-- ✅ Auto-save and file watching systems
-- ✅ Engine status monitoring framework
-- ✅ Asset browser panel (all TypeScript errors resolved)
-- ✅ Viewport rendering system (import resolution fixed)
-- ✅ Inspector panel (PropertyValidator exports fixed)
-- ✅ Entity-component system (Entity module implemented)
-- ✅ Unified asset management with canonical type system
+- Main process architecture (project management, IPC, dialogs)
+- Window management and splash screen
+- Auto-save and file watching systems
+- Engine status monitoring framework
+- Asset browser panel (all TypeScript errors resolved)
+- Viewport rendering system (import resolution fixed)
+- Inspector panel (PropertyValidator exports fixed)
+- Entity-component system (Entity module implemented)
+- Unified asset management with canonical type system
 
 **In Development:**
 - WORLDC lexer and token system (partial implementation)
@@ -1282,10 +1768,10 @@ npm run build:renderer # Builds successfully
 - Asset thumbnail generation system (framework ready)
 
 **Development Priorities:**
-1. ✅ COMPLETED: Fix TypeScript build errors in renderer process
-2. ✅ COMPLETED: Complete Entity module implementation
-3. ✅ COMPLETED: Resolve asset browser panel issues
-4. ✅ COMPLETED: Stabilize viewport rendering system
+1. COMPLETED: Fix TypeScript build errors in renderer process
+2. COMPLETED: Complete Entity module implementation
+3. COMPLETED: Resolve asset browser panel issues
+4. COMPLETED: Stabilize viewport rendering system
 5. Complete WORLDC parser and semantic analysis
 6. Implement asset thumbnail generation
 7. Add comprehensive testing framework
@@ -1293,7 +1779,7 @@ npm run build:renderer # Builds successfully
 ### Testing Status
 
 **Current Test Coverage:**
-- ✅ Application builds successfully enabling test execution
+- Application builds successfully enabling test execution
 - Testing framework ready for implementation
 - Core component validation systems in place
 - Manual testing requires build fixes

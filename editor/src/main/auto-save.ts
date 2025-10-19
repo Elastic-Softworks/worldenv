@@ -46,14 +46,14 @@ import { projectManager } from './project'; /* PROJECT STATE MANAGER */
 
 	       enabled controls whether auto-saving is active.
 	       interval sets millisecond delay between save attempts.
-	       on_focus_lost triggers saves when window loses focus.
+	       onFocusLost triggers saves when window loses focus.
 
 */
 
 interface AutoSaveOptions {
   enabled: boolean /* MASTER ENABLE/DISABLE SWITCH */;
   interval: number /* MILLISECONDS BETWEEN SAVE ATTEMPTS */;
-  on_focus_lost: boolean /* SAVE WHEN WINDOW LOSES FOCUS */;
+  onFocusLost: boolean /* SAVE WHEN WINDOW LOSES FOCUS */;
 }
 
 /*
@@ -79,22 +79,22 @@ interface AutoSaveOptions {
 */
 
 class AutoSave {
-  private interval_timer: NodeJS.Timeout | null; /* SAVE INTERVAL TIMER */
+  private intervalTimer: NodeJS.Timeout | null; /* SAVE INTERVAL TIMER */
   private options: AutoSaveOptions; /* CONFIGURATION OPTIONS */
-  private last_save_time: number; /* LAST SAVE TIMESTAMP */
-  private save_in_progress: boolean; /* SAVE OPERATION FLAG */
+  private lastSaveTime: number; /* LAST SAVE TIMESTAMP */
+  private saveInProgress: boolean; /* SAVE OPERATION FLAG */
 
   constructor() {
-    this.interval_timer = null;
-    this.last_save_time = 0;
-    this.save_in_progress = false;
+    this.intervalTimer = null;
+    this.lastSaveTime = 0;
+    this.saveInProgress = false;
 
     /* default configuration provides reasonable safety without
        being overly aggressive with disk writes */
     this.options = {
       enabled: true,
       interval: 300000 /* 5 MINUTES DEFAULT */,
-      on_focus_lost: true
+      onFocusLost: true
     };
   }
 
@@ -116,13 +116,13 @@ class AutoSave {
       return;
     }
 
-    if (this.interval_timer) {
+    if (this.intervalTimer) {
       this.stop();
     }
 
     /* set up interval timer that triggers save attempts.
        actual saves only occur if project is modified */
-    this.interval_timer = setInterval(() => {
+    this.intervalTimer = setInterval(() => {
       this.performAutoSave();
     }, this.options.interval);
 
@@ -143,11 +143,11 @@ class AutoSave {
   */
 
   public stop(): void {
-    if (this.interval_timer) {
-      clearInterval(this.interval_timer);
-      this.interval_timer = null;
+    if (this.intervalTimer) {
+      clearInterval(this.intervalTimer);
+      this.intervalTimer = null;
 
-      logger.info('AUTOSAVE', 'Auto-save stopped');
+      logger.debug('AUTOSAVE', 'Auto-save timer stopped');
     }
   }
 
@@ -195,7 +195,7 @@ class AutoSave {
     this.options.interval = interval;
 
     /* restart timer with new interval if currently active */
-    if (this.interval_timer) {
+    if (this.intervalTimer) {
       this.start();
     }
 
@@ -214,7 +214,7 @@ class AutoSave {
   */
 
   public setOnFocusLost(enabled: boolean): void {
-    this.options.on_focus_lost = enabled;
+    this.options.onFocusLost = enabled;
   }
 
   /*
@@ -259,7 +259,7 @@ class AutoSave {
   */
 
   public async onWindowBlur(): Promise<void> {
-    if (!this.options.on_focus_lost) {
+    if (!this.options.onFocusLost) {
       return;
     }
 
@@ -285,7 +285,7 @@ class AutoSave {
   private async performAutoSave(): Promise<void> {
     /* prevent concurrent save operations which could
        cause corruption or unnecessary resource usage */
-    if (this.save_in_progress) {
+    if (this.saveInProgress) {
       logger.debug('AUTOSAVE', 'Save already in progress, skipping');
       return;
     }
@@ -303,20 +303,20 @@ class AutoSave {
 
     /* throttle saves to prevent excessive disk activity
        during rapid editing sessions */
-    const time_since_last_save = Date.now() - this.last_save_time;
+    const timeSinceLastSave = Date.now() - this.lastSaveTime;
 
-    if (time_since_last_save < 5000) {
+    if (timeSinceLastSave < 5000) {
       return;
     }
 
-    this.save_in_progress = true;
+    this.saveInProgress = true;
 
     try {
       logger.info('AUTOSAVE', 'Auto-saving project');
 
       await projectManager.saveProject();
 
-      this.last_save_time = Date.now();
+      this.lastSaveTime = Date.now();
 
       logger.info('AUTOSAVE', 'Auto-save completed');
     } catch (error) {
@@ -324,7 +324,7 @@ class AutoSave {
          should not crash the application */
       logger.error('AUTOSAVE', 'Auto-save failed', { error });
     } finally {
-      this.save_in_progress = false;
+      this.saveInProgress = false;
     }
   }
 
@@ -340,7 +340,7 @@ class AutoSave {
   */
 
   public getLastSaveTime(): number {
-    return this.last_save_time;
+    return this.lastSaveTime;
   }
 
   /*
@@ -355,7 +355,7 @@ class AutoSave {
   */
 
   public isSaveInProgress(): boolean {
-    return this.save_in_progress;
+    return this.saveInProgress;
   }
 }
 

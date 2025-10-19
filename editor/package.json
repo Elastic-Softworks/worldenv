@@ -30,6 +30,7 @@
     "@types/three": "^0.160.0",
     "@worldenv/worldc": "file:../worldc",
     "allotment": "^1.20.4",
+    "canvas": "^3.2.0",
     "chokidar": "^4.0.3",
     "electron-store": "^8.1.0",
     "monaco-editor": "^0.54.0",

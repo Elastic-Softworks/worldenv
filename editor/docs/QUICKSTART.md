@@ -1,16 +1,4 @@
 # WORLDEDIT QUICKSTART GUIDE
-**Get up and running with WORLDEDIT in 15 minutes**
-
-> **⚠️ DEVELOPMENT STATUS NOTICE**
-> 
-> WORLDEDIT is currently under active development. The application has build issues that prevent it from running. This guide describes the intended workflow once build issues are resolved.
-> 
-> **Current Status:**
-> - Main process: ✅ Builds successfully
-> - Renderer process: ❌ TypeScript compilation errors
-> - Application launch: ❌ Blocked by build failures
-> 
-> See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for current critical issues and [DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md) for development status details.
 
 ## Table of Contents
 
@@ -41,68 +29,235 @@ git --version     # Any recent version
 
 ## Installation
 
-> **Note:** Pre-built releases are not currently available due to build issues. Use source build method below.
+> **Status Update:** WORLDEDIT now builds successfully with full menu and toolbar functionality implemented.
 
-### Option 1: Pre-built Releases (Not Currently Available)
+### Option 1: Pre-built Releases (Coming Soon)
 
-1. **Download WORLDEDIT**
-   - Visit [Releases Page](https://github.com/elastic-softworks/worldenv/releases)
-   - Download for your platform (Windows/macOS/Linux)
-   - Extract and run the installer
+Pre-built releases will be available once packaging is finalized. Currently use the source build method.
 
-2. **Install WORLDC Compiler**
-   ```bash
-   npm install -g @worldenv/worldc
-   worldc --version  # Verify installation
-   ```
-
-### Option 2: Build from Source (Current Method)
+### Option 2: Build from Source (Recommended)
 
 1. **Clone Repository**
    ```bash
    git clone https://github.com/elastic-softworks/worldenv.git
-   cd worldenv/editor
+   cd worldenv
    ```
 
 2. **Install Dependencies**
    ```bash
    npm install
+   cd editor && npm install
    ```
 
-3. **Attempt Build (Currently Failing)**
+3. **Build WORLDEDIT**
    ```bash
-   npm run build  # Will fail with TypeScript errors
-   # See TROUBLESHOOTING.md for resolution steps
+   npm run build:editor
    ```
 
-   **Build Status:** Application cannot currently be built due to renderer process TypeScript errors. See [DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md) for current issues and resolution priority.
+4. **Launch Editor**
+   ```bash
+   npm run start:editor
+   ```
 
 ## First Launch
 
-1. **Start WORLDEDIT (After Build Issues Are Resolved)**
-   ```bash
-   # Pre-built version (when available)
-   ./worldedit
+When you first launch WORLDEDIT, you'll see:
 
-   # From source (after successful build)
-   npm run start
-   ```
+1. **Welcome Screen** - Choose to create a new project or open existing
+2. **Project Templates** - Select from 2D Game, 3D Game, or Interactive App templates
+3. **Main Interface** - Professional editor with menu bar, toolbar, and dockable panels
 
-2. **Engine Status Check**
-   - Application loads with splash screen
-   - Engine status shows "Ready" (green) or "Initializing" (yellow)
-   - If WORLDC compiler not found, warning logged but editor continues
-   - All panels load correctly (Hierarchy, Inspector, Viewport, Assets)
+### Interface Overview
 
-3. **Verify Installation**
-   - Main window opens with proper panel layout
-   - File menu contains "New Scene" option
-   - Hierarchy panel shows empty scene hierarchy
-   - Console shows engine initialization messages
+- **Menu Bar** - File, Edit, View, Tools, Build, and Help menus
+- **Toolbar** - Transform tools, viewport controls, and quick actions
+- **Viewport** - 3D/2D scene editor with camera controls
+- **Hierarchy Panel** - Scene tree with entity management
+- **Inspector Panel** - Component properties and settings
+- **Assets Panel** - Project assets with import and preview
 
 ## Creating Your First Project
 
-### Step 1: Create Your First Scene
+### Step 1: New Project Setup
+
+1. **File → New Project** (Ctrl+N)
+2. **Choose Directory** - Select empty folder for your project
+3. **Select Template**:
+   - **2D Game** - For sprite-based games with 2D physics
+   - **3D Game** - For 3D environments with advanced rendering
+   - **Interactive App** - For applications and interactive experiences
+
+### Step 2: Explore the Interface
+
+The editor opens with:
+- **Default scene** with camera and lighting
+- **Transform tools** in the toolbar (Q/W/E/R keys)
+- **Viewport controls** for 2D/3D switching
+- **Grid and gizmos** for precise object placement
+
+### Step 3: Basic Entity Creation
+
+1. **Right-click in Hierarchy** → Add Entity
+2. **Select entity** in viewport or hierarchy
+3. **Use transform tools**:
+   - **Q** - Select tool
+   - **W** - Move tool (translate)
+   - **E** - Rotate tool
+   - **R** - Scale tool
+
+## Essential Editor Operations
+
+### Transform Operations
+- **Select entities** by clicking in viewport or hierarchy
+- **Multi-select** with Ctrl+click or drag selection box
+- **Transform gizmos** appear automatically when entities are selected
+- **Snap to grid** with toolbar button or transform space toggle
+
+### Clipboard Operations
+- **Cut** (Ctrl+X) - Remove entities and add to clipboard
+- **Copy** (Ctrl+C) - Copy entities to clipboard
+- **Paste** (Ctrl+V) - Create copies from clipboard
+- **Duplicate** (Ctrl+D) - Quick duplicate with offset
+
+### View Controls
+- **2D/3D Toggle** - Switch viewport modes with toolbar buttons
+- **Grid Toggle** (Ctrl+G) - Show/hide viewport grid
+- **Wireframe/Shaded** - Change rendering modes in View menu
+- **Panel management** - Show/hide panels from View menu
+
+### Find and Replace
+- **Find/Replace** (Ctrl+F) - Search across:
+  - Script files (.ts, .js, .wc)
+  - Scene files (.scene, .json)
+  - Entity properties and components
+- **Advanced options** - Case sensitive, whole word, regex support
+- **Batch replace** - Replace all occurrences with confirmation
+
+### Keyboard Shortcuts
+
+Master these essential shortcuts to speed up your workflow:
+
+**File Operations:**
+- **Ctrl+N** - New Project
+- **Ctrl+O** - Open Project
+- **Ctrl+S** - Save Project
+
+**Transform Tools:**
+- **Q** - Select Tool
+- **W** - Move Tool
+- **E** - Rotate Tool
+- **R** - Scale Tool
+
+**Edit Operations:**
+- **Ctrl+Z** - Undo
+- **Ctrl+Y** - Redo
+- **Ctrl+C/X/V** - Copy/Cut/Paste
+- **Ctrl+D** - Duplicate
+- **Delete** - Delete Selected
+
+**View Controls:**
+- **Ctrl+1/2/3/4** - Toggle panels
+- **F5/F6** - Play/Stop
+- **F1** - Help & Shortcuts
+
+**Pro Tip:** Press **F1** or **Ctrl+?** to open the interactive keyboard shortcuts dialog with full reference and search.
+
+### Step 1: Create a Script Asset
+
+1. **Right-click in Assets Panel** → Create → Script
+2. **Name your script** (e.g., "PlayerController")
+3. **Double-click** to open in Script Panel
+
+### Step 2: Basic WORLDC Script
+
+```worldc
+// Simple rotating cube script
+entity RotatingCube {
+    float rotationSpeed = 45.0; // degrees per second
+    
+    void start() {
+        log("Cube started rotating!");
+    }
+    
+    void update(float deltaTime) {
+        // Rotate around Y axis
+        transform.rotation.y += rotationSpeed * deltaTime;
+    }
+}
+```
+
+### Step 3: Attach Script to Entity
+
+1. **Select entity** in Hierarchy
+2. **Add Component** in Inspector → Script
+3. **Assign script file** from dropdown
+4. **Configure properties** if needed
+
+### Step 4: Test Your Script
+
+1. **Press F5** to enter Play Mode
+2. **Watch entity** rotate in viewport
+3. **Press F6** to stop** and return to edit mode
+
+## Building and Testing
+
+### Play Mode Testing
+
+- **F5** - Enter/exit play mode
+- **F6** - Stop and reset to edit state
+- **Console output** appears in Script Panel
+- **Real-time property editing** in Inspector
+
+### Build Your Project
+
+1. **Build Menu** → Build Project
+2. **Choose target platform** (Windows/Mac/Linux/Web)
+3. **Select build type** (Debug/Release)
+4. **Monitor build progress** in Build Output
+5. **Test built executable** from build folder
+
+### Build Shortcuts
+
+- **Ctrl+B** - Quick build (default platform)
+- **Ctrl+Shift+B** - Build configuration dialog
+- **F7** - Build and run
+
+## Next Steps
+
+### Essential Skills to Learn
+
+1. **Component System** - Add Mesh Renderer, Colliders, Audio components
+2. **Asset Pipeline** - Import 3D models, textures, audio files  
+3. **Scene Management** - Multiple scenes, scene loading, transitions
+4. **WORLDC Advanced** - Events, networking, save systems
+5. **Build Pipeline** - Platform-specific builds, optimization
+
+### Explore Advanced Features
+
+- **Find & Replace** (Ctrl+F) - Search across entire project
+- **Preferences System** - Customize editor to your workflow
+- **Help System** - Built-in tutorials and documentation (F1)
+- **Accessibility** - Full keyboard navigation and screen reader support
+
+### Get Help
+
+- **F1** - Built-in help and documentation
+- **Ctrl+?** - Interactive keyboard shortcuts reference
+- **Tooltips** - Hover over any UI element for context help
+- **Community** - GitHub discussions and issues
+- **Documentation** - Complete guides in `editor/docs/`
+
+### Pro Tips for Beginners
+
+1. **Use transform tools** (Q/W/E/R) instead of manual property editing
+2. **Learn keyboard shortcuts** - they dramatically speed up workflow
+3. **Save frequently** (Ctrl+S) - auto-save is enabled by default
+4. **Use Play Mode** (F5) to test changes immediately
+5. **Organize assets** in folders for larger projects
+6. **Enable grid snap** for precise object placement
+7. **Use Find/Replace** (Ctrl+F) when refactoring code
+
+**Welcome to WORLDEDIT! Start creating your first game today.**
 
 **Note**: Project management system is implemented. Create new projects or work with existing scenes.
 
@@ -496,7 +651,7 @@ By the end of this quickstart, you should have:
 - [ ] Tested camera controls and focus operations
 - [ ] Experienced real-time viewport feedback
 - [ ] Understood the integrated editing workflow
-- [ ] Identified Phase 5 asset system features
+- [ ] Identified advanced asset system features
 
 **Congratulations!** You're now ready to create your own games with WORLDEDIT. 
 

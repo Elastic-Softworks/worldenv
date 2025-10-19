@@ -17,6 +17,10 @@ import { useTheme } from '../../context/ThemeContext';
 import { DropZone, DropZoneIndicator } from '../ui/DropZone';
 import { ContextMenu, useContextMenu, CommonMenuItems, createSeparator } from '../ui/ContextMenu';
 import { AssetPropertiesDialog } from '../dialogs/AssetPropertiesDialog';
+import { BatchImportDialog } from '../dialogs/BatchImportDialog';
+import { SceneManager } from '../../core/hierarchy/SceneManager';
+import { NodeType } from '../../core/hierarchy/Node';
+import { componentSystem } from '../../core/components';
 
 /**
  * Asset browser panel component interfaces
@@ -52,7 +56,7 @@ function AssetPreview({ asset, onLoadError }: AssetPreviewProps): JSX.Element {
   const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    if (asset.type === 'image' && asset.metadata.thumbnail) {
+    if ((asset.type === 'image' || asset.type === 'font') && asset.metadata.thumbnail) {
       setThumbnailUrl(`file://${asset.metadata.thumbnail}`);
     } else if (asset.type === 'image') {
       // For images without thumbnails, use the original file
@@ -131,6 +135,8 @@ export function AssetBrowserPanel(): JSX.Element {
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
+  const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
+  const [batchImportFiles, setBatchImportFiles] = useState<File[]>([]);
 
   /**
    * Load assets for current path
@@ -350,6 +356,9 @@ export function AssetBrowserPanel(): JSX.Element {
       })
     );
 
+    // Add JSON format for property assignment
+    event.dataTransfer.setData('application/json', JSON.stringify(asset));
+
     event.dataTransfer.effectAllowed = 'copy';
   }, []);
 
@@ -438,9 +447,87 @@ export function AssetBrowserPanel(): JSX.Element {
     }
   };
 
-  const handleImportToViewport = (asset: AssetItem) => {
-    // TODO: Integrate with viewport system to add asset as entity
-    console.log('[ASSETS PANEL] Import to viewport:', asset);
+  const handleImportToViewport = async (asset: AssetItem) => {
+    try {
+      const scene = SceneManager.getInstance().currentScene;
+      if (!scene) {
+        console.warn('[ASSETS PANEL] No active scene for import');
+        return;
+      }
+
+      // Create entity based on asset type
+      let entityName = asset.name.replace(/\.[^/.]+$/, ''); // Remove extension
+      let entity: any;
+
+      switch (asset.type) {
+        case 'image':
+          // Create sprite entity for images
+          entity = scene.createNode(entityName, NodeType.SPRITE);
+          const spriteComponent = componentSystem.addComponent(entity.id, 'Sprite');
+          if (spriteComponent && spriteComponent.success && spriteComponent.component) {
+            const assetRef = {
+              id: asset.metadata.id,
+              path: asset.path,
+              type: asset.type
+            };
+            spriteComponent.component.setProperty('texture', assetRef);
+            spriteComponent.component.setProperty('useTextureSize', true);
+          }
+          break;
+
+        case 'model':
+          // Create mesh renderer entity for 3D models
+          entity = scene.createNode(entityName, NodeType.MESH);
+          const meshComponent = componentSystem.addComponent(entity.id, 'MeshRenderer');
+          if (meshComponent && meshComponent.success && meshComponent.component) {
+            const assetRef = {
+              id: asset.metadata.id,
+              path: asset.path,
+              type: asset.type
+            };
+            meshComponent.component.setProperty('mesh', assetRef);
+          }
+          break;
+
+        case 'audio':
+          // Create audio source entity for audio files
+          entity = scene.createNode(entityName, NodeType.AUDIO_SOURCE);
+          const audioComponent = componentSystem.addComponent(entity.id, 'AudioSource');
+          if (audioComponent && audioComponent.success && audioComponent.component) {
+            audioComponent.component.setProperty('audioClip', asset.path);
+          }
+          break;
+
+        case 'script':
+          // Create script entity for script files
+          entity = scene.createNode(entityName, NodeType.SCRIPT);
+          const scriptComponent = componentSystem.addComponent(entity.id, 'Script');
+          if (scriptComponent && scriptComponent.success && scriptComponent.component) {
+            scriptComponent.component.setProperty('scriptPath', asset.path);
+          }
+          break;
+
+        default:
+          console.warn(`[ASSETS PANEL] No viewport integration for asset type: ${asset.type}`);
+          return;
+      }
+
+      // Position entity at viewport center or selected position
+      if (entity) {
+        const transform = componentSystem.getComponent(entity.id, 'Transform');
+        if (transform) {
+          // Position at viewport center (0, 0, 0) for now
+          transform.setProperty('position', { x: 0, y: 0, z: 0 });
+        }
+
+        // Select the newly created entity
+        state.selectedEntities = [entity.id];
+
+        console.log(`[ASSETS PANEL] Created ${asset.type} entity:`, entityName);
+      }
+    } catch (error) {
+      console.error('[ASSETS PANEL] Failed to import asset to viewport:', error);
+    }
   };
 
   const handleShowProperties = (asset: AssetItem) => {
@@ -493,6 +580,7 @@ export function AssetBrowserPanel(): JSX.Element {
           { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'] },
           { name: 'Audio', extensions: ['mp3', 'wav', 'ogg', 'flac'] },
           { name: 'Models', extensions: ['gltf', 'glb', 'obj', 'fbx'] },
+          { name: 'Fonts', extensions: ['ttf', 'otf', 'woff', 'woff2'] },
           { name: 'Scripts', extensions: ['ws', 'ts', 'js'] },
           { name: 'All Files', extensions: ['*'] }
         ],
@@ -500,18 +588,19 @@ export function AssetBrowserPanel(): JSX.Element {
       })) as string[];
 
       if (filePaths && filePaths.length > 0) {
-        await window.electronAPI.invoke('asset:import', {
-          filePaths,
-          options: {
-            targetFolder: currentPath,
-            preserveStructure: false,
-            generateThumbnails: true,
-            overwriteExisting: false
-          }
+        // Convert file paths to File objects for batch import dialog
+        const files: File[] = filePaths.map((path) => {
+          const fileName = path.split('/').pop() || path;
+          return new File([], fileName, { lastModified: Date.now() });
         });
 
-        // Reload assets after import
-        await loadAssets(currentPath);
+        // Set file paths as a custom property for the dialog
+        files.forEach((file, index) => {
+          (file as any).path = filePaths[index];
+        });
+
+        setBatchImportFiles(files);
+        setIsBatchImportOpen(true);
       }
     } catch (error) {
       console.error('[ASSETS] Failed to import assets:', error);
@@ -525,22 +614,36 @@ export function AssetBrowserPanel(): JSX.Element {
    */
   const handleFilesDropped = async (files: File[]): Promise<void> => {
     try {
-      const filePaths = files.map((file) => file.path);
+      // Open batch import dialog for drag and drop
+      setBatchImportFiles(files);
+      setIsBatchImportOpen(true);
+    } catch (error) {
+      console.error('[ASSETS] Failed to handle dropped files:', error);
+    }
+  };
 
+  /**
+   * handleBatchImport()
+   *
+   * Handles the actual batch import operation.
+   */
+  const handleBatchImport = async (filePaths: string[], options: any): Promise<void> => {
+    try {
       await window.electronAPI.invoke('asset:import', {
         filePaths,
         options: {
-          targetFolder: currentPath,
-          preserveStructure: false,
-          generateThumbnails: true,
-          overwriteExisting: false
+          targetFolder: options.targetFolder,
+          preserveStructure: options.preserveStructure,
+          generateThumbnails: options.generateThumbnails,
+          overwriteExisting: options.overwriteExisting
         }
       });
 
       // Reload assets after import
-      loadAssets(currentPath);
+      await loadAssets(currentPath);
     } catch (error) {
-      console.error('[ASSETS] Failed to import dropped files:', error);
+      console.error('[ASSETS] Batch import failed:', error);
+      throw error;
     }
   };
 
@@ -1307,6 +1410,18 @@ export function AssetBrowserPanel(): JSX.Element {
         visible={showPropertiesDialog}
         onClose={handleClosePropertiesDialog}
         onSave={handleSaveAssetProperties}
+      />
+
+      {/* batch import dialog */}
+      <BatchImportDialog
+        isOpen={isBatchImportOpen}
+        files={batchImportFiles}
+        targetFolder={currentPath}
+        onClose={() => {
+          setIsBatchImportOpen(false);
+          setBatchImportFiles([]);
+        }}
+        onImport={handleBatchImport}
       />
     </div>
   );

@@ -31,6 +31,9 @@ import { recentProjectsManager } from './recent-projects'; /* RECENT PROJECTS */
 import { buildManager } from './build-manager'; /* BUILD SYSTEM */
 import { EngineStatusManager } from './engine/EngineStatusManager'; /* ENGINE STATUS */
 import { SceneManager } from './scene-manager'; /* SCENE MANAGEMENT */
+import { projectBackupManager } from './project-backup'; /* PROJECT BACKUP */
+import { projectValidator } from './project-validator'; /* PROJECT VALIDATION */
+import { fileHistoryManager } from './file-history'; /* FILE HISTORY */
 
 /*
 	===============================================================
@@ -104,6 +107,8 @@ class IPCManager {
     this.registerAssetHandlers();
     this.registerEngineHandlers();
     this.registerScriptHandlers();
+    this.registerFileCreationHandlers();
+    this.registerProjectManagementHandlers();
     this.registerBuildHandlers();
     this.registerWorldCHandlers();
     this.registerSceneHandlers();
@@ -919,6 +924,104 @@ class NewComponent : public Component {
       }
     );
 
+    ipcMain.handle(
+      'script:validate-worldc',
+      async (_event, args: { sourceCode: string; filePath: string }) => {
+        try {
+          const { WCCompilerIntegration } = await import('./engine/WCCompilerIntegration');
+          const compiler = new WCCompilerIntegration();
+
+          if (!compiler.isReady()) {
+            await compiler.initialize();
+          }
+
+          const result = await compiler.validateSource(args.sourceCode, args.filePath);
+
+          logger.info('IPC', 'WorldC validation complete', {
+            path: args.filePath,
+            success: result.valid,
+            diagnostics: result.diagnostics.length
+          });
+
+          return {
+            success: result.valid,
+            diagnostics: result.diagnostics.map((d) => ({
+              severity: d.severity,
+              message: d.message,
+              line: d.line || 1,
+              column: d.column || 1,
+              endLine: d.line || 1,
+              endColumn: (d.column || 1) + 1,
+              code: d.code
+            }))
+          };
+        } catch (error) {
+          logger.error('IPC', 'WorldC validation failed', {
+            path: args.filePath,
+            error
+          });
+          return {
+            success: false,
+            diagnostics: [
+              {
+                severity: 'error' as const,
+                message: error instanceof Error ? error.message : 'Validation failed',
+                line: 1,
+                column: 1
+              }
+            ]
+          };
+        }
+      }
+    );
+
+    ipcMain.handle(
+      'script:compile-worldc',
+      async (_event, args: { sourceCode: string; filePath: string; target?: string }) => {
+        try {
+          const { WCCompilerIntegration, CompilationTarget } = await import(
+            './engine/WCCompilerIntegration'
+          );
+          const compiler = new WCCompilerIntegration();
+
+          if (!compiler.isReady()) {
+            await compiler.initialize();
+          }
+
+          const target =
+            args.target === 'assemblyscript'
+              ? CompilationTarget.ASSEMBLYSCRIPT
+              : CompilationTarget.TYPESCRIPT;
+
+          const result = await compiler.compile({
+            sourceCode: args.sourceCode,
+            filename: args.filePath,
+            target
+          });
+
+          logger.info('IPC', 'WorldC compilation complete', {
+            path: args.filePath,
+            target: args.target,
+            success: result.success
+          });
+
+          return {
+            success: result.success,
+            outputCode: result.outputCode,
+            diagnostics: result.diagnostics,
+            warnings: result.warnings,
+            timing: result.timing
+          };
+        } catch (error) {
+          logger.error('IPC', 'WorldC compilation failed', {
+            path: args.filePath,
+            error
+          });
+          throw error;
+        }
+      }
+    );
+
     ipcMain.handle('script:list-scripts', async (_event) => {
       try {
         const project = projectManager.getCurrentProject();
@@ -935,15 +1038,833 @@ class NewComponent : public Component {
         const scripts = files.filter(
           (file: string) =>
             file.endsWith('.ts') ||
-            file.endsWith('.tsx') ||
             file.endsWith('.js') ||
-            file.endsWith('.jsx')
+            file.endsWith('.wc') ||
+            file.endsWith('.as.ts')
         );
 
         logger.info('IPC', 'Scripts listed', { count: scripts.length });
         return scripts.map((file: string) => path.join(scriptsDir, file));
       } catch (error) {
         logger.error('IPC', 'List scripts failed', { error });
+        throw error;
+      }
+    });
+
+    ipcMain.handle(
+      'script:attach-to-entity',
+      async (_event, args: { entityId: string; scriptPath: string; properties?: any }) => {
+        try {
+          const { ScriptComponent } = await import('./engine/ScriptComponent');
+          const { ScriptSystemManager } = await import('./engine/ScriptSystemManager');
+
+          const properties = {
+            scriptPath: args.scriptPath,
+            autoCompile: true,
+            enableHotReload: true,
+            executionOrder: 0,
+            enabledPhases: ['start', 'update', 'destroy'] as any[],
+            customProperties: args.properties || {}
+          };
+
+          const scriptComponent = new ScriptComponent(args.entityId, properties);
+          const scriptSystem = ScriptSystemManager.getInstance();
+
+          await scriptSystem.registerScript(args.entityId, scriptComponent);
+
+          logger.info('IPC', 'Script attached to entity', {
+            entityId: args.entityId,
+            scriptPath: args.scriptPath
+          });
+
+          return scriptComponent.toComponentData();
+        } catch (error) {
+          logger.error('IPC', 'Failed to attach script to entity', {
+            entityId: args.entityId,
+            scriptPath: args.scriptPath,
+            error
+          });
+          throw error;
+        }
+      }
+    );
+
+    ipcMain.handle('script:detach-from-entity', async (_event, args: { entityId: string }) => {
+      try {
+        const { ScriptSystemManager } = await import('./engine/ScriptSystemManager');
+
+        const scriptSystem = ScriptSystemManager.getInstance();
+        await scriptSystem.unregisterScript(args.entityId);
+
+        logger.info('IPC', 'Script detached from entity', { entityId: args.entityId });
+      } catch (error) {
+        logger.error('IPC', 'Failed to detach script from entity', {
+          entityId: args.entityId,
+          error
+        });
+        throw error;
+      }
+    });
+
+    ipcMain.handle(
+      'script:update-component-properties',
+      async (_event, args: { entityId: string; properties: any }) => {
+        try {
+          const { ScriptSystemManager } = await import('./engine/ScriptSystemManager');
+
+          const scriptSystem = ScriptSystemManager.getInstance();
+          const scripts = scriptSystem.getRegisteredScripts();
+          const script = scripts.find((s) => {
+            const data = s.toComponentData();
+            return data.properties.entityId === args.entityId;
+          });
+
+          if (script) {
+            for (const [key, value] of Object.entries(args.properties)) {
+              await script.setProperty(key, value, true);
+            }
+          }
+
+          logger.info('IPC', 'Script component properties updated', {
+            entityId: args.entityId,
+            properties: Object.keys(args.properties)
+          });
+        } catch (error) {
+          logger.error('IPC', 'Failed to update script component properties', {
+            entityId: args.entityId,
+            error
+          });
+          throw error;
+        }
+      }
+    );
+
+    ipcMain.handle('script:get-system-stats', async (_event) => {
+      try {
+        const { ScriptSystemManager } = await import('./engine/ScriptSystemManager');
+
+        const scriptSystem = ScriptSystemManager.getInstance();
+        const stats = scriptSystem.getExecutionStats();
+
+        logger.info('IPC', 'Script system stats retrieved');
+        return stats;
+      } catch (error) {
+        logger.error('IPC', 'Failed to get script system stats', { error });
+        throw error;
+      }
+    });
+
+    ipcMain.handle(
+      'script:execute-lifecycle-phase',
+      async (_event, args: { phase: string; deltaTime?: number }) => {
+        try {
+          const { ScriptSystemManager } = await import('./engine/ScriptSystemManager');
+
+          const scriptSystem = ScriptSystemManager.getInstance();
+          await scriptSystem.executeScripts(args.phase as any, args.deltaTime);
+
+          logger.info('IPC', 'Script lifecycle phase executed', {
+            phase: args.phase,
+            deltaTime: args.deltaTime
+          });
+        } catch (error) {
+          logger.error('IPC', 'Failed to execute script lifecycle phase', {
+            phase: args.phase,
+            error
+          });
+          throw error;
+        }
+      }
+    );
+
+    ipcMain.handle(
+      'script:start-debug-session',
+      async (_event, args: { filePath: string; breakpoints: any[] }) => {
+        try {
+          // For now, this is a placeholder for debug functionality
+          // In a full implementation, this would start a debug session
+          // with the WORLDC compiler/runtime
+          logger.info('IPC', 'Debug session started', {
+            filePath: args.filePath,
+            breakpoints: args.breakpoints.length
+          });
+        } catch (error) {
+          logger.error('IPC', 'Failed to start debug session', {
+            filePath: args.filePath,
+            error
+          });
+          throw error;
+        }
+      }
+    );
+
+    ipcMain.handle('script:stop-debug-session', async (_event) => {
+      try {
+        // Placeholder for stopping debug session
+        logger.info('IPC', 'Debug session stopped');
+      } catch (error) {
+        logger.error('IPC', 'Failed to stop debug session', { error });
+        throw error;
+      }
+    });
+
+    ipcMain.handle('script:continue-debug-session', async (_event) => {
+      try {
+        // Placeholder for continuing debug session
+        logger.info('IPC', 'Debug session continued');
+      } catch (error) {
+        logger.error('IPC', 'Failed to continue debug session', { error });
+        throw error;
+      }
+    });
+
+    ipcMain.handle('script:step-over', async (_event) => {
+      try {
+        // Placeholder for step over functionality
+        logger.info('IPC', 'Debug step over');
+      } catch (error) {
+        logger.error('IPC', 'Failed to step over', { error });
+        throw error;
+      }
+    });
+
+    ipcMain.handle('script:step-into', async (_event) => {
+      try {
+        // Placeholder for step into functionality
+        logger.info('IPC', 'Debug step into');
+      } catch (error) {
+        logger.error('IPC', 'Failed to step into', { error });
+        throw error;
+      }
+    });
+  }
+
+  /*
+	====================================================================
+             --- FILE CREATION HANDLERS ---
+	====================================================================
+  */
+
+  /**
+   * registerFileCreationHandlers()
+   *
+   * Registers handlers for creating new file types (shaders, materials, prefabs).
+   */
+  private registerFileCreationHandlers(): void {
+    /* Create new shader file */
+    ipcMain.handle(
+      'file:create-shader',
+      async (_event, shaderType: 'vertex' | 'fragment' | 'compute') => {
+        try {
+          const project = projectManager.getCurrentProject();
+          if (!project) {
+            throw new Error('No project open');
+          }
+
+          const shadersDir = path.join(project.path, 'assets', 'shaders');
+          await fileSystem.ensureDirectory(shadersDir);
+
+          const extension =
+            shaderType === 'compute' ? '.glsl' : shaderType === 'vertex' ? '.vert' : '.frag';
+          let counter = 1;
+          let shaderPath: string;
+
+          do {
+            const fileName = `New${shaderType.charAt(0).toUpperCase() + shaderType.slice(1)}Shader${counter}${extension}`;
+            shaderPath = path.join(shadersDir, fileName);
+            counter++;
+          } while (await fileSystem.exists(shaderPath));
+
+          const templatePath = path.join(
+            __dirname,
+            '..',
+            '..',
+            'templates',
+            'shaders',
+            `${shaderType}.glsl`
+          );
+          let templateContent: string;
+
+          try {
+            templateContent = await fileSystem.readFile(templatePath);
+          } catch (error) {
+            /* fallback template if file not found */
+            templateContent = this.getShaderTemplate(shaderType);
+          }
+
+          /* replace template variables */
+          const shaderName = path.basename(shaderPath, extension);
+          templateContent = templateContent.replace(/\{\{ShaderName\}\}/g, shaderName);
+
+          await fileSystem.writeFile(shaderPath, templateContent, { create_dirs: true });
+
+          logger.info('IPC', 'New shader created', { path: shaderPath, type: shaderType });
+          return shaderPath;
+        } catch (error) {
+          logger.error('IPC', 'Shader creation failed', { shaderType, error });
+          throw error;
+        }
+      }
+    );
+
+    /* Create new material file */
+    ipcMain.handle(
+      'file:create-material',
+      async (_event, materialType: 'standard' | 'unlit' | 'transparent') => {
+        try {
+          const project = projectManager.getCurrentProject();
+          if (!project) {
+            throw new Error('No project open');
+          }
+
+          const materialsDir = path.join(project.path, 'assets', 'materials');
+          await fileSystem.ensureDirectory(materialsDir);
+
+          let counter = 1;
+          let materialPath: string;
+
+          do {
+            const fileName = `New${materialType.charAt(0).toUpperCase() + materialType.slice(1)}Material${counter}.material`;
+            materialPath = path.join(materialsDir, fileName);
+            counter++;
+          } while (await fileSystem.exists(materialPath));
+
+          const templatePath = path.join(
+            __dirname,
+            '..',
+            '..',
+            'templates',
+            'materials',
+            'standard.material'
+          );
+          let templateContent: string;
+
+          try {
+            templateContent = await fileSystem.readFile(templatePath);
+          } catch (error) {
+            /* fallback template if file not found */
+            templateContent = this.getMaterialTemplate(materialType);
+          }
+
+          /* replace template variables */
+          const materialName = path.basename(materialPath, '.material');
+          const now = new Date().toISOString();
+          templateContent = templateContent
+            .replace(/\{\{MaterialName\}\}/g, materialName)
+            .replace(/\{\{CreatedDate\}\}/g, now)
+            .replace(/\{\{ModifiedDate\}\}/g, now);
+
+          await fileSystem.writeFile(materialPath, templateContent, { create_dirs: true });
+
+          logger.info('IPC', 'New material created', { path: materialPath, type: materialType });
+          return materialPath;
+        } catch (error) {
+          logger.error('IPC', 'Material creation failed', { materialType, error });
+          throw error;
+        }
+      }
+    );
+
+    /* Create new prefab file */
+    ipcMain.handle('file:create-prefab', async (_event, prefabType: 'entity' | 'ui' | 'effect') => {
+      try {
+        const project = projectManager.getCurrentProject();
+        if (!project) {
+          throw new Error('No project open');
+        }
+
+        const prefabsDir = path.join(project.path, 'prefabs');
+        await fileSystem.ensureDirectory(prefabsDir);
+
+        let counter = 1;
+        let prefabPath: string;
+
+        do {
+          const fileName = `New${prefabType.charAt(0).toUpperCase() + prefabType.slice(1)}${counter}.prefab`;
+          prefabPath = path.join(prefabsDir, fileName);
+          counter++;
+        } while (await fileSystem.exists(prefabPath));
+
+        const templatePath = path.join(
+          __dirname,
+          '..',
+          '..',
+          'templates',
+          'prefabs',
+          'entity.prefab'
+        );
+        let templateContent: string;
+
+        try {
+          templateContent = await fileSystem.readFile(templatePath);
+        } catch (error) {
+          /* fallback template if file not found */
+          templateContent = this.getPrefabTemplate(prefabType);
+        }
+
+        /* replace template variables */
+        const prefabName = path.basename(prefabPath, '.prefab');
+        const now = new Date().toISOString();
+        const entityId = `${prefabName.toLowerCase()}-entity-${Date.now()}`;
+        const childEntityId = `${prefabName.toLowerCase()}-child-${Date.now()}`;
+
+        templateContent = templateContent
+          .replace(/\{\{PrefabName\}\}/g, prefabName)
+          .replace(/\{\{CreatedDate\}\}/g, now)
+          .replace(/\{\{ModifiedDate\}\}/g, now)
+          .replace(/\{\{EntityId\}\}/g, entityId)
+          .replace(/\{\{ChildEntityId\}\}/g, childEntityId);
+
+        await fileSystem.writeFile(prefabPath, templateContent, { create_dirs: true });
+
+        logger.info('IPC', 'New prefab created', { path: prefabPath, type: prefabType });
+        return prefabPath;
+      } catch (error) {
+        logger.error('IPC', 'Prefab creation failed', { prefabType, error });
+        throw error;
+      }
+    });
+
+    /* Enhanced file operations - rename file */
+    ipcMain.handle('file:rename', async (_event, args: { oldPath: string; newPath: string }) => {
+      try {
+        const exists = await fileSystem.exists(args.oldPath);
+        if (!exists) {
+          throw new Error('Source file does not exist');
+        }
+
+        const targetExists = await fileSystem.exists(args.newPath);
+        if (targetExists) {
+          throw new Error('Target file already exists');
+        }
+
+        await fs.promises.rename(args.oldPath, args.newPath);
+
+        logger.info('IPC', 'File renamed', {
+          oldPath: args.oldPath,
+          newPath: args.newPath
+        });
+
+        return true;
+      } catch (error) {
+        logger.error('IPC', 'File rename failed', {
+          oldPath: args.oldPath,
+          newPath: args.newPath,
+          error
+        });
+        throw error;
+      }
+    });
+
+    /* Enhanced file operations - move file */
+    ipcMain.handle(
+      'file:move',
+      async (_event, args: { sourcePath: string; destinationPath: string }) => {
+        try {
+          const exists = await fileSystem.exists(args.sourcePath);
+          if (!exists) {
+            throw new Error('Source file does not exist');
+          }
+
+          /* ensure destination directory exists */
+          const destDir = path.dirname(args.destinationPath);
+          await fileSystem.ensureDirectory(destDir);
+
+          const targetExists = await fileSystem.exists(args.destinationPath);
+          if (targetExists) {
+            throw new Error('Target file already exists');
+          }
+
+          await fs.promises.rename(args.sourcePath, args.destinationPath);
+
+          logger.info('IPC', 'File moved', {
+            sourcePath: args.sourcePath,
+            destinationPath: args.destinationPath
+          });
+
+          return true;
+        } catch (error) {
+          logger.error('IPC', 'File move failed', {
+            sourcePath: args.sourcePath,
+            destinationPath: args.destinationPath,
+            error
+          });
+          throw error;
+        }
+      }
+    );
+
+    /* Enhanced file operations - copy file */
+    ipcMain.handle(
+      'file:copy',
+      async (_event, args: { sourcePath: string; destinationPath: string }) => {
+        try {
+          const exists = await fileSystem.exists(args.sourcePath);
+          if (!exists) {
+            throw new Error('Source file does not exist');
+          }
+
+          /* ensure destination directory exists */
+          const destDir = path.dirname(args.destinationPath);
+          await fileSystem.ensureDirectory(destDir);
+
+          await fs.promises.copyFile(args.sourcePath, args.destinationPath);
+
+          logger.info('IPC', 'File copied', {
+            sourcePath: args.sourcePath,
+            destinationPath: args.destinationPath
+          });
+
+          return true;
+        } catch (error) {
+          logger.error('IPC', 'File copy failed', {
+            sourcePath: args.sourcePath,
+            destinationPath: args.destinationPath,
+            error
+          });
+          throw error;
+        }
+      }
+    );
+
+    /* File search functionality */
+    ipcMain.handle(
+      'file:search',
+      async (_event, args: { query: string; directory: string; fileTypes?: string[] }) => {
+        try {
+          const project = projectManager.getCurrentProject();
+          if (!project) {
+            throw new Error('No project open');
+          }
+
+          const searchDir = args.directory || project.path;
+          const results: string[] = [];
+
+          const searchRecursive = async (dir: string): Promise<void> => {
+            const entries = await fileSystem.listDirectory(dir);
+
+            for (const entry of entries) {
+              const fullPath = path.join(dir, entry);
+              const isFile = await fileSystem.isFile(fullPath);
+
+              if (isFile) {
+                const fileName = path.basename(fullPath);
+                const fileExt = path.extname(fullPath);
+
+                /* check file type filter */
+                if (args.fileTypes && args.fileTypes.length > 0) {
+                  if (!args.fileTypes.includes(fileExt)) {
+                    continue;
+                  }
+                }
+
+                /* check if filename matches query */
+                if (fileName.toLowerCase().includes(args.query.toLowerCase())) {
+                  results.push(fullPath);
+                }
+              } else {
+                const isDir = await fileSystem.isDirectory(fullPath);
+                if (isDir) {
+                  await searchRecursive(fullPath);
+                }
+              }
+            }
+          };
+
+          await searchRecursive(searchDir);
+
+          logger.info('IPC', 'File search completed', {
+            query: args.query,
+            directory: searchDir,
+            resultCount: results.length
+          });
+
+          return results;
+        } catch (error) {
+          logger.error('IPC', 'File search failed', {
+            query: args.query,
+            directory: args.directory,
+            error
+          });
+          throw error;
+        }
+      }
+    );
+  }
+
+  /*
+	====================================================================
+             --- PROJECT MANAGEMENT HANDLERS ---
+	====================================================================
+  */
+
+  /**
+   * registerProjectManagementHandlers()
+   *
+   * Registers handlers for project backup, validation, and history management.
+   */
+  private registerProjectManagementHandlers(): void {
+    /* Project backup handlers */
+    ipcMain.handle('project:create-backup', async (_event, options?: any) => {
+      try {
+        const project = projectManager.getCurrentProject();
+        if (!project) {
+          throw new Error('No project open');
+        }
+
+        await projectBackupManager.initialize(project.path);
+        const backupId = await projectBackupManager.createBackup(options);
+
+        logger.info('IPC', 'Project backup created', { backupId });
+        return backupId;
+      } catch (error) {
+        logger.error('IPC', 'Project backup failed', { error });
+        throw error;
+      }
+    });
+
+    ipcMain.handle('project:list-backups', async (_event) => {
+      try {
+        const project = projectManager.getCurrentProject();
+        if (!project) {
+          throw new Error('No project open');
+        }
+
+        await projectBackupManager.initialize(project.path);
+        const backups = await projectBackupManager.listBackups();
+
+        logger.info('IPC', 'Project backups listed', { count: backups.length });
+        return backups;
+      } catch (error) {
+        logger.error('IPC', 'List backups failed', { error });
+        throw error;
+      }
+    });
+
+    ipcMain.handle(
+      'project:restore-backup',
+      async (_event, args: { backupId: string; options?: any }) => {
+        try {
+          const project = projectManager.getCurrentProject();
+          if (!project) {
+            throw new Error('No project open');
+          }
+
+          await projectBackupManager.initialize(project.path);
+          await projectBackupManager.restoreBackup(args.backupId, args.options);
+
+          logger.info('IPC', 'Project backup restored', { backupId: args.backupId });
+          return true;
+        } catch (error) {
+          logger.error('IPC', 'Backup restore failed', { backupId: args.backupId, error });
+          throw error;
+        }
+      }
+    );
+
+    ipcMain.handle('project:delete-backup', async (_event, backupId: string) => {
+      try {
+        const project = projectManager.getCurrentProject();
+        if (!project) {
+          throw new Error('No project open');
+        }
+
+        await projectBackupManager.initialize(project.path);
+        await projectBackupManager.deleteBackup(backupId);
+
+        logger.info('IPC', 'Project backup deleted', { backupId });
+        return true;
+      } catch (error) {
+        logger.error('IPC', 'Backup deletion failed', { backupId, error });
+        throw error;
+      }
+    });
+
+    /* Project validation handlers */
+    ipcMain.handle('project:validate', async (_event, useCache: boolean = false) => {
+      try {
+        const project = projectManager.getCurrentProject();
+        if (!project) {
+          throw new Error('No project open');
+        }
+
+        const result = await projectValidator.validateProject(useCache);
+
+        logger.info('IPC', 'Project validation completed', {
+          valid: result.valid,
+          errorCount: result.errorCount,
+          warningCount: result.warningCount
+        });
+
+        return result;
+      } catch (error) {
+        logger.error('IPC', 'Project validation failed', { error });
+        throw error;
+      }
+    });
+
+    ipcMain.handle('project:auto-fix-issues', async (_event, issues: any[]) => {
+      try {
+        const fixedIssues = await projectValidator.autoFixIssues(issues);
+
+        logger.info('IPC', 'Auto-fix completed', { fixedCount: fixedIssues.length });
+        return fixedIssues;
+      } catch (error) {
+        logger.error('IPC', 'Auto-fix failed', { error });
+        throw error;
+      }
+    });
+
+    ipcMain.handle('project:clear-validation-cache', async (_event) => {
+      try {
+        projectValidator.clearValidationCache();
+        logger.info('IPC', 'Validation cache cleared');
+        return true;
+      } catch (error) {
+        logger.error('IPC', 'Clear validation cache failed', { error });
+        throw error;
+      }
+    });
+
+    /* File history handlers */
+    ipcMain.handle('file:track-history', async (_event, filePath: string) => {
+      try {
+        const project = projectManager.getCurrentProject();
+        if (!project) {
+          throw new Error('No project open');
+        }
+
+        await fileHistoryManager.initialize(project.path);
+        const versionId = await fileHistoryManager.trackFile(filePath);
+
+        logger.info('IPC', 'File history tracking started', { filePath, versionId });
+        return versionId;
+      } catch (error) {
+        logger.error('IPC', 'File history tracking failed', { filePath, error });
+        throw error;
+      }
+    });
+
+    ipcMain.handle(
+      'file:create-version',
+      async (_event, args: { filePath: string; message: string }) => {
+        try {
+          const project = projectManager.getCurrentProject();
+          if (!project) {
+            throw new Error('No project open');
+          }
+
+          await fileHistoryManager.initialize(project.path);
+          const versionId = await fileHistoryManager.createVersion(args.filePath, args.message);
+
+          logger.info('IPC', 'File version created', { filePath: args.filePath, versionId });
+          return versionId;
+        } catch (error) {
+          logger.error('IPC', 'File version creation failed', { filePath: args.filePath, error });
+          throw error;
+        }
+      }
+    );
+
+    ipcMain.handle('file:get-history', async (_event, filePath: string) => {
+      try {
+        const history = fileHistoryManager.getFileHistory(filePath);
+
+        logger.info('IPC', 'File history retrieved', {
+          filePath,
+          versionCount: history?.totalVersions || 0
+        });
+
+        return history;
+      } catch (error) {
+        logger.error('IPC', 'File history retrieval failed', { filePath, error });
+        throw error;
+      }
+    });
+
+    ipcMain.handle(
+      'file:get-version-content',
+      async (_event, args: { filePath: string; versionId: string }) => {
+        try {
+          const content = await fileHistoryManager.getVersionContent(args.filePath, args.versionId);
+
+          logger.info('IPC', 'Version content retrieved', {
+            filePath: args.filePath,
+            versionId: args.versionId
+          });
+
+          return content;
+        } catch (error) {
+          logger.error('IPC', 'Version content retrieval failed', {
+            filePath: args.filePath,
+            versionId: args.versionId,
+            error
+          });
+          throw error;
+        }
+      }
+    );
+
+    ipcMain.handle(
+      'file:restore-version',
+      async (_event, args: { filePath: string; versionId: string }) => {
+        try {
+          await fileHistoryManager.restoreVersion(args.filePath, args.versionId);
+
+          logger.info('IPC', 'File version restored', {
+            filePath: args.filePath,
+            versionId: args.versionId
+          });
+
+          return true;
+        } catch (error) {
+          logger.error('IPC', 'File version restoration failed', {
+            filePath: args.filePath,
+            versionId: args.versionId,
+            error
+          });
+          throw error;
+        }
+      }
+    );
+
+    ipcMain.handle(
+      'file:compare-versions',
+      async (_event, args: { filePath: string; oldVersionId: string; newVersionId: string }) => {
+        try {
+          const diff = await fileHistoryManager.compareVersions(
+            args.filePath,
+            args.oldVersionId,
+            args.newVersionId
+          );
+
+          logger.info('IPC', 'File versions compared', {
+            filePath: args.filePath,
+            oldVersionId: args.oldVersionId,
+            newVersionId: args.newVersionId
+          });
+
+          return diff;
+        } catch (error) {
+          logger.error('IPC', 'File version comparison failed', {
+            filePath: args.filePath,
+            oldVersionId: args.oldVersionId,
+            newVersionId: args.newVersionId,
+            error
+          });
+          throw error;
+        }
+      }
+    );
+
+    ipcMain.handle('file:delete-history', async (_event, filePath: string) => {
+      try {
+        await fileHistoryManager.deleteFileHistory(filePath);
+
+        logger.info('IPC', 'File history deleted', { filePath });
+        return true;
+      } catch (error) {
+        logger.error('IPC', 'File history deletion failed', { filePath, error });
         throw error;
       }
     });
@@ -1045,7 +1966,127 @@ class NewComponent : public Component {
       }
     });
 
+    /* GET BUILD PROFILES */
+    ipcMain.handle('build:get-build-profiles', async () => {
+      try {
+        const profiles = buildManager.getBuildProfiles();
+        logger.debug('IPC', 'Build profiles retrieved', { profiles });
+        return { profiles };
+      } catch (error) {
+        logger.error('IPC', 'Failed to get build profiles', { error });
+        throw error;
+      }
+    });
+
+    /* APPLY BUILD PROFILE */
+    ipcMain.handle('build:apply-build-profile', async (_event, config) => {
+      try {
+        const updatedConfig = buildManager.applyBuildProfile(config);
+        logger.debug('IPC', 'Build profile applied', { updatedConfig });
+        return { config: updatedConfig };
+      } catch (error) {
+        logger.error('IPC', 'Failed to apply build profile', { error });
+        throw error;
+      }
+    });
+
     logger.debug('IPC', 'Build handlers registered');
+  }
+
+  /**
+   * getShaderTemplate()
+   *
+   * Returns fallback template content for new shaders.
+   */
+  private getShaderTemplate(shaderType: 'vertex' | 'fragment' | 'compute'): string {
+    if (shaderType === 'vertex') {
+      return `#version 330 core
+
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec2 aTexCoord;
+
+uniform mat4 uModel;
+uniform mat4 uView;
+uniform mat4 uProjection;
+
+out vec2 vTexCoord;
+
+void main() {
+  gl_Position = uProjection * uView * uModel * vec4(aPosition, 1.0);
+  vTexCoord = aTexCoord;
+}
+`;
+    } else if (shaderType === 'fragment') {
+      return `#version 330 core
+
+in vec2 vTexCoord;
+out vec4 FragColor;
+
+uniform sampler2D uTexture;
+uniform vec4 uColor;
+
+void main() {
+  FragColor = texture(uTexture, vTexCoord) * uColor;
+}
+`;
+    } else {
+      return `#version 430
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+void main() {
+  // Compute shader logic here
+}
+`;
+    }
+  }
+
+  /**
+   * getMaterialTemplate()
+   *
+   * Returns fallback template content for new materials.
+   */
+  private getMaterialTemplate(materialType: 'standard' | 'unlit' | 'transparent'): string {
+    return `{
+  "version": "1.0.0",
+  "name": "{{MaterialName}}",
+  "type": "${materialType}",
+  "properties": {
+    "diffuseColor": [1.0, 1.0, 1.0],
+    "opacity": ${materialType === 'transparent' ? '0.5' : '1.0'}
+  },
+  "textures": {
+    "diffuse": {
+      "path": null,
+      "enabled": true
+    }
+  }
+}`;
+  }
+
+  /**
+   * getPrefabTemplate()
+   *
+   * Returns fallback template content for new prefabs.
+   */
+  private getPrefabTemplate(prefabType: 'entity' | 'ui' | 'effect'): string {
+    return `{
+  "version": "1.0.0",
+  "name": "{{PrefabName}}",
+  "type": "prefab",
+  "rootEntity": {
+    "id": "{{EntityId}}",
+    "name": "{{PrefabName}}",
+    "enabled": true,
+    "transform": {
+      "position": [0.0, 0.0, 0.0],
+      "rotation": [0.0, 0.0, 0.0, 1.0],
+      "scale": [1.0, 1.0, 1.0]
+    },
+    "components": [],
+    "children": []
+  }
+}`;
   }
 
   /**

@@ -5,7 +5,7 @@
     "moduleResolution": "Node",
     "lib": ["ES2022", "DOM"],
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDir": "./src",
     "strict": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -31,9 +31,10 @@
     "incremental": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "noImplicitThis": false,
+    "downlevelIteration": true,
     "types": ["jest", "node"]
   },
-  "include": ["src/**/*", "tests/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
   "ts-node": {
     "esm": true,

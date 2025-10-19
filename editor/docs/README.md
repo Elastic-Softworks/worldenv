@@ -1,11 +1,8 @@
 # WORLDEDIT DOCUMENTATION
 
-**Phase 5 Complete - Professional Asset Management & Viewport Integration**
-
-**Professional game development editor for the WORLDENV engine**
+**Game development editor for the WORLDENV engine**
 
 ## Quick Navigation
-
 ### Getting Started
 - **[QUICKSTART.md](QUICKSTART.md)** - Get up and running in 15 minutes
 - **[USER-GUIDE.md](USER-GUIDE.md)** - Comprehensive user manual
@@ -36,7 +33,10 @@ WORLDEDIT is a professional game development editor built for the WORLDENV engin
 - **Asset Properties & Metadata** - Tag management, descriptions, technical information
 - **Integrated Editing** - Viewport-hierarchy synchronization, keyboard shortcuts
 - **WORLDC Integration** - Advanced scripting with hybrid C/C++/TypeScript syntax
-- **Multi-Platform Deployment** - Export to web, desktop, and PWA formats
+- **Complete Build System** - Multi-platform compilation with profiles and optimization
+- **Multi-Platform Deployment** - Export to web, desktop, mobile, and PWA formats
+- **Progressive Web Apps** - Service workers, offline support, installable apps
+- **Development Tools** - Hot-reload, bundle analysis, installer generation
 - **Professional UI** - VS Code-inspired interface with dockable panels
 
 ### Technology Stack
@@ -97,11 +97,47 @@ npm run start
 
 ## Project Status
 
-**Current Version**: 0.1.0 (Pre-Alpha)  
-**Development Phase**: Phase 5 Complete (Asset System Overhaul)  
-**Next Milestone**: Phase 6 - File & Project System
+**Current Version**: 0.1.0 (Pre-Alpha)
 
-### Phase 1-5 Completed Features ✅
+## Build System
+
+WORLDEDIT includes a comprehensive build system for deploying your projects:
+
+### Build Profiles
+- **Debug**: Fast builds with debugging features and hot-reload
+- **Release**: Optimized builds for testing and staging
+- **Distribution**: Production-ready builds with maximum optimization
+
+### Supported Platforms
+- **Web**: HTML/CSS/JS packages for web deployment
+- **Desktop**: Electron applications for Windows, macOS, Linux
+- **Mobile**: Cordova/PhoneGap apps for iOS and Android
+- **WebAssembly**: High-performance WASM modules
+- **PWA**: Progressive Web Apps with offline support
+
+### Build Features
+- WorldC compilation to TypeScript and AssemblyScript
+- Asset bundling and optimization
+- Source map generation
+- Code minification and compression
+- Bundle size analysis
+- Automatic installer generation
+- Hot-reload for development
+
+## Getting Started with Builds
+
+1. **Configure Build Settings**: `Build > Build Configuration...`
+2. **Select Profile**: Choose Debug, Release, or Distribution
+3. **Choose Platforms**: Select target platforms (Web, Desktop, Mobile)
+4. **Set Options**: Configure compression, PWA features, installers
+5. **Build Project**: `Build > Build Project` or `Ctrl+B`
+
+See [USER-GUIDE.md](USER-GUIDE.md) for detailed build system documentation.
+
+**Current Status**: Script editor and code integration complete
+**Latest Features**: Advanced build system with multi-platform compilation
+
+### Core Features
 - **Engine Foundation**: Status system, IPC communication, WORLDC integration
 - **Scene Management**: Create/save/load scenes with .scene.json format
 - **Entity System**: Create, delete, reparent entities with hierarchy management
@@ -117,20 +153,20 @@ npm run start
 - **Asset Properties**: Metadata editing, tags, descriptions, technical info
 - **Asset Organization**: Search, filtering, breadcrumb navigation, keyboard shortcuts
 
-### Phase 6 Ready to Begin
+### Current Development Focus
 - Project structure and file templates
 - Script creation and management
 - File system integration and monitoring
 - Project settings and configuration
 
-### Upcoming Features ⏳
-- File & Project System (Phase 6)
-- Script Editor & WORLDC Integration (Phase 7)
-- Build System & Compilation (Phase 8)
+### Upcoming Features
+- Menu & Toolbar Functionality
+- Performance Optimization & Polish
+- Advanced debugging features
 
 ## Quick Examples
 
-### Creating Your First Scene (Phase 5 Enhanced)
+### Creating Your First Scene
 1. Launch WORLDEDIT
 2. Go to "File" → "New Scene"
 3. Enter scene name and choose template (Empty/2D/3D)
@@ -165,7 +201,7 @@ npm run start
 }
 ```
 
-### Current Working Features (Phase 5 Complete)
+### Current Working Features
 - **Advanced 3D/2D Viewport**: Real-time scene visualization with object manipulation
 - **Professional Asset Management**: Import, organize, preview with metadata editing
 - **Drag-and-Drop Workflow**: Assets to viewport with automatic entity creation
@@ -217,15 +253,15 @@ Built with love by Elastic Softworks using:
 
 **Ready to Experience Professional Game Development?**
 
-**Phase 5 brings you:**
-- Professional 3D viewport with real-time rendering
-- Comprehensive asset management with import pipeline
+**Latest Enhancements:**
+- Enhanced file creation capabilities (scripts, shaders, materials, prefabs)
+- Comprehensive project validation and integrity checking
+- Project backup and recovery system with automatic scheduling
+- File history and version tracking with diff-based storage
+- Project templates for different application types
+- Enhanced file operations (rename, move, copy, search)
+- Professional asset management with import pipeline
 - Drag-and-drop workflow from assets to viewport
-- Asset properties with metadata and tag management
-- Advanced object selection and manipulation
-- Transform gizmos for precise editing
-- Smooth camera controls with focus operations
-- Performance-optimized rendering and asset loading
 
 **[Get Started with QUICKSTART.md](QUICKSTART.md)**
 

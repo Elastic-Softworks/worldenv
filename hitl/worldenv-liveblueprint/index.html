@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WORLDENV Live Blueprint Analyzer</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/mode-c_cpp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/mode-typescript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/theme-monokai.min.js"></script>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Header Section -->
+      <header class="header">
+        <div class="header-content">
+          <h1 class="app-title">WORLDENV Live Blueprint</h1>
+          <div class="system-status">
+            <span class="status-indicator" id="systemStatus">ANALYZING</span>
+            <span class="last-update" id="lastUpdate">Last Update: --</span>
+          </div>
+          <div class="header-controls">
+            <button class="control-btn" id="refreshBtn">
+              Refresh Analysis
+            </button>
+            <button class="control-btn" id="exportBtn">Export</button>
+            <button class="control-btn" id="settingsBtn">Settings</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="main-content">
+        <!-- Navigation Tabs -->
+        <nav class="tab-navigation">
+          <button class="tab-btn active" data-tab="visual">
+            Visual Analysis
+          </button>
+          <button class="tab-btn" data-tab="textual">Textual Flow</button>
+          <button class="tab-btn" data-tab="debug">Debug Tools</button>
+          <button class="tab-btn" data-tab="monitor">System Monitor</button>
+          <button class="tab-btn" data-tab="code">Code Explorer</button>
+        </nav>
+
+        <!-- Tab Content Panels -->
+        <div class="tab-content">
+          <!-- Visual Analysis Tab -->
+          <div class="tab-panel active" id="visual-tab">
+            <div class="visual-layout">
+              <div class="visual-sidebar">
+                <div class="sidebar-section">
+                  <h3>System Overview</h3>
+                  <div class="system-metrics">
+                    <div class="metric-item">
+                      <span class="metric-label">Total Files:</span>
+                      <span class="metric-value" id="totalFiles">--</span>
+                    </div>
+                    <div class="metric-item">
+                      <span class="metric-label">C Functions:</span>
+                      <span class="metric-value" id="cFunctions">--</span>
+                    </div>
+                    <div class="metric-item">
+                      <span class="metric-label">TS Classes:</span>
+                      <span class="metric-value" id="tsClasses">--</span>
+                    </div>
+                    <div class="metric-item">
+                      <span class="metric-label">Integration Points:</span>
+                      <span class="metric-value" id="integrationPoints"
+                        >--</span
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <div class="sidebar-section">
+                  <h3>Component Filter</h3>
+                  <div class="filter-controls">
+                    <label class="filter-item">
+                      <input type="checkbox" id="showEditor" checked />
+                      <span>Editor Components</span>
+                    </label>
+                    <label class="filter-item">
+                      <input type="checkbox" id="showWorldC" checked />
+                      <span>WorldC Engine</span>
+                    </label>
+                    <label class="filter-item">
+                      <input type="checkbox" id="showManagers" checked />
+                      <span>Manager Classes</span>
+                    </label>
+                    <label class="filter-item">
+                      <input type="checkbox" id="showIPC" checked />
+                      <span>IPC Channels</span>
+                    </label>
+                    <label class="filter-item">
+                      <input type="checkbox" id="showScripts" checked />
+                      <span>Script System</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="sidebar-section">
+                  <h3>View Options</h3>
+                  <div class="view-controls">
+                    <select id="viewMode">
+                      <option value="hierarchy">Hierarchy View</option>
+                      <option value="dependency">Dependency Graph</option>
+                      <option value="flow">Data Flow</option>
+                      <option value="architecture">Architecture Map</option>
+                    </select>
+                    <select id="layoutAlgorithm">
+                      <option value="force">Force Directed</option>
+                      <option value="tree">Tree Layout</option>
+                      <option value="circular">Circular</option>
+                      <option value="layered">Layered</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="visual-main">
+                <div class="visualization-container">
+                  <svg id="systemDiagram" width="100%" height="100%"></svg>
+                  <div class="zoom-controls">
+                    <button class="zoom-btn" id="zoomIn">+</button>
+                    <button class="zoom-btn" id="zoomOut">-</button>
+                    <button class="zoom-btn" id="zoomReset">Reset</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="visual-inspector">
+                <div class="inspector-content">
+                  <h3>Component Inspector</h3>
+                  <div class="selected-component" id="selectedComponent">
+                    <p>Select a component to view details</p>
+                  </div>
+                  <div class="component-details" id="componentDetails"></div>
+                  <div class="component-code" id="componentCode"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Textual Flow Tab -->
+          <div class="tab-panel" id="textual-tab">
+            <div class="textual-layout">
+              <div class="textual-controls">
+                <div class="flow-options">
+                  <label>Entry Point:</label>
+                  <select id="entryPointSelect">
+                    <option value="editor-main">Editor Main Process</option>
+                    <option value="worldc-compiler">WorldC Compiler</option>
+                    <option value="renderer-app">Renderer Process</option>
+                    <option value="engine-service">Engine Service</option>
+                  </select>
+                  <label>Flow Depth:</label>
+                  <input
+                    type="range"
+                    id="flowDepth"
+                    min="1"
+                    max="10"
+                    value="5"
+                  />
+                  <span id="depthValue">5</span>
+                </div>
+                <div class="flow-filters">
+                  <label class="flow-filter">
+                    <input type="checkbox" id="showFunctionCalls" checked />
+                    <span>Function Calls</span>
+                  </label>
+                  <label class="flow-filter">
+                    <input type="checkbox" id="showDataFlow" checked />
+                    <span>Data Flow</span>
+                  </label>
+                  <label class="flow-filter">
+                    <input type="checkbox" id="showIPCMessages" checked />
+                    <span>IPC Messages</span>
+                  </label>
+                  <label class="flow-filter">
+                    <input type="checkbox" id="showAsyncOps" checked />
+                    <span>Async Operations</span>
+                  </label>
+                </div>
+              </div>
+              <div class="flow-description">
+                <div class="flow-header">
+                  <h3>System Execution Flow</h3>
+                  <button class="export-flow-btn">Export Flow</button>
+                </div>
+                <div class="flow-content" id="flowContent">
+                  <div class="flow-loading">Analyzing system flow...</div>
+                </div>
+              </div>
+              <div class="flow-navigation">
+                <div class="flow-search">
+                  <input
+                    type="text"
+                    placeholder="Search in flow..."
+                    id="flowSearch"
+                  />
+                  <div class="search-results" id="flowSearchResults"></div>
+                </div>
+                <div class="flow-bookmarks">
+                  <h4>Bookmarks</h4>
+                  <div class="bookmark-list" id="flowBookmarks"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Debug Tools Tab -->
+          <div class="tab-panel" id="debug-tab">
+            <div class="debug-layout">
+              <div class="debug-sidebar">
+                <div class="debug-section">
+                  <h3>Issue Detection</h3>
+                  <div class="issue-summary">
+                    <div class="issue-count error">
+                      <span class="count" id="errorCount">0</span>
+                      <span class="label">Errors</span>
+                    </div>
+                    <div class="issue-count warning">
+                      <span class="count" id="warningCount">0</span>
+                      <span class="label">Warnings</span>
+                    </div>
+                    <div class="issue-count info">
+                      <span class="count" id="infoCount">0</span>
+                      <span class="label">Suggestions</span>
+                    </div>
+                  </div>
+                  <div class="issue-filters">
+                    <button class="filter-btn active" data-type="all">
+                      All Issues
+                    </button>
+                    <button class="filter-btn" data-type="integration">
+                      Integration
+                    </button>
+                    <button class="filter-btn" data-type="performance">
+                      Performance
+                    </button>
+                    <button class="filter-btn" data-type="code-quality">
+                      Code Quality
+                    </button>
+                  </div>
+                </div>
+
+                <div class="debug-section">
+                  <h3>Performance Metrics</h3>
+                  <div class="performance-metrics">
+                    <div class="perf-item">
+                      <span class="perf-label">Build Time:</span>
+                      <span class="perf-value" id="buildTime">--</span>
+                    </div>
+                    <div class="perf-item">
+                      <span class="perf-label">Bundle Size:</span>
+                      <span class="perf-value" id="bundleSize">--</span>
+                    </div>
+                    <div class="perf-item">
+                      <span class="perf-label">Startup Time:</span>
+                      <span class="perf-value" id="startupTime">--</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="debug-main">
+                <div class="issue-list">
+                  <div class="issue-header">
+                    <h3>Detected Issues</h3>
+                    <button class="refresh-issues-btn">Refresh Analysis</button>
+                  </div>
+                  <div class="issues-container" id="issuesContainer">
+                    <div class="issue-loading">Scanning for issues...</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="debug-inspector">
+                <div class="debug-details">
+                  <h3>Issue Details</h3>
+                  <div class="selected-issue" id="selectedIssue">
+                    <p>Select an issue to view details</p>
+                  </div>
+                  <div class="issue-suggestions" id="issueSuggestions"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Monitor Tab -->
+          <div class="tab-panel" id="monitor-tab">
+            <div class="monitor-layout">
+              <div class="monitor-grid">
+                <div class="monitor-section">
+                  <h3>File System Monitor</h3>
+                  <div class="fs-monitor">
+                    <div class="fs-stats">
+                      <div class="fs-stat">
+                        <span class="stat-label">Watched Files:</span>
+                        <span class="stat-value" id="watchedFiles">0</span>
+                      </div>
+                      <div class="fs-stat">
+                        <span class="stat-label">Recent Changes:</span>
+                        <span class="stat-value" id="recentChanges">0</span>
+                      </div>
+                    </div>
+                    <div class="file-changes" id="fileChanges">
+                      <div class="changes-loading">
+                        Monitoring file system...
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="monitor-section">
+                  <h3>Build Status</h3>
+                  <div class="build-monitor">
+                    <div class="build-status" id="buildStatus">
+                      <div class="status-item">
+                        <span class="status-label">Editor Build:</span>
+                        <span class="status-value" id="editorBuildStatus"
+                          >Unknown</span
+                        >
+                      </div>
+                      <div class="status-item">
+                        <span class="status-label">WorldC Build:</span>
+                        <span class="status-value" id="worldcBuildStatus"
+                          >Unknown</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="monitor-section">
+                  <h3>Integration Health</h3>
+                  <div class="integration-monitor">
+                    <div class="integration-status">
+                      <div class="integration-item">
+                        <span class="integration-label">Editor ↔ WorldC:</span>
+                        <span
+                          class="integration-status-indicator"
+                          id="editorWorldcStatus"
+                          >checking</span
+                        >
+                      </div>
+                      <div class="integration-item">
+                        <span class="integration-label">IPC Channels:</span>
+                        <span
+                          class="integration-status-indicator"
+                          id="ipcStatus"
+                          >checking</span
+                        >
+                      </div>
+                      <div class="integration-item">
+                        <span class="integration-label">Compiler Access:</span>
+                        <span
+                          class="integration-status-indicator"
+                          id="compilerStatus"
+                          >checking</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="monitor-section">
+                  <h3>System Performance</h3>
+                  <div class="performance-monitor">
+                    <canvas
+                      id="performanceChart"
+                      width="400"
+                      height="200"
+                    ></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Code Explorer Tab -->
+          <div class="tab-panel" id="code-tab">
+            <div class="code-layout">
+              <div class="code-sidebar">
+                <div class="file-tree">
+                  <div class="tree-header">
+                    <h3>Project Structure</h3>
+                    <input
+                      type="text"
+                      placeholder="Filter files..."
+                      id="fileFilter"
+                    />
+                  </div>
+                  <div class="tree-content" id="fileTree">
+                    <div class="tree-loading">Loading project structure...</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="code-main">
+                <div class="code-tabs" id="codeTabs">
+                  <div class="tab-placeholder">Open a file to view code</div>
+                </div>
+                <div class="code-editor-container">
+                  <div id="codeEditor"></div>
+                </div>
+              </div>
+
+              <div class="code-inspector">
+                <div class="code-analysis">
+                  <h3>Code Analysis</h3>
+                  <div class="analysis-content" id="codeAnalysis">
+                    <p>Select a file to view analysis</p>
+                  </div>
+                </div>
+                <div class="symbol-references">
+                  <h4>References</h4>
+                  <div class="references-list" id="referencesList"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Settings Modal -->
+      <div class="modal" id="settingsModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Settings</h2>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="settings-section">
+              <h3>Analysis Options</h3>
+              <label class="setting-item">
+                <input type="checkbox" id="deepAnalysis" />
+                <span>Enable Deep Analysis (slower but more accurate)</span>
+              </label>
+              <label class="setting-item">
+                <input type="checkbox" id="realTimeUpdates" checked />
+                <span>Real-time Updates</span>
+              </label>
+              <label class="setting-item">
+                <span>Refresh Interval:</span>
+                <input
+                  type="number"
+                  id="refreshInterval"
+                  value="5000"
+                  min="1000"
+                  max="30000"
+                />
+                <span>ms</span>
+              </label>
+            </div>
+            <div class="settings-section">
+              <h3>Display Options</h3>
+              <label class="setting-item">
+                <span>Theme:</span>
+                <select id="themeSelect">
+                  <option value="dark">Dark</option>
+                  <option value="light">Light</option>
+                  <option value="system">System</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="modal-btn save-btn">Save</button>
+            <button class="modal-btn cancel-btn">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Overlay -->
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Analyzing WORLDENV system...</div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1456,7 +1456,7 @@ void jit_set_hot_reload_callback(JITCompiler* jit, void (*callback)(void));
 
 WORLDC Language Version: 0.2.0
 Specification Date: October 2025
-Implementation: Pre-Alpha Phase 15-16
+Implementation: Pre-Alpha Development
 
 ## References
 

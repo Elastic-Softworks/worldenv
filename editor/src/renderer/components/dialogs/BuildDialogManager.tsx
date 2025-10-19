@@ -12,11 +12,11 @@
  * between build configuration and progress dialogs.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { BuildConfigDialog } from './BuildConfigDialog';
 import { BuildProgressDialog } from './BuildProgressDialog';
 import { useBuild } from '../../context/BuildContext';
-import { BuildConfiguration, BuildResult } from '../../../shared/types';
+import { BuildConfiguration, BuildResult, BuildProfile } from '../../../shared/types';
 
 interface BuildDialogManagerProps {
   configDialogOpen: boolean;
@@ -29,31 +29,38 @@ export const BuildDialogManager: React.FC<BuildDialogManagerProps> = ({
 }) => {
   const { state, actions } = useBuild();
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
+  const [buildProfiles, setBuildProfiles] = useState<BuildProfile[]>([]);
 
   /**
    * handleSaveConfiguration()
    *
    * Saves build configuration without starting build.
    */
-  const handleSaveConfiguration = useCallback((config: BuildConfiguration) => {
-    actions.updateConfiguration(config);
-  }, [actions]);
+  const handleSaveConfiguration = useCallback(
+    (config: BuildConfiguration) => {
+      actions.updateConfiguration(config);
+    },
+    [actions]
+  );
 
   /**
    * handleBuildNow()
    *
    * Starts build process with given configuration.
    */
-  const handleBuildNow = useCallback(async (config: BuildConfiguration) => {
-    actions.updateConfiguration(config);
-    setProgressDialogOpen(true);
+  const handleBuildNow = useCallback(
+    async (config: BuildConfiguration) => {
+      actions.updateConfiguration(config);
+      setProgressDialogOpen(true);
 
-    try {
-      await actions.startBuild(config);
-    } catch (error) {
-      console.error('Build failed:', error);
-    }
-  }, [actions]);
+      try {
+        await actions.startBuild(config);
+      } catch (error) {
+        console.error('Build failed:', error);
+      }
+    },
+    [actions]
+  );
 
   /**
    * handleCancelBuild()
@@ -74,7 +81,7 @@ export const BuildDialogManager: React.FC<BuildDialogManagerProps> = ({
    *
    * Handles build completion result.
    */
-  const handleBuildComplete = useCallback((result: BuildResult) => {
+  const handleBuildComplete = useCallback((result: import('../../../shared/types').BuildResult) => {
     console.log('Build completed:', result);
 
     // Keep progress dialog open to show results
@@ -91,6 +98,28 @@ export const BuildDialogManager: React.FC<BuildDialogManagerProps> = ({
     actions.resetBuildState();
   }, [actions]);
 
+  /**
+   * Load build profiles on component mount
+   */
+  useEffect(() => {
+    const loadBuildProfiles = async () => {
+      try {
+        const result = (await window.worldedit.build.getBuildProfiles()) as {
+          profiles?: BuildProfile[];
+        };
+        if (result && result.profiles) {
+          setBuildProfiles(result.profiles);
+        }
+      } catch (error) {
+        console.error('Failed to load build profiles:', error);
+      }
+    };
+
+    if (configDialogOpen) {
+      loadBuildProfiles();
+    }
+  }, [configDialogOpen]);
+
   return (
     <>
       {/* BUILD CONFIGURATION DIALOG */}
@@ -98,6 +127,7 @@ export const BuildDialogManager: React.FC<BuildDialogManagerProps> = ({
         isOpen={configDialogOpen}
         config={state.configuration}
         availableScenes={state.availableScenes}
+        buildProfiles={buildProfiles}
         onClose={onCloseConfigDialog}
         onSave={handleSaveConfiguration}
         onBuild={handleBuildNow}

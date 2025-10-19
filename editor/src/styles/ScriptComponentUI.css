@@ -1,0 +1,266 @@
+/*
+   ===============================================
+   ScriptComponentUI Styles
+   ===============================================
+*/
+
+.script-component-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  background: var(--color-panel-background);
+  border-radius: 4px;
+}
+
+.script-component-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.script-component-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.script-component-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.script-component-button {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-button-background);
+  color: var(--color-text-primary);
+  border-radius: 3px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.script-component-button:hover {
+  background: var(--color-button-hover);
+  border-color: var(--color-border-hover);
+}
+
+.script-component-button:active {
+  background: var(--color-button-active);
+}
+
+.script-component-button.primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.script-component-button.primary:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.script-component-properties {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.script-property-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.script-property-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 2px;
+}
+
+.script-property-input {
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-input-background);
+  color: var(--color-text-primary);
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  transition: border-color 0.2s ease;
+}
+
+.script-property-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-alpha);
+}
+
+.script-property-textarea {
+  resize: vertical;
+  min-height: 60px;
+  font-family: var(--font-mono);
+}
+
+.script-property-select {
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-input-background);
+  color: var(--color-text-primary);
+  border-radius: 3px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.script-property-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.script-property-checkbox input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--color-primary);
+}
+
+.script-compilation-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.script-compilation-status.success {
+  background: var(--color-success-background);
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success-border);
+}
+
+.script-compilation-status.error {
+  background: var(--color-error-background);
+  color: var(--color-error-text);
+  border: 1px solid var(--color-error-border);
+}
+
+.script-compilation-status.warning {
+  background: var(--color-warning-background);
+  color: var(--color-warning-text);
+  border: 1px solid var(--color-warning-border);
+}
+
+.script-compilation-status.compiling {
+  background: var(--color-info-background);
+  color: var(--color-info-text);
+  border: 1px solid var(--color-info-border);
+}
+
+.script-compilation-status-icon {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+}
+
+.script-compilation-errors {
+  margin-top: 8px;
+}
+
+.script-compilation-error {
+  padding: 6px 8px;
+  background: var(--color-error-background);
+  border: 1px solid var(--color-error-border);
+  border-radius: 3px;
+  margin-bottom: 4px;
+}
+
+.script-compilation-error-message {
+  font-size: 11px;
+  color: var(--color-error-text);
+  font-family: var(--font-mono);
+  margin: 2px 0;
+}
+
+.script-compilation-error-location {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.script-hot-reload-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+.script-hot-reload-indicator.active {
+  background: var(--color-success-background);
+  color: var(--color-success-text);
+}
+
+.script-performance-metrics {
+  display: flex;
+  gap: 12px;
+  padding: 6px 8px;
+  background: var(--color-panel-secondary);
+  border-radius: 3px;
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+}
+
+.script-performance-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.script-performance-metric-label {
+  font-weight: 500;
+}
+
+.script-performance-metric-value {
+  font-family: var(--font-mono);
+  color: var(--color-text-primary);
+}
+
+/* Dark theme specific adjustments */
+.theme-dark .script-component-ui {
+  background: var(--color-panel-background-dark);
+}
+
+.theme-dark .script-property-input,
+.theme-dark .script-property-select {
+  background: var(--color-input-background-dark);
+  border-color: var(--color-border-dark);
+}
+
+/* Animation for compilation status */
+@keyframes compilation-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.script-compilation-status.compiling {
+  animation: compilation-pulse 1.5s ease-in-out infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 300px) {
+  .script-component-controls {
+    flex-wrap: wrap;
+  }
+
+  .script-performance-metrics {
+    flex-direction: column;
+    gap: 4px;
+  }
+}

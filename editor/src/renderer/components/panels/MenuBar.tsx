@@ -19,6 +19,11 @@ import { ProjectData } from '../../../shared/types';
 import { ProjectSettingsDialog } from '../dialogs/ProjectSettingsDialog';
 import { BuildDialogManager } from '../dialogs/BuildDialogManager';
 import { useBuild } from '../../context/BuildContext';
+import { ClipboardManager } from '../../core/clipboard/ClipboardManager';
+import { SearchManager } from '../../core/search/SearchManager';
+import { TransformManager, TransformMode } from '../../core/transform/TransformManager';
+import { FindReplaceDialog } from '../dialogs/FindReplaceDialog';
+import { KeyboardShortcutsDialog } from '../dialogs/KeyboardShortcutsDialog';
 
 /**
  * Menu item interface
@@ -45,6 +50,51 @@ export function MenuBar(): JSX.Element {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showProjectSettings, setShowProjectSettings] = useState(false);
   const [showBuildConfig, setShowBuildConfig] = useState(false);
+  const [showFindReplace, setShowFindReplace] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+
+  /* KEYBOARD SHORTCUT EVENT LISTENERS */
+  useEffect(() => {
+    const handleKeyboardShortcutEvents = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      switch (customEvent.type) {
+        case 'editor:new-project':
+          handleNewProject();
+          break;
+        case 'editor:open-project':
+          handleOpenProject();
+          break;
+        case 'editor:save-project':
+          handleSaveProject();
+          break;
+        case 'editor:show-find-replace':
+          setShowFindReplace(true);
+          break;
+        case 'editor:show-keyboard-shortcuts':
+          setShowKeyboardShortcuts(true);
+          break;
+      }
+    };
+
+    /* REGISTER LISTENERS */
+    document.addEventListener('editor:new-project', handleKeyboardShortcutEvents);
+    document.addEventListener('editor:open-project', handleKeyboardShortcutEvents);
+    document.addEventListener('editor:save-project', handleKeyboardShortcutEvents);
+    document.addEventListener('editor:show-find-replace', handleKeyboardShortcutEvents);
+    document.addEventListener('editor:show-keyboard-shortcuts', handleKeyboardShortcutEvents);
+
+    return () => {
+      document.removeEventListener('editor:new-project', handleKeyboardShortcutEvents);
+      document.removeEventListener('editor:open-project', handleKeyboardShortcutEvents);
+      document.removeEventListener('editor:save-project', handleKeyboardShortcutEvents);
+      document.removeEventListener('editor:show-find-replace', handleKeyboardShortcutEvents);
+      document.removeEventListener('editor:show-keyboard-shortcuts', handleKeyboardShortcutEvents);
+    };
+  }, []);
+
+  const clipboardManager = ClipboardManager.getInstance();
+  const searchManager = SearchManager.getInstance();
+  const transformManager = TransformManager.getInstance();
 
   /**
    * handleNewProject()
@@ -113,6 +163,23 @@ export function MenuBar(): JSX.Element {
         'Project Open Error',
         `Failed to open project: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
+    }
+  };
+
+  /**
+   * handleShowDocumentation()
+   *
+   * Shows documentation information.
+   */
+  const handleShowDocumentation = async (): Promise<void> => {
+    try {
+      await window.worldedit.dialog.showMessage({
+        type: 'info',
+        title: 'Documentation',
+        message: `WORLDEDIT Documentation\n\nVisit the project repository at:\nhttps://github.com/elasticsoftwarefoundation/worldenv\n\nFor comprehensive guides and tutorials.`
+      });
+    } catch (error) {
+      console.error('[MENU] Failed to show documentation:', error);
     }
   };
 
@@ -299,6 +366,124 @@ export function MenuBar(): JSX.Element {
   }, [handleBuildProject, handleBuildConfiguration, handleOpenBuildLocation]);
 
   /**
+   * handleCutEntities()
+   *
+   * Cuts selected entities to clipboard.
+   */
+  const handleCutEntities = async (): Promise<void> => {
+    try {
+      if (state.selectedEntities.length === 0) {
+        console.warn('[MENU] No entities selected for cut operation');
+        return;
+      }
+
+      clipboardManager.cutEntities(state.selectedEntities);
+      actions.clearSelection();
+    } catch (error) {
+      console.error('[MENU] Failed to cut entities:', error);
+      await window.worldedit.dialog.showError(
+        'Cut Error',
+        `Failed to cut entities: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  };
+
+  /**
+   * handleCopyEntities()
+   *
+   * Copies selected entities to clipboard.
+   */
+  const handleCopyEntities = async (): Promise<void> => {
+    try {
+      if (state.selectedEntities.length === 0) {
+        console.warn('[MENU] No entities selected for copy operation');
+        return;
+      }
+
+      clipboardManager.copyEntities(state.selectedEntities);
+    } catch (error) {
+      console.error('[MENU] Failed to copy entities:', error);
+      await window.worldedit.dialog.showError(
+        'Copy Error',
+        `Failed to copy entities: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  };
+
+  /**
+   * handlePasteEntities()
+   *
+   * Pastes entities from clipboard.
+   */
+  const handlePasteEntities = async (): Promise<void> => {
+    try {
+      if (!clipboardManager.hasClipboardData()) {
+        console.warn('[MENU] No data in clipboard to paste');
+        return;
+      }
+
+      clipboardManager.pasteEntities();
+    } catch (error) {
+      console.error('[MENU] Failed to paste entities:', error);
+      await window.worldedit.dialog.showError(
+        'Paste Error',
+        `Failed to paste entities: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  };
+
+  /**
+   * handleSelectAll()
+   *
+   * Selects all entities in current scene.
+   */
+  const handleSelectAll = (): void => {
+    try {
+      const allEntities = clipboardManager.selectAllEntities();
+      actions.selectEntities(allEntities);
+    } catch (error) {
+      console.error('[MENU] Failed to select all entities:', error);
+    }
+  };
+
+  /**
+   * handleDeleteEntities()
+   *
+   * Deletes selected entities with confirmation.
+   */
+  const handleDeleteEntities = async (): Promise<void> => {
+    try {
+      if (state.selectedEntities.length === 0) {
+        console.warn('[MENU] No entities selected for deletion');
+        return;
+      }
+
+      await clipboardManager.deleteEntities(state.selectedEntities, true);
+      actions.clearSelection();
+    } catch (error) {
+      console.error('[MENU] Failed to delete entities:', error);
+    }
+  };
+
+  /**
+   * handleFindReplace()
+   *
+   * Shows find and replace dialog.
+   */
+  const handleFindReplace = (): void => {
+    setShowFindReplace(true);
+  };
+
+  /**
+   * handleSetTransformMode()
+   *
+   * Changes transform tool mode.
+   */
+  const handleSetTransformMode = (mode: TransformMode): void => {
+    transformManager.setTransformMode(mode);
+  };
+
+  /**
    * Menu structure
    */
   const menus: Record<string, MenuItem[]> = {
@@ -347,15 +532,49 @@ export function MenuBar(): JSX.Element {
         disabled: !undoRedo.canRedo
       },
       { separator: true },
-      { label: 'Cut', shortcut: 'Ctrl+X', disabled: true },
-      { label: 'Copy', shortcut: 'Ctrl+C', disabled: true },
-      { label: 'Paste', shortcut: 'Ctrl+V', disabled: true },
+      {
+        label: 'Cut',
+        action: handleCutEntities,
+        shortcut: 'Ctrl+X',
+        disabled: state.selectedEntities.length === 0
+      },
+      {
+        label: 'Copy',
+        action: handleCopyEntities,
+        shortcut: 'Ctrl+C',
+        disabled: state.selectedEntities.length === 0
+      },
+      {
+        label: 'Paste',
+        action: handlePasteEntities,
+        shortcut: 'Ctrl+V',
+        disabled: !clipboardManager.hasClipboardData()
+      },
       { separator: true },
-      { label: 'Select All', shortcut: 'Ctrl+A', disabled: true },
+      {
+        label: 'Select All',
+        action: handleSelectAll,
+        shortcut: 'Ctrl+A',
+        disabled: !state.project.isOpen
+      },
       {
         label: 'Deselect All',
         action: actions.clearSelection,
         disabled: state.selectedEntities.length === 0
+      },
+      { separator: true },
+      {
+        label: 'Delete',
+        action: handleDeleteEntities,
+        shortcut: 'Delete',
+        disabled: state.selectedEntities.length === 0
+      },
+      { separator: true },
+      {
+        label: 'Find and Replace...',
+        action: handleFindReplace,
+        shortcut: 'Ctrl+F',
+        disabled: !state.project.isOpen
       }
     ],
     View: [
@@ -406,6 +625,51 @@ export function MenuBar(): JSX.Element {
         label: 'Switch to 3D View',
         action: () => actions.setViewportMode('3d'),
         disabled: state.ui.activeViewportMode === '3d'
+      },
+      { separator: true },
+      {
+        label: 'Wireframe Mode',
+        action: () => actions.setRenderMode('wireframe'),
+        disabled: state.ui.activeRenderMode === 'wireframe'
+      },
+      {
+        label: 'Shaded Mode',
+        action: () => actions.setRenderMode('shaded'),
+        disabled: state.ui.activeRenderMode === 'shaded'
+      }
+    ],
+    Tools: [
+      {
+        label: 'Select Tool',
+        action: () => handleSetTransformMode(TransformMode.SELECT),
+        shortcut: 'Q'
+      },
+      {
+        label: 'Move Tool',
+        action: () => handleSetTransformMode(TransformMode.TRANSLATE),
+        shortcut: 'W'
+      },
+      {
+        label: 'Rotate Tool',
+        action: () => handleSetTransformMode(TransformMode.ROTATE),
+        shortcut: 'E'
+      },
+      {
+        label: 'Scale Tool',
+        action: () => handleSetTransformMode(TransformMode.SCALE),
+        shortcut: 'R'
+      },
+      { separator: true },
+      {
+        label: 'Duplicate',
+        action: () => {
+          if (state.selectedEntities.length > 0) {
+            const duplicated = transformManager.duplicateEntities();
+            actions.selectEntities(duplicated);
+          }
+        },
+        shortcut: 'Ctrl+D',
+        disabled: state.selectedEntities.length === 0
       }
     ],
     Build: [
@@ -430,6 +694,17 @@ export function MenuBar(): JSX.Element {
     ],
     Help: [
       {
+        label: 'Documentation',
+        action: handleShowDocumentation,
+        shortcut: 'F1'
+      },
+      {
+        label: 'Keyboard Shortcuts',
+        action: () => setShowKeyboardShortcuts(true),
+        shortcut: 'Ctrl+?'
+      },
+      { separator: true },
+      {
         label: 'About WORLDEDIT',
         action: () =>
           window.worldedit.dialog.showMessage({
@@ -437,9 +712,7 @@ export function MenuBar(): JSX.Element {
             title: 'About',
             message: `WORLDEDIT v${state.version}\nGame Development Editor for WORLDENV Engine`
           })
-      },
-      { label: 'Documentation', disabled: true },
-      { label: 'Keyboard Shortcuts', disabled: true }
+      }
     ]
   };
 
@@ -648,6 +921,15 @@ export function MenuBar(): JSX.Element {
       <BuildDialogManager
         configDialogOpen={showBuildConfig}
         onCloseConfigDialog={() => setShowBuildConfig(false)}
+      />
+
+      {/* Find and Replace Dialog */}
+      <FindReplaceDialog isOpen={showFindReplace} onClose={() => setShowFindReplace(false)} />
+
+      {/* Keyboard Shortcuts Dialog */}
+      <KeyboardShortcutsDialog
+        visible={showKeyboardShortcuts}
+        onClose={() => setShowKeyboardShortcuts(false)}
       />
     </>
   );

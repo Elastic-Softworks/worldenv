@@ -236,3 +236,215 @@
 .script-tabs::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }
+
+/* ============================================================================
+   DEBUG PANEL STYLES
+   ============================================================================ */
+
+.debug-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 300px;
+  height: 100vh;
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border-color);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.debug-section {
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px;
+}
+
+.debug-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.call-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stack-frame {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  font-size: 11px;
+  border: 1px solid var(--border-color);
+}
+
+.frame-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.frame-location {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.variables {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.variable-item {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  font-size: 11px;
+  border: 1px solid var(--border-color);
+}
+
+.variable-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.variable-type {
+  color: var(--accent-color);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.variable-value {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  word-break: break-all;
+}
+
+.breakpoints-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-breakpoints {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.file-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 11px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 4px;
+}
+
+.breakpoint-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 11px;
+}
+
+.breakpoint-item input[type='checkbox'] {
+  margin: 0;
+}
+
+.breakpoint-item span {
+  flex: 1;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.breakpoint-item button {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+.breakpoint-item button:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* ============================================================================
+   BREAKPOINT DECORATIONS
+   ============================================================================ */
+
+.breakpoint-enabled {
+  background: rgba(255, 0, 0, 0.1) !important;
+}
+
+.breakpoint-disabled {
+  background: rgba(128, 128, 128, 0.1) !important;
+}
+
+.breakpoint-glyph-enabled::before {
+  content: '●';
+  color: #ff0000;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.breakpoint-glyph-disabled::before {
+  content: '○';
+  color: #808080;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.current-debug-line {
+  background: rgba(255, 255, 0, 0.2) !important;
+}
+
+/* ============================================================================
+   COMPILATION ERRORS STYLES
+   ============================================================================ */
+
+.compilation-errors {
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.error-item {
+  font-size: 11px;
+  color: var(--error-color);
+  font-family: var(--font-mono);
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.error-item:last-child {
+  margin-bottom: 0;
+}
+
+.tab.has-errors {
+  border-bottom: 2px solid var(--error-color);
+}
+
+.tab .error-indicator {
+  color: var(--error-color);
+  font-weight: bold;
+  margin-left: 4px;
+}

@@ -11,11 +11,11 @@
  * Provides detailed property editors with undo/redo, validation, and multi-selection support.
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useEditorState } from '../../context/EditorStateContext';
 import { useTheme } from '../../context/ThemeContext';
-import { componentSystem, componentRegistry, ComponentUtils } from '../../core/components';
 import { SceneManager } from '../../core/hierarchy/SceneManager';
+import { componentSystem, componentRegistry } from '../../core/components';
 import {
   UndoRedoManager,
   PropertyChangeCommand,
@@ -29,13 +29,16 @@ import type {
   PropertyMetadata,
   Vector2,
   Vector3,
-  Color
+  Color,
+  AssetReference
 } from '../../core/components/Component';
 import {
   componentHelpRegistry,
   getPropertyTooltip,
   getComponentTooltip
 } from '../../core/components/ComponentHelp';
+import { AssetItem } from '../../../shared/types';
+import { ScriptComponentUI } from '../ui/ScriptComponentUI';
 
 /**
  * UI Component data interface
@@ -106,7 +109,7 @@ export function InspectorPanel(): JSX.Element {
           setComponentData(uiData);
 
           // Get available components that can be added
-          const available = ComponentUtils.getAvailableComponents(nodeId);
+          const available = componentRegistry.getAllDescriptors().map((desc) => desc.type);
           setAvailableComponents(available);
           setMultiSelectionData(null);
         } else {
@@ -328,7 +331,7 @@ export function InspectorPanel(): JSX.Element {
       if (selectedNodes.length === 0) return;
 
       for (const node of selectedNodes) {
-        const result = ComponentUtils.addComponentSafe(node.id, componentType);
+        const result = componentSystem.addComponent(node.id, componentType);
         if (!result.success) {
           console.error('Failed to add component:', result.error);
         }
@@ -350,7 +353,7 @@ export function InspectorPanel(): JSX.Element {
       if (selectedNodes.length === 0) return;
 
       for (const node of selectedNodes) {
-        const result = ComponentUtils.removeComponentSafe(node.id, componentType);
+        const result = componentSystem.removeComponent(node.id, componentType);
         if (!result.success) {
           console.error('Failed to remove component:', result.error);
         }
@@ -590,6 +593,25 @@ export function InspectorPanel(): JSX.Element {
             </div>
           );
 
+        case 'asset':
+          return (
+            <div style={containerStyle}>
+              <div style={labelStyle} title={getPropertyTooltip(component.type, propertyKey)}>
+                <span>{propertyMetadata.displayName}</span>
+                {propertyMetadata.required && <span style={{ color: '#ff6b6b' }}>*</span>}
+              </div>
+              <AssetPropertyEditor
+                value={propertyValue as AssetReference | null}
+                onChange={(value) => handlePropertyChange(component.type, propertyKey, value)}
+                fileFilter={propertyMetadata.fileFilter}
+                assetTypes={propertyMetadata.assetTypes}
+                readonly={propertyMetadata.readonly}
+                placeholder={propertyMetadata.placeholder || 'Drop asset here or click to browse'}
+              />
+              {validationResult?.error && <div style={errorStyle}>{validationResult.error}</div>}
+            </div>
+          );
+
         default:
           return (
             <div style={containerStyle}>
@@ -683,17 +705,37 @@ export function InspectorPanel(): JSX.Element {
 
           {uiData.expanded && (
             <div style={componentContentStyle}>
-              {component
-                .getAllProperties()
-                .map((property) =>
-                  renderPropertyEditor(
-                    component,
-                    property.key,
-                    property.value,
-                    property.metadata,
-                    validationResults[property.key]
+              {component.type === 'Script' ? (
+                <ScriptComponentUI
+                  component={component}
+                  onPropertyChange={(key: string, value: any) => {
+                    const entityId = state.selectedEntities.length > 0 ? state.selectedEntities[0] : '';
+                    const command = new PropertyChangeCommand(
+                      entityId,
+                      component.type,
+                      key,
+                      component.getProperty(key),
+                      value,
+                      componentSystem
+                    );
+                    undoRedoManager.executeCommand(command);
+                    updateComponentData();
+                  }}
+                  onRemove={() => handleRemoveComponent(component.type)}
+                />
+              ) : (
+                component
+                  .getAllProperties()
+                  .map((property) =>
+                    renderPropertyEditor(
+                      component,
+                      property.key,
+                      property.value,
+                      property.metadata,
+                      validationResults[property.key]
+                    )
                   )
-                )}
+              )}
             </div>
           )}
         </div>
@@ -791,14 +833,13 @@ export function InspectorPanel(): JSX.Element {
             >
               <option value="">Add Component</option>
               {availableComponents.map((componentType) => {
-                const info = ComponentUtils.getComponentDisplayInfo(componentType);
                 return (
                   <option
                     key={componentType}
                     value={componentType}
                     title={getComponentTooltip(componentType)}
                   >
-                    {info?.displayName || componentType}
+                    {componentType}
                   </option>
                 );
               })}
@@ -958,6 +999,276 @@ export function InspectorPanel(): JSX.Element {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/*
+  =================================
+        --- ASSET PROPERTY ---
+  =================================
+*/
+
+interface AssetPropertyEditorProps {
+  value: AssetReference | null;
+  onChange: (value: AssetReference | null) => void;
+  fileFilter?: string;
+  assetTypes?: string[];
+  readonly?: boolean;
+  placeholder?: string;
+}
+
+function AssetPropertyEditor({
+  value,
+  onChange,
+  fileFilter,
+  assetTypes,
+  readonly,
+  placeholder
+}: AssetPropertyEditorProps): JSX.Element {
+  const { theme } = useTheme();
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  /*
+
+           handleDrop()
+           ---
+           handles asset drop from asset browser
+
+  */
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
+
+      if (readonly) return;
+
+      try {
+        const dragData = e.dataTransfer.getData('application/json');
+        if (dragData) {
+          const asset = JSON.parse(dragData) as AssetItem;
+
+          /* validate asset type if filter specified */
+          if (assetTypes && !assetTypes.includes(asset.type)) {
+            console.warn(`Asset type ${asset.type} not allowed for this property`);
+            return;
+          }
+
+          /* create asset reference */
+          const assetRef: AssetReference = {
+            id: asset.metadata.id,
+            path: asset.path,
+            type: asset.type
+          };
+
+          onChange(assetRef);
+        }
+      } catch (error) {
+        console.error('Failed to handle asset drop:', error);
+      }
+    },
+    [onChange, assetTypes, readonly]
+  );
+
+  /*
+
+           handleDragOver()
+           ---
+           handles drag over events for drop zone
+
+  */
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      if (!readonly) {
+        setIsDragOver(true);
+      }
+    },
+    [readonly]
+  );
+
+  /*
+
+           handleDragLeave()
+           ---
+           handles drag leave events
+
+  */
+  const handleDragLeave = useCallback(() => {
+    setIsDragOver(false);
+  }, []);
+
+  /*
+
+           handleClear()
+           ---
+           clears the asset reference
+
+  */
+  const handleClear = useCallback(() => {
+    if (!readonly) {
+      onChange(null);
+    }
+  }, [onChange, readonly]);
+
+  /*
+
+           handleBrowse()
+           ---
+           opens file dialog to browse for assets
+
+  */
+  const handleBrowse = useCallback(async () => {
+    if (readonly) return;
+
+    try {
+      const filters = [];
+
+      if (assetTypes?.includes('image')) {
+        filters.push({ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'] });
+      }
+      if (assetTypes?.includes('audio')) {
+        filters.push({ name: 'Audio', extensions: ['mp3', 'wav', 'ogg', 'flac'] });
+      }
+      if (assetTypes?.includes('model')) {
+        filters.push({ name: 'Models', extensions: ['gltf', 'glb', 'obj', 'fbx'] });
+      }
+      if (assetTypes?.includes('font')) {
+        filters.push({ name: 'Fonts', extensions: ['ttf', 'otf', 'woff', 'woff2'] });
+      }
+      if (assetTypes?.includes('script')) {
+        filters.push({ name: 'Scripts', extensions: ['ws', 'ts', 'js'] });
+      }
+
+      if (filters.length === 0) {
+        filters.push({ name: 'All Files', extensions: ['*'] });
+      }
+
+      const filePath = await window.electronAPI.invoke('dialog:open-file', {
+        title: 'Select Asset',
+        filters,
+        properties: ['openFile']
+      });
+
+      if (filePath) {
+        /* import the asset if not already in project */
+        const imported = await window.electronAPI.invoke('asset:import', {
+          filePaths: [filePath],
+          options: {
+            targetFolder: 'assets',
+            preserveStructure: false,
+            generateThumbnails: true,
+            overwriteExisting: false
+          }
+        });
+
+        if (imported && Array.isArray(imported) && imported.length > 0) {
+          const asset = imported[0];
+          const assetRef: AssetReference = {
+            id: asset.metadata.id,
+            path: asset.path,
+            type: asset.type
+          };
+          onChange(assetRef);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to browse for asset:', error);
+    }
+  }, [onChange, assetTypes, readonly]);
+
+  /*
+    =================================
+           --- STYLES ---
+    =================================
+  */
+
+  const containerStyle: React.CSSProperties = {
+    border: `1px solid ${isDragOver ? theme.colors.accent.primary : theme.colors.border.primary}`,
+    borderRadius: theme.borderRadius.sm,
+    padding: theme.spacing.sm,
+    backgroundColor: isDragOver
+      ? `${theme.colors.accent.primary}10`
+      : theme.colors.background.secondary,
+    minHeight: '40px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    cursor: readonly ? 'default' : 'pointer',
+    transition: 'all 0.2s ease'
+  };
+
+  const assetInfoStyle: React.CSSProperties = {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px'
+  };
+
+  const assetNameStyle: React.CSSProperties = {
+    fontSize: '13px',
+    color: theme.colors.foreground.primary,
+    fontWeight: 500
+  };
+
+  const assetPathStyle: React.CSSProperties = {
+    fontSize: '11px',
+    color: theme.colors.foreground.tertiary,
+    fontFamily: 'monospace'
+  };
+
+  const placeholderStyle: React.CSSProperties = {
+    fontSize: '12px',
+    color: theme.colors.foreground.tertiary,
+    fontStyle: 'italic'
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    padding: '4px 8px',
+    border: `1px solid ${theme.colors.border.primary}`,
+    backgroundColor: theme.colors.background.primary,
+    color: theme.colors.foreground.secondary,
+    borderRadius: theme.borderRadius.sm,
+    cursor: 'pointer',
+    fontSize: '11px'
+  };
+
+  /*
+    =================================
+           --- RENDER ---
+    =================================
+  */
+
+  return (
+    <div
+      style={containerStyle}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onClick={!readonly ? handleBrowse : undefined}
+    >
+      {value ? (
+        <>
+          <div style={assetInfoStyle}>
+            <div style={assetNameStyle}>{value.path.split('/').pop() || value.path}</div>
+            <div style={assetPathStyle}>{value.path}</div>
+          </div>
+          {!readonly && (
+            <button
+              style={buttonStyle}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClear();
+              }}
+              title="Clear asset reference"
+            >
+              Clear
+            </button>
+          )}
+        </>
+      ) : (
+        <div style={placeholderStyle}>{placeholder}</div>
+      )}
     </div>
   );
 }
